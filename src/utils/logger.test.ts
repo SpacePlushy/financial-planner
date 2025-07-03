@@ -1,16 +1,17 @@
+/* eslint-disable testing-library/no-debugging-utils */
 import { logger, LogLevel } from './logger';
 
 describe('Logger', () => {
   beforeEach(() => {
     // Clear logs before each test
-    logger.clear();
+    logger.clearLogs();
     // Reset to default configuration
     logger.configure({
       enabled: true,
       minLevel: LogLevel.DEBUG,
       enableConsole: false, // Disable console output during tests
-      maxLogSize: 1000,
-      performanceThreshold: 100,
+      enableLocalStorage: false,
+      maxStoredLogs: 1000,
     });
   });
 
@@ -135,7 +136,7 @@ describe('Logger', () => {
 
       expect(logger.getLogCount()).toBe(2);
 
-      logger.clear();
+      logger.clearLogs();
 
       expect(logger.getLogCount()).toBe(0);
       expect(logger.exportLogs()).toHaveLength(0);
