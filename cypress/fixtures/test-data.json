@@ -1,0 +1,75 @@
+{
+  "defaultConfig": {
+    "generations": 100,
+    "populationSize": 50,
+    "mutationRate": 0.01,
+    "eliteCount": 5,
+    "targetEndingBalance": 10000,
+    "minimumBalance": 1000,
+    "startingBalance": 5000
+  },
+  "testPreset": {
+    "id": "test-preset",
+    "name": "Test Configuration",
+    "description": "Configuration for E2E testing",
+    "config": {
+      "generations": 50,
+      "populationSize": 30,
+      "mutationRate": 0.02,
+      "eliteCount": 3,
+      "targetEndingBalance": 8000,
+      "minimumBalance": 500,
+      "startingBalance": 3000
+    }
+  },
+  "sampleSchedule": [
+    {
+      "day": 1,
+      "shifts": ["medium"],
+      "earnings": 67.5,
+      "expenses": 25.0,
+      "deposit": 0,
+      "startBalance": 5000,
+      "endBalance": 5042.5
+    },
+    {
+      "day": 2,
+      "shifts": [],
+      "earnings": 0,
+      "expenses": 30.0,
+      "deposit": 0,
+      "startBalance": 5042.5,
+      "endBalance": 5012.5
+    },
+    {
+      "day": 3,
+      "shifts": ["large"],
+      "earnings": 86.5,
+      "expenses": 20.0,
+      "deposit": 0,
+      "startBalance": 5012.5,
+      "endBalance": 5079.0
+    }
+  ],
+  "testExpenses": [
+    {
+      "day": 1,
+      "name": "Groceries",
+      "amount": 25.0,
+      "category": "Food"
+    },
+    {
+      "day": 2,
+      "name": "Gas",
+      "amount": 30.0,
+      "category": "Transportation"
+    }
+  ],
+  "testDeposits": [
+    {
+      "day": 5,
+      "amount": 100.0,
+      "description": "Bonus payment"
+    }
+  ]
+}

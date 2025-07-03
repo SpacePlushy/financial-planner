@@ -1,0 +1,314 @@
+.tableContainer {
+  position: relative;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px var(--shadow-color);
+  overflow: hidden;
+}
+
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-primary);
+  opacity: 0.95;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  backdrop-filter: blur(2px);
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--bg-tertiary);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scheduleTable {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.scheduleTable thead {
+  background: var(--bg-tertiary);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.scheduleTable th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.editableHeader {
+  position: relative;
+}
+
+.editableHeader::after {
+  content: '*';
+  color: var(--primary-color);
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+.scheduleTable td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+  color: var(--text-primary);
+}
+
+.scheduleTable tbody tr:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.scheduleTable tbody tr.hasEdits {
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.scheduleTable tbody tr.hasEdits:hover {
+  background-color: rgba(255, 152, 0, 0.2);
+}
+
+.workDay {
+  position: relative;
+}
+
+.workDay::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--success-color, #4caf50);
+}
+
+.dayCell {
+  font-weight: 600;
+  color: var(--text-primary, #333);
+  text-align: center;
+}
+
+.dateCell {
+  color: var(--text-secondary, #666);
+  font-size: 13px;
+}
+
+.shiftsCell {
+  font-weight: 500;
+  color: var(--text-primary, #333);
+}
+
+.editableCell {
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.editableCell:hover {
+  background-color: var(--editable-hover, #e3f2fd);
+  color: var(--primary-color, #1976d2);
+}
+
+.editableCell:hover::after {
+  content: '✏️';
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.edited {
+  background-color: var(--edited-bg, #e8f5e9) !important;
+  font-weight: 600;
+}
+
+.edited::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background-color: var(--edit-indicator, #ff9800);
+  border-radius: 50%;
+}
+
+.depositCell {
+  color: var(--text-secondary, #666);
+}
+
+.balanceCell {
+  font-weight: 600;
+  color: var(--text-primary, #333);
+}
+
+.lowBalance {
+  color: var(--error-color, #f44336) !important;
+  font-weight: 700;
+}
+
+.emptyState {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-secondary, #666);
+}
+
+.emptyState p {
+  margin: 8px 0;
+}
+
+.emptyState p:first-child {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-primary, #333);
+}
+
+.editIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background-color: var(--edit-indicator-bg, #fff3cd);
+  border-top: 1px solid var(--border-color, #e0e0e0);
+  font-size: 14px;
+  color: var(--text-primary, #333);
+}
+
+.editDot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--edit-indicator, #ff9800);
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tableContainer {
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .scheduleTable {
+    font-size: 12px;
+  }
+
+  .scheduleTable th,
+  .scheduleTable td {
+    padding: 8px 6px;
+  }
+
+  .editableCell:hover::after {
+    display: none;
+  }
+
+  .tableWrapper {
+    position: relative;
+  }
+
+  .tableWrapper::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.8)
+    );
+    pointer-events: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .scheduleTable {
+    font-size: 11px;
+    min-width: 600px;
+  }
+
+  .scheduleTable th,
+  .scheduleTable td {
+    padding: 6px 4px;
+  }
+
+  .dayCell {
+    font-size: 12px;
+  }
+
+  .dateCell {
+    font-size: 10px;
+  }
+
+  .emptyState {
+    padding: 32px 16px;
+  }
+
+  .emptyState p:first-child {
+    font-size: 16px;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-top-color: transparent;
+    border-right-color: var(--primary-color, #1976d2);
+  }
+
+  .editDot {
+    animation: none;
+  }
+
+  * {
+    transition: none !important;
+  }
+}
+
+/* Dark mode media query removed - now using CSS variables from App.css */
