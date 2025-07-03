@@ -14,7 +14,7 @@ import { Summary } from './components/Summary/SummaryV2';
 import { OptimizationProgress } from './components/OptimizationProgress/OptimizationProgressV2';
 import { EditModal } from './components/EditModal/EditModalV2';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
-import { LoadingOverlay } from './components/LoadingStates/LoadingOverlay';
+import { OptimizationLoadingOverlay } from './components/OptimizationLoadingOverlay';
 import { useUI } from './context/UIContext';
 import { usePersistence } from './hooks/usePersistence';
 import { useOptimizer } from './hooks/useOptimizer';
@@ -270,30 +270,8 @@ function AppContent() {
       {/* Debug mode indicator */}
       {ui.debugMode && <div className="debug-indicator">Debug Mode</div>}
 
-      {/* Optimization state debug */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          left: '20px',
-          background: 'rgba(0, 0, 0, 0.8)',
-          color: 'white',
-          padding: '10px',
-          borderRadius: '4px',
-          fontSize: '12px',
-          zIndex: 9999,
-        }}
-      >
-        Optimization State: {optimizer.isOptimizing ? 'RUNNING' : 'STOPPED'}
-      </div>
-
-      {/* Full-screen loading overlay */}
-      <LoadingOverlay
-        isLoading={ui.isLoading}
-        fullScreen={true}
-        blur={false}
-        message="Optimizing your schedule... This may take a few moments."
-      />
+      {/* Full-screen optimization loading overlay */}
+      <OptimizationLoadingOverlay isVisible={optimizer.isOptimizing} />
     </div>
   );
 }
