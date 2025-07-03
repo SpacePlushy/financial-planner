@@ -286,7 +286,7 @@ function AppContent() {
       >
         Optimization State: {optimizer.isOptimizing ? 'RUNNING' : 'STOPPED'}
       </div>
-      
+
       {/* Full-screen loading overlay */}
       <LoadingOverlay
         isLoading={ui.isLoading}

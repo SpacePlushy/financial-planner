@@ -331,7 +331,7 @@ export function useOptimizer(): UseOptimizerReturn {
           error: errorMessage,
           currentOptimization: null,
         }));
-        
+
         // Clear loading state
         setLoading(false);
 

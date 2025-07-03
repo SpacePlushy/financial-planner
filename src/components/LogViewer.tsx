@@ -241,7 +241,9 @@ export const LogViewer: React.FC<LogViewerProps> = ({ className }) => {
                     <div className={styles.logEntryHeader}>
                       <div className={styles.logEntryBody}>
                         <div className={styles.logMetaRow}>
-                          <span className={`${styles.levelBadge} ${levelClasses.badge}`}>
+                          <span
+                            className={`${styles.levelBadge} ${levelClasses.badge}`}
+                          >
                             {LogLevel[log.level]}
                           </span>
                           <span className={styles.logContext}>
@@ -295,7 +297,9 @@ export const LogViewer: React.FC<LogViewerProps> = ({ className }) => {
                           </details>
                         )}
                       </div>
-                      <span className={`${styles.logTimestamp} ${styles.timestampRight}`}>
+                      <span
+                        className={`${styles.logTimestamp} ${styles.timestampRight}`}
+                      >
                         {log.timestamp.toLocaleTimeString()}
                       </span>
                     </div>
