@@ -150,6 +150,13 @@ body {
 .progress-section {
   margin: 1.5rem 0;
   animation: fadeIn 0.3s ease-in-out;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  min-height: 350px;
+  position: relative;
 }
 
 @keyframes fadeIn {

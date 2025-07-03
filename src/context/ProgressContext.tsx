@@ -222,10 +222,12 @@ export function ProgressProvider({
 
   // Optimization control actions
   const startOptimization = useCallback(() => {
+    console.log('[ProgressContext] Starting optimization');
     dispatch({ type: 'START_OPTIMIZATION' });
   }, []);
 
   const updateProgress = useCallback((progress: OptimizationProgress) => {
+    console.log('[ProgressContext] Updating progress:', progress);
     dispatch({ type: 'UPDATE_PROGRESS', payload: progress });
   }, []);
 

@@ -122,6 +122,7 @@ export function useOptimizer(): UseOptimizerReturn {
           break;
 
         case 'complete':
+          console.log('Worker completed optimization, result:', data);
           const endTime = Date.now();
           const totalTime = endTime - optimizationStartTimeRef.current;
           const result = data as OptimizationResult;
@@ -236,6 +237,7 @@ export function useOptimizer(): UseOptimizerReturn {
     };
 
     worker.onerror = error => {
+      console.error('Worker error occurred:', error);
       logger.error('useOptimizer', 'Worker error', new Error(error.message));
       setState(prev => ({
         ...prev,
@@ -243,6 +245,7 @@ export function useOptimizer(): UseOptimizerReturn {
         isPaused: false,
         error: 'Worker error: ' + error.message,
       }));
+      setProgressError('Worker error: ' + error.message);
     };
 
     return worker;
@@ -275,7 +278,11 @@ export function useOptimizer(): UseOptimizerReturn {
         currentOptimization: optimization,
       }));
 
-      console.log('Optimization started - isOptimizing set to true');
+      console.log('Optimization started - isOptimizing set to true', {
+        isOptimizing: true,
+        state: state,
+        config,
+      });
 
       // Start progress tracking
       startProgressOptimization();
@@ -287,7 +294,9 @@ export function useOptimizer(): UseOptimizerReturn {
         }
 
         // Create new worker
+        console.log('Creating new worker...');
         workerRef.current = createWorker();
+        console.log('Worker created successfully:', workerRef.current);
 
         // Start optimization
         workerRef.current.postMessage({
@@ -298,6 +307,7 @@ export function useOptimizer(): UseOptimizerReturn {
           shiftTypes,
         });
       } catch (error) {
+        console.error('Failed to create/start worker:', error);
         const errorMessage =
           error instanceof Error
             ? error.message
@@ -322,6 +332,8 @@ export function useOptimizer(): UseOptimizerReturn {
           currentOptimization: null,
         }));
 
+        setProgressError(errorMessage);
+        console.error('Optimization failed after retries:', errorMessage);
         logger.error(
           'useOptimizer',
           'Failed to start optimization',
