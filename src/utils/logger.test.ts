@@ -84,20 +84,20 @@ describe('Logger', () => {
       const stateBefore = { value: 1 };
       const stateAfter = { value: 2 };
 
-      logger.logAction(
-        'TestContext',
-        'TEST_ACTION',
+      logger.logAction('TestContext', 'TEST_ACTION', {
         stateBefore,
         stateAfter,
-        50
-      );
+        executionTime: '50ms',
+      });
 
       const logs = logger.getLogs();
       expect(logs).toHaveLength(1);
       expect(logs[0].action).toBe('TEST_ACTION');
-      expect(logs[0].stateBefore).toEqual(stateBefore);
-      expect(logs[0].stateAfter).toEqual(stateAfter);
-      expect(logs[0].executionTime).toBe(50);
+      expect(logs[0].data).toEqual({
+        stateBefore,
+        stateAfter,
+        executionTime: '50ms',
+      });
       expect(logs[0].level).toBe(LogLevel.INFO);
     });
 
