@@ -1,0 +1,199 @@
+name: PR Automation with GitHub App
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  github-app-automation:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Generate GitHub App Token
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          # Optional: specify repositories if your app has access to multiple repos
+          # repositories: "owner/repo1,owner/repo2"
+          # Optional: specify custom permissions
+          # permissions: >
+          #   {
+          #     "contents": "write",
+          #     "pull_requests": "write",
+          #     "issues": "write"
+          #   }
+
+      # Step 3: Use the token to create a PR comment
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const issue_number = context.issue.number;
+            if (issue_number) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue_number,
+                body: '👋 Hello from GitHub App! This PR is being processed.'
+              });
+            }
+
+      # Step 4: Check repository status
+      - name: Get Repository Info
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const { data: repo } = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            
+            console.log(`Repository: ${repo.full_name}`);
+            console.log(`Default Branch: ${repo.default_branch}`);
+            console.log(`Open Issues: ${repo.open_issues_count}`);
+            console.log(`Stars: ${repo.stargazers_count}`);
+
+      # Step 5: Label the PR
+      - name: Add Labels to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['automated', 'github-app']
+            });
+
+      # Step 6: Create a check run
+      - name: Create Check Run
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const { data: check } = await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'GitHub App Integration Check',
+              head_sha: context.payload.pull_request.head.sha,
+              status: 'completed',
+              conclusion: 'success',
+              output: {
+                title: 'Integration Successful',
+                summary: 'GitHub App token was successfully generated and used.',
+                text: 'All API operations completed successfully.'
+              }
+            });
+            console.log(`Check run created: ${check.html_url}`);
+
+      # Step 7: Security demonstration - Token is automatically masked
+      - name: Demonstrate Token Security
+        run: |
+          echo "Token is automatically masked in logs"
+          echo "Token value: ${{ steps.app-token.outputs.token }}"
+          echo "This will show as '***' in the logs"
+
+  # Example job for creating PRs with the GitHub App
+  create-pr-example:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Create a new branch
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b automated-pr-${{ github.run_number }}
+          echo "# Automated Update" >> README.md
+          echo "This PR was created by GitHub App at $(date)" >> README.md
+          git add README.md
+          git commit -m "Automated update from GitHub App"
+          git push origin automated-pr-${{ github.run_number }}
+
+      - name: Create Pull Request
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Automated PR from GitHub App',
+              body: `This PR was automatically created by our GitHub App.
+              
+              ## Changes
+              - Updated README.md with timestamp
+              
+              ## Automation Details
+              - Run Number: ${{ github.run_number }}
+              - Triggered by: ${{ github.actor }}
+              - Workflow: ${{ github.workflow }}`,
+              head: `automated-pr-${{ github.run_number }}`,
+              base: 'main'
+            });
+            
+            console.log(`Pull request created: ${pr.html_url}`);
+            core.setOutput('pr-url', pr.html_url);
+            core.setOutput('pr-number', pr.number);
+
+  # Example job for Google Gemini integration
+  gemini-integration-example:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Gemini API Integration Placeholder
+        id: gemini
+        run: |
+          # This is where you would integrate with Google Gemini API
+          # Example structure:
+          # - Call Gemini API with your prompt
+          # - Process the response
+          # - Use the response to create PR content
+          
+          echo "This is a placeholder for Gemini integration"
+          echo "AI_RESPONSE=Generated content would go here" >> $GITHUB_OUTPUT
+
+      - name: Use Gemini Response in PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            // This is where you would use the Gemini response
+            // to create or update PRs with AI-generated content
+            console.log('Gemini integration placeholder executed');
