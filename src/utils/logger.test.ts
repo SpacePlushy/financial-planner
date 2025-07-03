@@ -118,7 +118,7 @@ describe('Logger', () => {
 
   describe('Log management', () => {
     it('should maintain max log size', () => {
-      logger.configure({ maxLogSize: 5 });
+      logger.configure({ maxStoredLogs: 5 });
 
       for (let i = 0; i < 10; i++) {
         logger.info('TestContext', `Message ${i}`);
