@@ -332,8 +332,7 @@ export function useOptimizer(): UseOptimizerReturn {
           currentOptimization: null,
         }));
 
-        // Clear loading state
-        setLoading(false);
+        // Loading state is managed by progress context
 
         setProgressError(new Error(errorMessage));
         console.error('Optimization failed after retries:', errorMessage);
