@@ -495,6 +495,8 @@ export function useEdits() {
       expenses: 0,
       balance: 0,
       notes: 0,
+      shifts: 0,
+      deposit: 0,
     };
 
     const dayCounts = new Map<number, number>();

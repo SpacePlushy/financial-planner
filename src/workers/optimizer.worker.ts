@@ -33,7 +33,6 @@ declare const self: DedicatedWorkerGlobalScope;
 
 self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
   const { type, config, expenses, deposits, shiftTypes } = event.data;
-  console.log('[Worker] Message received:', { type, config });
 
   switch (type) {
     case 'start':
@@ -46,7 +45,6 @@ self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
       }
 
       try {
-        console.log('[Worker] Starting optimization with config:', config);
         optimizer = new GeneticOptimizer(
           config,
           expenses || [],
@@ -56,7 +54,6 @@ self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
         isPaused = false;
         isCancelled = false;
 
-        console.log('[Worker] Starting optimization...');
         const result = await optimizer.optimize(async progress => {
           // Check if cancelled
           if (isCancelled) {
@@ -69,7 +66,6 @@ self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
           }
 
           // Send progress update
-          console.log('[Worker] Sending progress:', progress);
           self.postMessage({
             type: 'progress',
             data: progress,
@@ -83,7 +79,6 @@ self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
           } as WorkerResponse);
         }
       } catch (error) {
-        console.error('[Worker] Error during optimization:', error);
         if (
           error instanceof Error &&
           error.message === 'Optimization cancelled'

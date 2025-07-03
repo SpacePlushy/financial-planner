@@ -68,7 +68,7 @@ describe('GeneticOptimizer', () => {
       const optimizer = new GeneticOptimizer(configWithConstraints);
       const result = await optimizer.optimize();
 
-      const schedule = result.getFormattedSchedule();
+      const schedule = result.formattedSchedule;
       expect(schedule[4].shifts).toContain('large'); // Day 5
       expect(schedule[9].shifts).toHaveLength(0); // Day 10 off
     });
@@ -92,7 +92,7 @@ describe('GeneticOptimizer', () => {
       const optimizer = new GeneticOptimizer(baseConfig);
       const result = await optimizer.optimize();
 
-      const schedule = result.getFormattedSchedule();
+      const schedule = result.formattedSchedule;
 
       expect(schedule).toHaveLength(30);
       expect(schedule[0].day).toBe(1);
@@ -119,7 +119,7 @@ describe('GeneticOptimizer', () => {
       const result = await optimizer.optimize();
 
       // Should work many days with double shifts
-      const schedule = result.getFormattedSchedule();
+      const schedule = result.formattedSchedule;
       const doubleshiftDays = schedule.filter(
         day => day.shifts.length > 1
       ).length;
@@ -144,7 +144,7 @@ describe('GeneticOptimizer', () => {
       const optimizer = new GeneticOptimizer(configWithEdit);
       const result = await optimizer.optimize();
 
-      const schedule = result.getFormattedSchedule();
+      const schedule = result.formattedSchedule;
 
       // Days before edit should use manual constraints
       expect(schedule[0].shifts).toContain('medium'); // Day 1

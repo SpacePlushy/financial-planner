@@ -123,6 +123,18 @@ describe('App Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorageMock.getItem.mockReturnValue(null);
+    // Clean up DOM before each test
+    document.body.innerHTML = '';
+    // Use fake timers to control timing
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    // Clean up DOM after each test
+    document.body.innerHTML = '';
+    // Clean up any lingering timeouts
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
   });
 
   it('should render without crashing', () => {

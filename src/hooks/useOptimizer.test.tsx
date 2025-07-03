@@ -7,19 +7,16 @@ import {
   OptimizationResult,
 } from '../types';
 import { ScheduleProvider } from '../context/ScheduleContext';
+import { ProgressProvider } from '../context/ProgressContext';
+import { ConfigurationProvider } from '../context/ConfigurationContext';
 import React from 'react';
 import { useOptimizer } from './useOptimizer';
 import { DaySchedule } from '../types';
 
-const mockWorker = {
-  postMessage: jest.fn(),
-  terminate: jest.fn(),
-  onmessage: null as ((event: MessageEvent) => void) | null,
-  onerror: null as ((event: ErrorEvent) => void) | null,
-};
+// Import the mock worker class
+import MockWorker from '../workers/__mocks__/optimizer.worker';
 
-// Override global Worker constructor
-(global as any).Worker = jest.fn().mockImplementation(() => mockWorker);
+const mockWorker = new MockWorker();
 
 // Mock URL constructor to handle import.meta.url
 (global as any).URL = class URL {
@@ -29,14 +26,10 @@ const mockWorker = {
   static createObjectURL = jest.fn().mockReturnValue('mock-blob-url');
 };
 
-// Mock the worker module
-jest.mock('../workers/optimizer.worker.ts', () => ({
-  default: class MockWorker {
-    postMessage = jest.fn();
-    terminate = jest.fn();
-    onmessage: any = null;
-    onerror: any = null;
-  },
+// Mock the worker factory to return our specific mock instance
+let mockCreateOptimizerWorker: jest.Mock;
+jest.mock('../workers/workerFactory', () => ({
+  createOptimizerWorker: jest.fn(),
 }));
 
 // Mock logger
@@ -100,15 +93,27 @@ const mockSchedule: DaySchedule[] = [
 ];
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <ScheduleProvider>{children}</ScheduleProvider>
+  <ScheduleProvider>
+    <ConfigurationProvider>
+      <ProgressProvider>{children}</ProgressProvider>
+    </ConfigurationProvider>
+  </ScheduleProvider>
 );
 
 beforeEach(() => {
+  // Get the mock function from the module
+  const { createOptimizerWorker } = require('../workers/workerFactory');
+  mockCreateOptimizerWorker = createOptimizerWorker as jest.Mock;
+
   jest.clearAllMocks();
-  mockWorker.postMessage.mockClear();
-  mockWorker.terminate.mockClear();
+  // Reset the mock worker state
   mockWorker.onmessage = null;
   mockWorker.onerror = null;
+  // Clear mock calls
+  mockWorker.postMessage.mockClear();
+  mockWorker.terminate.mockClear();
+  // Set up the mock to return our worker
+  mockCreateOptimizerWorker.mockReturnValue(mockWorker);
 });
 
 describe('useOptimizer', () => {
@@ -132,15 +137,20 @@ describe('useOptimizer', () => {
       manualConstraints: {},
     };
 
-    await act(async () => {
-      await result.current.startOptimization(config);
+    act(() => {
+      result.current.startOptimization(config);
     });
 
+    // Wait a bit for async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     expect(result.current.isOptimizing).toBe(true);
+    expect(mockCreateOptimizerWorker).toHaveBeenCalled();
     expect(mockWorker.postMessage).toHaveBeenCalledWith({
       type: 'start',
       config,
-      schedule: expect.any(Array),
+      expenses: expect.any(Array),
+      deposits: expect.any(Array),
       shiftTypes: expect.any(Object),
     });
   });

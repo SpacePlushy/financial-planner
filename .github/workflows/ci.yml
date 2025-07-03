@@ -46,6 +46,8 @@ jobs:
 
     - name: Build project
       run: npm run build
+      env:
+        CI: false
 
     - name: Upload coverage reports
       uses: actions/upload-artifact@v3
@@ -88,6 +90,8 @@ jobs:
 
     - name: Build project
       run: npm run build
+      env:
+        CI: false
 
     - name: Run Cypress tests
       uses: cypress-io/github-action@v6

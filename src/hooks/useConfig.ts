@@ -61,10 +61,14 @@ export function useConfig() {
 
       // Validate population size
       if (config.populationSize !== undefined) {
-        if (config.populationSize < 1) {
-          errors.push('Population size must be at least 1');
+        if (config.populationSize < 10) {
+          errors.push('Population size must be at least 10');
         }
-        // Removed upper limit - allow any reasonable value
+        if (config.populationSize > 1000) {
+          errors.push(
+            'Population size should not exceed 1000 for performance reasons'
+          );
+        }
       }
 
       // Validate generations
@@ -72,7 +76,11 @@ export function useConfig() {
         if (config.generations < 1) {
           errors.push('Generations must be at least 1');
         }
-        // Removed upper limit - allow any reasonable value
+        if (config.generations > 500) {
+          errors.push(
+            'Generations should not exceed 500 for performance reasons'
+          );
+        }
       }
 
       // Validate balance edit day

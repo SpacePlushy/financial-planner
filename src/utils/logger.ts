@@ -174,15 +174,19 @@ class Logger {
 
     switch (entry.level) {
       case LogLevel.DEBUG:
+        // eslint-disable-next-line no-console
         console.debug(prefix, entry.message, entry.data || '');
         break;
       case LogLevel.INFO:
+        // eslint-disable-next-line no-console
         console.info(prefix, entry.message, entry.data || '');
         break;
       case LogLevel.WARN:
+        // eslint-disable-next-line no-console
         console.warn(prefix, entry.message, entry.data || '');
         break;
       case LogLevel.ERROR:
+        // eslint-disable-next-line no-console
         console.error(
           prefix,
           entry.message,
@@ -193,9 +197,13 @@ class Logger {
     }
 
     if (entry.stateBefore && entry.stateAfter) {
+      // eslint-disable-next-line no-console
       console.groupCollapsed(`${prefix} State Change`);
+      // eslint-disable-next-line no-console
       console.log('Before:', entry.stateBefore);
+      // eslint-disable-next-line no-console
       console.log('After:', entry.stateAfter);
+      // eslint-disable-next-line no-console
       console.groupEnd();
     }
   }

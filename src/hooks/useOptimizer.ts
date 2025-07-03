@@ -92,24 +92,16 @@ export function useOptimizer(): UseOptimizerReturn {
     // Create a new worker
     let worker: Worker;
 
-    try {
-      // Try factory first (works in tests)
+    // In test environment, always use the factory (which should be mocked)
+    if (process.env.NODE_ENV === 'test') {
       worker = createOptimizerWorker();
-    } catch (error) {
-      // In test environment, throw the error
-      if (process.env.NODE_ENV === 'test') {
-        throw new Error('Worker creation failed in test environment');
-      }
-      // Fallback to direct creation (works in browser)
-      worker = new Worker(
-        new URL('../workers/optimizer.worker.ts', import.meta.url),
-        { type: 'module' }
-      );
+    } else {
+      // In browser environment, use the worker factory which handles URL creation
+      worker = createOptimizerWorker();
     }
 
     worker.onmessage = event => {
       const { type, data, error } = event.data;
-      console.log('Worker message received:', { type, data, error });
 
       switch (type) {
         case 'progress':
@@ -122,7 +114,6 @@ export function useOptimizer(): UseOptimizerReturn {
           break;
 
         case 'complete':
-          console.log('Worker completed optimization, result:', data);
           const endTime = Date.now();
           const totalTime = endTime - optimizationStartTimeRef.current;
           const result = data as OptimizationResult;
@@ -237,7 +228,6 @@ export function useOptimizer(): UseOptimizerReturn {
     };
 
     worker.onerror = error => {
-      console.error('Worker error occurred:', error);
       logger.error('useOptimizer', 'Worker error', new Error(error.message));
       setState(prev => ({
         ...prev,
@@ -249,7 +239,16 @@ export function useOptimizer(): UseOptimizerReturn {
     };
 
     return worker;
-  }, [setOptimizationResult, setCurrentSchedule]);
+  }, [
+    setOptimizationResult,
+    setCurrentSchedule,
+    updateProgress,
+    completeOptimization,
+    setProgressError,
+    cancelProgressOptimization,
+    pauseProgressOptimization,
+    resumeProgressOptimization,
+  ]);
 
   const startOptimization = useCallback(
     async (config: OptimizationConfig): Promise<void> => {
@@ -278,12 +277,6 @@ export function useOptimizer(): UseOptimizerReturn {
         currentOptimization: optimization,
       }));
 
-      console.log('Optimization started - isOptimizing set to true', {
-        isOptimizing: true,
-        state: state,
-        config,
-      });
-
       // Start progress tracking
       startProgressOptimization();
 
@@ -294,9 +287,7 @@ export function useOptimizer(): UseOptimizerReturn {
         }
 
         // Create new worker
-        console.log('Creating new worker...');
         workerRef.current = createWorker();
-        console.log('Worker created successfully:', workerRef.current);
 
         // Start optimization
         workerRef.current.postMessage({
@@ -307,7 +298,6 @@ export function useOptimizer(): UseOptimizerReturn {
           shiftTypes,
         });
       } catch (error) {
-        console.error('Failed to create/start worker:', error);
         const errorMessage =
           error instanceof Error
             ? error.message
@@ -335,7 +325,6 @@ export function useOptimizer(): UseOptimizerReturn {
         // Loading state is managed by progress context
 
         setProgressError(new Error(errorMessage));
-        console.error('Optimization failed after retries:', errorMessage);
         logger.error(
           'useOptimizer',
           'Failed to start optimization',
@@ -343,7 +332,14 @@ export function useOptimizer(): UseOptimizerReturn {
         );
       }
     },
-    [createWorker, expenses, deposits, shiftTypes]
+    [
+      createWorker,
+      expenses,
+      deposits,
+      shiftTypes,
+      startProgressOptimization,
+      setProgressError,
+    ]
   );
 
   const cancelOptimization = useCallback(() => {

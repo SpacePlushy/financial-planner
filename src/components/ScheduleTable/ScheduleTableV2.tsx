@@ -40,8 +40,8 @@ export const ScheduleTable: React.FC = () => {
     const { field, direction } = ui.sort;
 
     sorted.sort((a, b) => {
-      let aValue: any = a[field as keyof typeof a];
-      let bValue: any = b[field as keyof typeof b];
+      let aValue: number | string[] = a[field as keyof typeof a];
+      let bValue: number | string[] = b[field as keyof typeof b];
 
       // Handle special cases
       if (field === 'shifts') {
@@ -76,7 +76,11 @@ export const ScheduleTable: React.FC = () => {
 
   // Get the display value for a cell
   const getCellValue = useCallback(
-    (day: number, field: string, originalValue: any) => {
+    (
+      day: number,
+      field: string,
+      originalValue: string[] | number | unknown
+    ) => {
       const edit = getEditForField(day, field);
       if (edit) {
         return edit.newValue;
@@ -92,7 +96,13 @@ export const ScheduleTable: React.FC = () => {
         return originalValue.toFixed(2);
       }
 
-      return originalValue || '-';
+      // Handle string values
+      if (typeof originalValue === 'string') {
+        return originalValue || '-';
+      }
+
+      // Default for any other type
+      return '-';
     },
     [getEditForField]
   );

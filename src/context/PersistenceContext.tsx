@@ -7,6 +7,7 @@ import React, {
   useRef,
   ReactNode,
 } from 'react';
+import { act } from 'react-dom/test-utils';
 import {
   PersistenceState,
   PersistenceActions,
@@ -95,6 +96,15 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastChangeRef = useRef<number>(Date.now());
 
+  // Helper function to safely dispatch actions in test environment
+  const safeDispatch = useCallback((action: PersistenceActionType) => {
+    if (process.env.NODE_ENV === 'test') {
+      act(() => dispatch(action));
+    } else {
+      dispatch(action);
+    }
+  }, []);
+
   // Get other contexts - we'll need these for save/load operations
   // Note: These contexts must be wrapped around PersistenceProvider in the app
   const scheduleContext = useScheduleContext();
@@ -106,7 +116,7 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
     // Only mark as changed if it's been more than 100ms since last change
     // This debounces rapid changes
     if (currentTime - lastChangeRef.current > 100) {
-      dispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: true });
+      safeDispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: true });
       lastChangeRef.current = currentTime;
     }
   }, [
@@ -118,6 +128,7 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
     configContext.config,
     configContext.presets,
     configContext.selectedPresetId,
+    safeDispatch,
   ]);
 
   // Save to localStorage
@@ -149,8 +160,8 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
 
       await storage.save(data);
 
-      dispatch({ type: 'SET_LAST_SAVE_TIME', payload: new Date() });
-      dispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: false });
+      safeDispatch({ type: 'SET_LAST_SAVE_TIME', payload: new Date() });
+      safeDispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: false });
 
       logger.info('Persistence', 'Data saved successfully');
     } catch (error) {
@@ -162,7 +173,7 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
   // Load from localStorage
   const loadFromLocalStorage = useCallback(async (): Promise<void> => {
     try {
-      dispatch({ type: 'SET_IS_RESTORING', payload: true });
+      safeDispatch({ type: 'SET_IS_RESTORING', payload: true });
       logger.info('Persistence', 'Loading from localStorage...');
 
       const data = await storage.load();
@@ -205,12 +216,12 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
           }
         }
 
-        dispatch({
+        safeDispatch({
           type: 'SET_LAST_SAVE_TIME',
           payload: new Date(data.timestamp),
         });
-        dispatch({ type: 'SET_DATA_VERSION', payload: data.version });
-        dispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: false });
+        safeDispatch({ type: 'SET_DATA_VERSION', payload: data.version });
+        safeDispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: false });
 
         logger.info('Persistence', 'Data loaded successfully', {
           version: data.version,
@@ -232,17 +243,17 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
       logger.error('Persistence', 'Failed to load data', error as Error);
       throw error;
     } finally {
-      dispatch({ type: 'SET_IS_RESTORING', payload: false });
+      safeDispatch({ type: 'SET_IS_RESTORING', payload: false });
     }
-  }, [scheduleContext, configContext]);
+  }, [scheduleContext, configContext, safeDispatch]);
 
   // Clear localStorage
   const clearLocalStorage = useCallback(async (): Promise<void> => {
     try {
       logger.info('Persistence', 'Clearing localStorage...');
       await storage.clear();
-      dispatch({ type: 'SET_LAST_SAVE_TIME', payload: null });
-      dispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: false });
+      safeDispatch({ type: 'SET_LAST_SAVE_TIME', payload: null });
+      safeDispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: false });
       logger.info('Persistence', 'Storage cleared');
     } catch (error) {
       logger.error('Persistence', 'Failed to clear storage', error as Error);
@@ -295,7 +306,7 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
   const importData = useCallback(
     async (jsonString: string): Promise<void> => {
       try {
-        dispatch({ type: 'SET_IS_RESTORING', payload: true });
+        safeDispatch({ type: 'SET_IS_RESTORING', payload: true });
         logger.info('Persistence', 'Importing data...');
 
         const data = await storage.import(jsonString);
@@ -330,8 +341,8 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
           }
         }
 
-        dispatch({ type: 'SET_DATA_VERSION', payload: data.version });
-        dispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: false });
+        safeDispatch({ type: 'SET_DATA_VERSION', payload: data.version });
+        safeDispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: false });
 
         // Save the imported data to localStorage
         await saveToLocalStorage();
@@ -341,42 +352,45 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
         logger.error('Persistence', 'Failed to import data', error as Error);
         throw error;
       } finally {
-        dispatch({ type: 'SET_IS_RESTORING', payload: false });
+        safeDispatch({ type: 'SET_IS_RESTORING', payload: false });
       }
     },
-    [scheduleContext, configContext, saveToLocalStorage]
+    [scheduleContext, configContext, saveToLocalStorage, safeDispatch]
   );
 
   // Toggle auto-save
   const toggleAutoSave = useCallback(() => {
-    dispatch({
+    safeDispatch({
       type: 'SET_AUTO_SAVE_ENABLED',
       payload: !state.autoSaveEnabled,
     });
-  }, [state.autoSaveEnabled]);
+  }, [state.autoSaveEnabled, safeDispatch]);
 
   // Set auto-save interval
-  const setAutoSaveInterval = useCallback((seconds: number) => {
-    if (seconds < 10) {
-      logger.warn(
-        'Persistence',
-        'Auto-save interval too short, using minimum of 10 seconds'
-      );
-      seconds = 10;
-    }
-    dispatch({ type: 'SET_AUTO_SAVE_INTERVAL', payload: seconds });
-  }, []);
+  const setAutoSaveInterval = useCallback(
+    (seconds: number) => {
+      if (seconds < 10) {
+        logger.warn(
+          'Persistence',
+          'Auto-save interval too short, using minimum of 10 seconds'
+        );
+        seconds = 10;
+      }
+      safeDispatch({ type: 'SET_AUTO_SAVE_INTERVAL', payload: seconds });
+    },
+    [safeDispatch]
+  );
 
   // Mark as changed
   const markAsChanged = useCallback(() => {
-    dispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: true });
-  }, []);
+    safeDispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: true });
+  }, [safeDispatch]);
 
   // Mark as saved
   const markAsSaved = useCallback(() => {
-    dispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: false });
-    dispatch({ type: 'SET_LAST_SAVE_TIME', payload: new Date() });
-  }, []);
+    safeDispatch({ type: 'SET_HAS_UNSAVED_CHANGES', payload: false });
+    safeDispatch({ type: 'SET_LAST_SAVE_TIME', payload: new Date() });
+  }, [safeDispatch]);
 
   // Auto-save effect
   useEffect(() => {

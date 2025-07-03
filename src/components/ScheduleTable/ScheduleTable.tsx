@@ -42,7 +42,11 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
     (day: DaySchedule, field: Edit['field']): string | number => {
       const edit = editMap.get(`${day.day}-${field}`);
       if (edit) {
-        return edit.newValue;
+        // Handle array values (shifts)
+        if (Array.isArray(edit.newValue)) {
+          return edit.newValue.join(', ');
+        }
+        return edit.newValue as string | number;
       }
 
       switch (field) {

@@ -88,23 +88,42 @@ export const Summary: React.FC<SummaryProps> = ({ className }) => {
   const handleExportCSV = useCallback(() => {
     if (!currentSchedule.length) return;
 
-    const csvContent = scheduleService.exportSchedule(currentSchedule);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
+    try {
+      const csvContent = scheduleService.exportSchedule(currentSchedule);
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
 
-    link.setAttribute('href', url);
-    link.setAttribute(
-      'download',
-      `schedule_${new Date().toISOString().split('T')[0]}.csv`
-    );
-    link.style.visibility = 'hidden';
+      // Ensure we have a valid DOM element and document.body exists
+      if (
+        !link ||
+        !document.body ||
+        typeof document.body.appendChild !== 'function'
+      ) {
+        console.warn('DOM manipulation not available in this environment');
+        return;
+      }
 
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const url = URL.createObjectURL(blob);
 
-    URL.revokeObjectURL(url);
+      link.setAttribute('href', url);
+      link.setAttribute(
+        'download',
+        `schedule_${new Date().toISOString().split('T')[0]}.csv`
+      );
+      link.style.visibility = 'hidden';
+
+      document.body.appendChild(link);
+      link.click();
+
+      // Safely remove the link
+      if (link.parentNode) {
+        document.body.removeChild(link);
+      }
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export CSV:', error);
+    }
   }, [currentSchedule, scheduleService]);
 
   // Print

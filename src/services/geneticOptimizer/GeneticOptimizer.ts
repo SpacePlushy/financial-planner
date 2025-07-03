@@ -15,11 +15,11 @@ import { FitnessManager } from './FitnessManager';
 
 // Disable logger to prevent console spam during optimization
 const logger = {
-  info: (...args: any[]) => {},
-  debug: (...args: any[]) => {},
-  error: (...args: any[]) => {},
-  warn: (...args: any[]) => {},
-  logAction: (...args: any[]) => {},
+  info: (...args: unknown[]) => {},
+  debug: (...args: unknown[]) => {},
+  error: (...args: unknown[]) => {},
+  warn: (...args: unknown[]) => {},
+  logAction: (...args: unknown[]) => {},
 };
 
 /**

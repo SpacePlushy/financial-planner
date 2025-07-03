@@ -77,14 +77,6 @@ export const ScheduleCalendar: React.FC = () => {
     [currentSchedule, ui]
   );
 
-  // Debug info
-  console.log('ScheduleCalendar Debug:', {
-    currentScheduleLength: currentSchedule.length,
-    firstFewItems: currentSchedule.slice(0, 3),
-    isOptimizing,
-    progressPercentage: getProgressPercentage(),
-  });
-
   // Render empty state
   if (currentSchedule.length === 0) {
     return (
@@ -141,7 +133,6 @@ export const ScheduleCalendar: React.FC = () => {
             }
 
             setCurrentSchedule(sampleSchedule);
-            console.log('Generated sample schedule:', sampleSchedule);
           }}
           style={{
             marginTop: '10px',
