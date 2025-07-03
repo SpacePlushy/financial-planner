@@ -282,7 +282,7 @@ section {
 }
 
 .action-button.save:hover:not(:disabled) {
-  background-color: #388e3c;
+  filter: brightness(0.9);
 }
 
 .action-button.export,
@@ -315,7 +315,7 @@ section {
 
 .action-button.pause:hover:not(:disabled),
 .action-button.resume:hover:not(:disabled) {
-  background-color: #ef6c00;
+  filter: brightness(0.9);
 }
 
 .action-button.cancel {
@@ -324,7 +324,7 @@ section {
 }
 
 .action-button.cancel:hover:not(:disabled) {
-  background-color: #c62828;
+  filter: brightness(0.9);
 }
 
 /* Error toast */

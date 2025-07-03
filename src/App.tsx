@@ -14,6 +14,7 @@ import { Summary } from './components/Summary/SummaryV2';
 import { OptimizationProgress } from './components/OptimizationProgress/OptimizationProgressV2';
 import { EditModal } from './components/EditModal/EditModalV2';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
+import { LoadingOverlay } from './components/LoadingStates/LoadingOverlay';
 import { useUI } from './context/UIContext';
 import { usePersistence } from './hooks/usePersistence';
 import { useOptimizer } from './hooks/useOptimizer';
@@ -285,6 +286,14 @@ function AppContent() {
       >
         Optimization State: {optimizer.isOptimizing ? 'RUNNING' : 'STOPPED'}
       </div>
+      
+      {/* Full-screen loading overlay */}
+      <LoadingOverlay
+        isLoading={ui.isLoading}
+        fullScreen={true}
+        blur={false}
+        message="Optimizing your schedule... This may take a few moments."
+      />
     </div>
   );
 }
