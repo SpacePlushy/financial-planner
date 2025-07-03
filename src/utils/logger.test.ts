@@ -170,9 +170,9 @@ describe('Logger', () => {
     });
 
     it('should filter by date range', () => {
-      const logs = logger.exportLogs({
-        startDate: new Date('2024-01-01T01:00:00Z'),
-        endDate: new Date('2024-01-01T02:00:00Z'),
+      const logs = logger.getLogs({
+        startTime: new Date('2024-01-01T01:00:00Z'),
+        endTime: new Date('2024-01-01T02:00:00Z'),
       });
 
       expect(logs).toHaveLength(2);
@@ -181,7 +181,7 @@ describe('Logger', () => {
     });
 
     it('should filter by log level', () => {
-      const logs = logger.exportLogs({ level: LogLevel.WARN });
+      const logs = logger.getLogs({ level: LogLevel.WARN });
 
       expect(logs).toHaveLength(2);
       expect(logs[0].level).toBe(LogLevel.WARN);
@@ -189,7 +189,7 @@ describe('Logger', () => {
     });
 
     it('should filter by context', () => {
-      const logs = logger.exportLogs({ context: 'Context1' });
+      const logs = logger.getLogs({ context: 'Context1' });
 
       expect(logs).toHaveLength(2);
       expect(logs[0].context).toBe('Context1');
