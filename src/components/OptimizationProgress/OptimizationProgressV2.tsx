@@ -52,10 +52,11 @@ export const OptimizationProgress: React.FC = () => {
     }
   }, [currentProgress]);
 
-  // Reset dismissed state when a new optimization starts
+  // Reset dismissed state and initialization when a new optimization starts
   useEffect(() => {
     if (isOptimizing) {
       setIsDismissed(false);
+      setIsInitializing(true);
     }
   }, [isOptimizing]);
 
@@ -130,9 +131,10 @@ export const OptimizationProgress: React.FC = () => {
 
   // Show initialization state when optimization just started
   if (
-    isInitializing ||
-    !currentProgress ||
-    (currentProgress.generation === 0 && progressPercentage === 0)
+    isOptimizing &&
+    (isInitializing ||
+      !currentProgress ||
+      (currentProgress.generation === 0 && progressPercentage === 0))
   ) {
     return (
       <div className={styles.container}>
@@ -149,6 +151,11 @@ export const OptimizationProgress: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  // Don't show anything if not optimizing and no result to show
+  if (!isOptimizing && !isCompleted) {
+    return null;
   }
 
   return (

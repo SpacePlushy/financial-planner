@@ -115,6 +115,7 @@ function progressReducer(
       return {
         ...state,
         isOptimizing: false,
+        currentProgress: null,
         lastResult: action.payload,
         endTime: Date.now(),
         isPaused: false,
@@ -125,6 +126,7 @@ function progressReducer(
       return {
         ...state,
         isOptimizing: false,
+        currentProgress: null,
         isPaused: false,
         endTime: Date.now(),
       };
@@ -146,6 +148,7 @@ function progressReducer(
         ...state,
         error: action.payload,
         isOptimizing: false,
+        currentProgress: null,
         isPaused: false,
         endTime: action.payload ? Date.now() : state.endTime,
       };
