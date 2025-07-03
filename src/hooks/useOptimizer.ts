@@ -92,19 +92,20 @@ export function useOptimizer(): UseOptimizerReturn {
     // Create a new worker
     let worker: Worker;
 
-    try {
-      // Try factory first (works in tests)
+    // In test environment, always use the factory (which should be mocked)
+    if (process.env.NODE_ENV === 'test') {
       worker = createOptimizerWorker();
-    } catch (error) {
-      // In test environment, throw the error
-      if (process.env.NODE_ENV === 'test') {
-        throw new Error('Worker creation failed in test environment');
+    } else {
+      try {
+        // Try factory first (works in tests)
+        worker = createOptimizerWorker();
+      } catch (error) {
+        // Fallback to direct creation (works in browser)
+        worker = new Worker(
+          new URL('../workers/optimizer.worker.ts', import.meta.url),
+          { type: 'module' }
+        );
       }
-      // Fallback to direct creation (works in browser)
-      worker = new Worker(
-        new URL('../workers/optimizer.worker.ts', import.meta.url),
-        { type: 'module' }
-      );
     }
 
     worker.onmessage = event => {
