@@ -103,17 +103,18 @@ export function defaultStateSanitizer<T>(state: T): T {
     return state;
   }
 
-  const sanitized = { ...(state as Record<string, unknown>) } as T;
+  const stateObj = state as Record<string, unknown>;
+  const sanitized = { ...stateObj };
 
   // Remove any potentially sensitive fields
   const sensitiveFields = ['password', 'token', 'secret', 'key', 'auth'];
   sensitiveFields.forEach(field => {
     if (field in sanitized) {
-      sanitized[field] = '[REDACTED]' as T[keyof T];
+      sanitized[field] = '[REDACTED]';
     }
   });
 
-  return sanitized;
+  return sanitized as T;
 }
 
 /**
