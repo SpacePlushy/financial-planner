@@ -281,7 +281,7 @@ function App() {
     <ErrorBoundary
       level="page"
       onError={(error, errorInfo) => {
-        logger.error('App', 'Application error', error, { errorInfo });
+        logger.error('App', 'Application error', { error, errorInfo });
         // In production, you might want to send this to an error tracking service
       }}
     >
