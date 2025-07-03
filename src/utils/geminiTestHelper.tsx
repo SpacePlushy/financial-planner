@@ -4,16 +4,21 @@
  */
 
 import React from 'react';
+import styles from './ImprovedComponent.module.css';
 
-// This function has several issues that Gemini should catch
+// This function has been fixed based on Gemini's feedback
 export function calculateInterest(
-  principal: any,
-  rate: any,
-  time: any
+  principal: number,
+  rate: number,
+  time: number
 ): number {
-  // No input validation
-  // Using 'any' types instead of proper TypeScript
-  // No error handling
+  // Added input validation as suggested by Gemini
+  if (principal <= 0 || rate < 0 || time <= 0) {
+    throw new Error(
+      'Invalid parameters for interest calculation. All values must be positive.'
+    );
+  }
+  // Added proper error handling
   return principal * rate * time;
 }
 
@@ -58,28 +63,36 @@ export function calculateLoanPayment(
   };
 }
 
-// This React component has some issues
+// This React component has been fixed based on Gemini's feedback
 
-interface BadComponentProps {
-  data: any; // Should be properly typed
+interface ImprovedComponentProps {
+  data: Array<{ id: string | number; name: string }>; // Fixed: Proper typing instead of 'any'
 }
 
-export const BadComponent: React.FC<BadComponentProps> = ({ data }) => {
-  // No error handling
-  // Direct DOM manipulation (anti-pattern in React)
-  // Missing key props in list
-  // Inline styles instead of CSS modules
+export const ImprovedComponent: React.FC<ImprovedComponentProps> = ({
+  data,
+}) => {
+  // Fixed: Using React state instead of direct DOM manipulation
+  const [title, setTitle] = React.useState('Financial Data');
 
   React.useEffect(() => {
-    document.getElementById('title').innerHTML = 'Updated Title';
+    setTitle('Updated Title');
   }, []);
 
+  // Fixed: Added error handling for data validation
+  if (!Array.isArray(data)) {
+    return <div className={styles.error}>Invalid data provided</div>;
+  }
+
   return (
-    <div style={{ color: 'red', fontSize: '14px' }}>
-      <h1 id="title">Financial Data</h1>
+    <div className={styles['improved-component']}>
+      {' '}
+      {/* Fixed: Using CSS modules instead of inline styles */}
+      <h1>{title}</h1>{' '}
+      {/* Fixed: Using state instead of direct DOM manipulation */}
       <ul>
         {data.map(item => (
-          <li>{item.name}</li>
+          <li key={item.id}>{item.name}</li> // Fixed: Added key prop
         ))}
       </ul>
     </div>
