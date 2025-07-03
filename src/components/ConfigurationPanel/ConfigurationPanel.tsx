@@ -255,7 +255,6 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
             }
             disabled={isOptimizing}
             min="10"
-            max="1000"
             step="10"
           />
           {validationErrors.populationSize && (
@@ -281,7 +280,6 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
             }
             disabled={isOptimizing}
             min="1"
-            max="500"
             step="10"
           />
           {validationErrors.generations && (
