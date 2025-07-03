@@ -224,20 +224,20 @@ export function ScheduleProvider({
           process.env.NODE_ENV !== 'production' ||
           process.env.REACT_APP_ENABLE_LOGGING === 'true',
         logStateDiff: process.env.REACT_APP_LOG_STATE_DIFF === 'true',
-        sanitizeState: (state: ScheduleState) => {
+        sanitizeState: state => {
           // Custom sanitization for schedule state
-          const sanitized = defaultStateSanitizer(state);
+          const sanitized = defaultStateSanitizer(state) as ScheduleState;
           // Limit schedule arrays to first 5 items in logs
           if (sanitized.currentSchedule?.length > 5) {
             sanitized.currentSchedule = [
               ...sanitized.currentSchedule.slice(0, 5),
-              `... and ${sanitized.currentSchedule.length - 5} more days`,
+              `... and ${sanitized.currentSchedule.length - 5} more days` as any,
             ];
           }
           if (sanitized.originalSchedule?.length > 5) {
             sanitized.originalSchedule = [
               ...sanitized.originalSchedule.slice(0, 5),
-              `... and ${sanitized.originalSchedule.length - 5} more days`,
+              `... and ${sanitized.originalSchedule.length - 5} more days` as any,
             ];
           }
           return sanitized;
