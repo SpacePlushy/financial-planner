@@ -84,7 +84,10 @@ function AppContent() {
                 logger.error('ConfigurationPanel', 'Configuration error', error)
               }
             >
-              <ConfigurationPanel />
+              <ConfigurationPanel
+                startOptimization={optimizer.startOptimization}
+                isOptimizing={optimizer.isOptimizing}
+              />
             </ErrorBoundary>
           </section>
 
@@ -265,19 +268,21 @@ function AppContent() {
 
       {/* Debug mode indicator */}
       {ui.debugMode && <div className="debug-indicator">Debug Mode</div>}
-      
+
       {/* Optimization state debug */}
-      <div style={{
-        position: 'fixed',
-        bottom: '20px',
-        left: '20px',
-        background: 'rgba(0, 0, 0, 0.8)',
-        color: 'white',
-        padding: '10px',
-        borderRadius: '4px',
-        fontSize: '12px',
-        zIndex: 9999
-      }}>
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          left: '20px',
+          background: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '10px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          zIndex: 9999,
+        }}
+      >
         Optimization State: {optimizer.isOptimizing ? 'RUNNING' : 'STOPPED'}
       </div>
     </div>

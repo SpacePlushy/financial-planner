@@ -245,7 +245,7 @@ export function useOptimizer(): UseOptimizerReturn {
         isPaused: false,
         error: 'Worker error: ' + error.message,
       }));
-      setProgressError('Worker error: ' + error.message);
+      setProgressError(new Error('Worker error: ' + error.message));
     };
 
     return worker;
@@ -332,7 +332,7 @@ export function useOptimizer(): UseOptimizerReturn {
           currentOptimization: null,
         }));
 
-        setProgressError(errorMessage);
+        setProgressError(new Error(errorMessage));
         console.error('Optimization failed after retries:', errorMessage);
         logger.error(
           'useOptimizer',

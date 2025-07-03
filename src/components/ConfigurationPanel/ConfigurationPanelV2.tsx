@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useConfig } from '../../hooks/useConfig';
-import { useOptimizer } from '../../hooks/useOptimizer';
 import { useScheduleContext } from '../../context/ScheduleContext';
 import { getDefaultData } from '../../utils/sampleData';
+import { OptimizationConfig } from '../../types';
 import {
   LoadingOverlay,
   useLoadingState,
@@ -14,7 +14,15 @@ interface ValidationErrors {
   [key: string]: string;
 }
 
-export const ConfigurationPanel: React.FC = () => {
+interface ConfigurationPanelProps {
+  startOptimization: (config: OptimizationConfig) => Promise<void>;
+  isOptimizing: boolean;
+}
+
+export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
+  startOptimization,
+  isOptimizing,
+}) => {
   const {
     config,
     presets,
@@ -28,7 +36,6 @@ export const ConfigurationPanel: React.FC = () => {
     isPresetNameTaken,
   } = useConfig();
 
-  const { startOptimization, isOptimizing } = useOptimizer();
   const scheduleContext = useScheduleContext();
 
   const [showSavePreset, setShowSavePreset] = useState(false);
