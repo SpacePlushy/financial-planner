@@ -72,13 +72,13 @@ function startDev() {
   log('blue', `Port: ${CONFIG.devPort}`);
   log('blue', `Log file: ${CONFIG.logFile}`);
   
-  // Create log file stream
-  const logStream = fs.createWriteStream(CONFIG.logFile, { flags: 'w' });
+  // Ensure log directory exists
+  fs.mkdirSync(path.dirname(CONFIG.logFile), { recursive: true });
   
-  // Start development server
+  // Start development server with proper stdio handling
   const child = spawn('npm', ['start'], {
     detached: true,
-    stdio: ['ignore', logStream, logStream]
+    stdio: ['ignore', 'ignore', 'ignore']
   });
   
   // Save PID

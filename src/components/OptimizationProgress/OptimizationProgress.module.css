@@ -49,6 +49,29 @@
   box-shadow: none;
 }
 
+.closeButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: var(--primary-color);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.closeButton:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
 .content {
   display: flex;
   flex-direction: column;
@@ -342,6 +365,11 @@
 
 .infoText {
   color: var(--text-primary);
+}
+
+.successText {
+  color: var(--success-color);
+  font-weight: 500;
 }
 
 /* Progress bar paused state */

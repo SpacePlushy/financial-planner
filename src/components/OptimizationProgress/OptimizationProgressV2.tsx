@@ -18,6 +18,7 @@ export const OptimizationProgress: React.FC = () => {
   } = useOptimizer();
   const {
     currentProgress,
+    lastResult,
     getProgressPercentage,
     getElapsedTime,
     getEstimatedTimeRemaining,
@@ -36,17 +37,27 @@ export const OptimizationProgress: React.FC = () => {
   const [prevBestFitness, setPrevBestFitness] = useState(0);
   const [prevViolations, setPrevViolations] = useState(0);
 
-  // Initial loading state
+  // Initial loading state - check if we're at generation 0 with no real progress
   const [isInitializing, setIsInitializing] = useState(
-    isOptimizing && !currentProgress
+    !currentProgress || currentProgress.generation === 0
   );
 
-  // Update initialization state
+  // Track if user has dismissed the completed view
+  const [isDismissed, setIsDismissed] = useState(false);
+
+  // Update initialization state - once we get past generation 0, we're no longer initializing
   useEffect(() => {
-    if (currentProgress) {
+    if (currentProgress && currentProgress.generation > 0) {
       setIsInitializing(false);
     }
   }, [currentProgress]);
+
+  // Reset dismissed state when a new optimization starts
+  useEffect(() => {
+    if (isOptimizing) {
+      setIsDismissed(false);
+    }
+  }, [isOptimizing]);
 
   console.log('OptimizationProgress render:', {
     isOptimizing,
@@ -112,16 +123,24 @@ export const OptimizationProgress: React.FC = () => {
     return `${seconds}s`;
   };
 
-  if (!isOptimizing) {
-    return null;
-  }
-
   const progressPercentage = getProgressPercentage();
   const timeElapsed = getElapsedTime();
   const estimatedTimeRemaining = getEstimatedTimeRemaining();
 
-  // Show initialization state
-  if (isInitializing) {
+  // Don't show if user dismissed the completed view
+  if (isDismissed) {
+    return null;
+  }
+
+  // Determine if we're showing completed state
+  const isCompleted = !isOptimizing && lastResult !== null;
+
+  // Show initialization state when optimization just started
+  if (
+    isInitializing ||
+    !currentProgress ||
+    (currentProgress.generation === 0 && progressPercentage === 0)
+  ) {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
@@ -142,7 +161,9 @@ export const OptimizationProgress: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h3 className={styles.title}>Optimization Progress</h3>
+        <h3 className={styles.title}>
+          {isCompleted ? 'Optimization Complete' : 'Optimization Progress'}
+        </h3>
         <div className={styles.actions}>
           {isOptimizing && !isPaused && (
             <button
@@ -171,6 +192,15 @@ export const OptimizationProgress: React.FC = () => {
               Cancel
             </button>
           )}
+          {isCompleted && (
+            <button
+              className={styles.closeButton}
+              onClick={() => setIsDismissed(true)}
+              aria-label="Close optimization results"
+            >
+              Close
+            </button>
+          )}
         </div>
       </div>
 
@@ -182,22 +212,24 @@ export const OptimizationProgress: React.FC = () => {
             <span
               className={`${styles.progressValue} ${isProgressChanging ? styles.changing : ''}`}
             >
-              {progressPercentage}%
+              {isCompleted ? 100 : progressPercentage}%
             </span>
           </div>
           <div className={styles.progressBarContainer}>
             <div
               className={`${styles.progressBar} ${isPaused ? styles.paused : ''}`}
-              style={{ width: `${progressPercentage}%` }}
+              style={{ width: `${isCompleted ? 100 : progressPercentage}%` }}
               role="progressbar"
-              aria-valuenow={progressPercentage}
+              aria-valuenow={isCompleted ? 100 : progressPercentage}
               aria-valuemin={0}
               aria-valuemax={100}
             />
           </div>
-          {currentProgress && (
+          {(currentProgress || isCompleted) && (
             <div className={styles.generationInfo}>
-              Generation {currentProgress.generation} of {config.generations}
+              {isCompleted
+                ? 'Optimization Complete'
+                : `Generation ${currentProgress?.generation} of ${config.generations}`}
             </div>
           )}
         </div>
@@ -329,9 +361,13 @@ export const OptimizationProgress: React.FC = () => {
         </div>
 
         {/* Status Message */}
-        {isOptimizing && (
+        {(isOptimizing || isCompleted) && (
           <div className={styles.statusMessage}>
-            {isPaused ? (
+            {isCompleted ? (
+              <span className={styles.successText}>
+                Optimization completed successfully!
+              </span>
+            ) : isPaused ? (
               <span className={styles.pausedText}>
                 Optimization paused. Click resume to continue.
               </span>

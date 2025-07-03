@@ -6,7 +6,7 @@ import {
 } from './context/ConfigurationContext';
 import { PersistenceProvider } from './context/PersistenceContext';
 import { UIProvider } from './context/UIContext';
-import { ProgressProvider } from './context/ProgressContext';
+import { ProgressProvider, useProgress } from './context/ProgressContext';
 import { ConfigurationPanel } from './components/ConfigurationPanel/ConfigurationPanelV2';
 import { ScheduleTable } from './components/ScheduleTable/ScheduleTableV2';
 import { ScheduleCalendar } from './components/ScheduleCalendar';
@@ -28,6 +28,7 @@ function AppContent() {
   const ui = useUI();
   const persistence = usePersistence();
   const optimizer = useOptimizer();
+  const progress = useProgress();
   // const schedule = useSchedule(); // TODO: Use for future features
   const { config } = useConfiguration();
 
@@ -151,7 +152,7 @@ function AppContent() {
           </section>
 
           {/* Optimization progress */}
-          {optimizer.isOptimizing && (
+          {(optimizer.isOptimizing || progress.lastResult) && (
             <section className="progress-section">
               <ErrorBoundary
                 level="section"

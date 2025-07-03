@@ -39,12 +39,13 @@ Components follow a V2 pattern with enhanced features:
 npm install
 
 # Start development server
-npm start
+npm start                  # Runs on http://localhost:3000
 
 # Run tests
 npm test                    # Interactive watch mode
 npm test -- --coverage     # With coverage report
 npm test -- --watchAll=false  # Single run
+npm test -- ConfigurationPanel.test  # Run specific test file
 
 # Linting
 npm run lint              # Check for issues
@@ -53,6 +54,10 @@ npm run lint:fix         # Auto-fix issues
 # Build
 npm run build            # Production build
 
+# Deployment
+vercel                   # Deploy to Vercel (production)
+vercel --prod           # Deploy to production domain
+
 # E2E Testing
 npm run cypress:open     # Interactive Cypress
 npm run cypress:run      # Headless Cypress
@@ -60,6 +65,7 @@ npm run e2e             # Start server and run E2E tests
 npm run e2e:open        # Start server and open Cypress
 
 # Server Management (for production-like testing)
+# IMPORTANT: The user controls the server at all times. Always ask before starting/restarting the server.
 npm run server:start     # Start server in development mode
 npm run server:start:prod # Start server with production build
 npm run server:stop      # Stop server
@@ -136,6 +142,20 @@ npm run server:logs      # View server logs
 - **.eslintrc.js**: Linting rules
 - **.prettierrc**: Code formatting
 - **.github/workflows/ci.yml**: CI/CD pipeline with matrix testing
+
+## Worker Communication
+
+The optimizer uses Web Workers with specific message protocols:
+- **Worker location**: src/workers/optimizer.worker.ts
+- **Message types**: 'start', 'progress', 'complete', 'error'
+- **Mock for testing**: src/workers/__mocks__/optimizer.worker.ts
+- Progress updates are throttled to prevent UI overwhelm
+
+## Environment Variables
+
+React app environment variables must be prefixed with `REACT_APP_`:
+- Development: `.env.local` (gitignored)
+- Production: Set in deployment platform (e.g., Vercel)
 
 ## Current Implementation Status
 
