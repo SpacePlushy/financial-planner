@@ -88,7 +88,15 @@ function progressReducer(
       return {
         ...state,
         isOptimizing: true,
-        currentProgress: null,
+        currentProgress: {
+          generation: 0,
+          progress: 0,
+          bestFitness: 0,
+          workDays: 0,
+          balance: 0,
+          violations: 0,
+          message: 'Initializing optimization...',
+        },
         startTime: Date.now(),
         endTime: null,
         isPaused: false,

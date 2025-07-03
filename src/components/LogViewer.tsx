@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { logger, LogLevel, LogEntry } from '../utils/logger';
+import styles from './LogViewer.module.css';
 
 interface LogViewerProps {
   className?: string;
@@ -77,18 +78,18 @@ export const LogViewer: React.FC<LogViewerProps> = ({ className }) => {
     URL.revokeObjectURL(url);
   };
 
-  const getLevelColor = (level: LogLevel): string => {
+  const getLevelClasses = (level: LogLevel) => {
     switch (level) {
       case LogLevel.DEBUG:
-        return '#6B7280';
+        return { entry: styles.logDebug, badge: styles.levelDebug };
       case LogLevel.INFO:
-        return '#3B82F6';
+        return { entry: styles.logInfo, badge: styles.levelInfo };
       case LogLevel.WARN:
-        return '#F59E0B';
+        return { entry: styles.logWarn, badge: styles.levelWarn };
       case LogLevel.ERROR:
-        return '#EF4444';
+        return { entry: styles.logError, badge: styles.levelError };
       default:
-        return '#6B7280';
+        return { entry: styles.logDebug, badge: styles.levelDebug };
     }
   };
 
@@ -96,7 +97,7 @@ export const LogViewer: React.FC<LogViewerProps> = ({ className }) => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-700 transition-colors ${className}`}
+        className={`${styles.logViewerButton} ${className || ''}`}
         title="Open Log Viewer"
       >
         📋 Logs ({logger.getLogCount()})
@@ -105,14 +106,14 @@ export const LogViewer: React.FC<LogViewerProps> = ({ className }) => {
   }
 
   return (
-    <div className={`fixed inset-0 bg-black bg-opacity-50 z-50 ${className}`}>
-      <div className="absolute right-0 top-0 bottom-0 w-full max-w-4xl bg-white shadow-xl overflow-hidden flex flex-col">
+    <div className={`${styles.backdrop} ${className || ''}`}>
+      <div className={styles.panel}>
         {/* Header */}
-        <div className="bg-gray-800 text-white p-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Log Viewer</h2>
+        <div className={styles.header}>
+          <h2 className={styles.headerTitle}>Log Viewer</h2>
           <button
             onClick={() => setIsOpen(false)}
-            className="text-gray-300 hover:text-white"
+            className={styles.closeButton}
             title="Close"
           >
             ✕
@@ -120,16 +121,16 @@ export const LogViewer: React.FC<LogViewerProps> = ({ className }) => {
         </div>
 
         {/* Controls */}
-        <div className="bg-gray-100 p-4 border-b flex flex-wrap gap-4 items-center">
-          <div className="flex items-center gap-2">
-            <label htmlFor="filter-level" className="text-sm font-medium">
+        <div className={styles.controls}>
+          <div className={styles.controlGroup}>
+            <label htmlFor="filter-level" className={styles.controlLabel}>
               Level:
             </label>
             <select
               id="filter-level"
               value={filterLevel}
               onChange={e => setFilterLevel(Number(e.target.value))}
-              className="px-2 py-1 border rounded"
+              className={styles.controlSelect}
             >
               <option value={LogLevel.DEBUG}>Debug</option>
               <option value={LogLevel.INFO}>Info</option>
@@ -138,8 +139,8 @@ export const LogViewer: React.FC<LogViewerProps> = ({ className }) => {
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
-            <label htmlFor="filter-context" className="text-sm font-medium">
+          <div className={styles.controlGroup}>
+            <label htmlFor="filter-context" className={styles.controlLabel}>
               Context:
             </label>
             <input
@@ -148,43 +149,43 @@ export const LogViewer: React.FC<LogViewerProps> = ({ className }) => {
               value={filterContext}
               onChange={e => setFilterContext(e.target.value)}
               placeholder="All contexts"
-              className="px-2 py-1 border rounded"
+              className={styles.controlInput}
             />
           </div>
 
-          <label className="flex items-center gap-2">
+          <label className={styles.controlGroup}>
             <input
               type="checkbox"
               checked={autoRefresh}
               onChange={e => setAutoRefresh(e.target.checked)}
             />
-            <span className="text-sm">Auto-refresh</span>
+            <span className={styles.controlLabel}>Auto-refresh</span>
           </label>
 
           <button
             onClick={refreshLogs}
-            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className={`${styles.button} ${styles.buttonPrimary}`}
           >
             Refresh
           </button>
 
           <button
             onClick={() => logger.clear()}
-            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            className={`${styles.button} ${styles.buttonDanger}`}
           >
             Clear
           </button>
 
-          <div className="ml-auto flex gap-2">
+          <div className={styles.controlGroup}>
             <button
               onClick={handleExportJson}
-              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+              className={`${styles.button} ${styles.buttonSecondary}`}
             >
               Export JSON
             </button>
             <button
               onClick={handleExportCsv}
-              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+              className={`${styles.button} ${styles.buttonSecondary}`}
             >
               Export CSV
             </button>
@@ -193,25 +194,25 @@ export const LogViewer: React.FC<LogViewerProps> = ({ className }) => {
 
         {/* Performance Stats */}
         {performanceStats.totalActions > 0 && (
-          <div className="bg-yellow-50 p-4 border-b">
-            <h3 className="font-medium mb-2">Performance Statistics</h3>
-            <div className="grid grid-cols-3 gap-4 text-sm">
+          <div className={styles.performanceStats}>
+            <h3 className={styles.performanceTitle}>Performance Statistics</h3>
+            <div className={styles.performanceGrid}>
               <div>
-                <span className="text-gray-600">Total Actions:</span>{' '}
-                <span className="font-medium">
+                <span className={styles.logContext}>Total Actions:</span>{' '}
+                <span className={styles.performanceValue}>
                   {performanceStats.totalActions}
                 </span>
               </div>
               <div>
-                <span className="text-gray-600">Average Time:</span>{' '}
-                <span className="font-medium">
+                <span className={styles.logContext}>Average Time:</span>{' '}
+                <span className={styles.performanceValue}>
                   {performanceStats.averageExecutionTime.toFixed(2)}ms
                 </span>
               </div>
               {performanceStats.slowestAction && (
                 <div>
-                  <span className="text-gray-600">Slowest:</span>{' '}
-                  <span className="font-medium">
+                  <span className={styles.logContext}>Slowest:</span>{' '}
+                  <span className={styles.performanceValue}>
                     {performanceStats.slowestAction.action} (
                     {performanceStats.slowestAction.time}ms)
                   </span>
@@ -222,97 +223,91 @@ export const LogViewer: React.FC<LogViewerProps> = ({ className }) => {
         )}
 
         {/* Logs */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className={styles.logList}>
           {logs.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              No logs to display
+            <div className={styles.emptyState}>
+              <div className={styles.emptyStateIcon}>📋</div>
+              <div className={styles.emptyStateText}>No logs to display</div>
             </div>
           ) : (
-            <div className="space-y-2">
-              {logs.map((log, index) => (
-                <div
-                  key={index}
-                  className="border rounded p-3 hover:bg-gray-50"
-                  style={{
-                    borderLeftColor: getLevelColor(log.level),
-                    borderLeftWidth: '4px',
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span
-                          className="text-xs font-medium px-2 py-0.5 rounded"
-                          style={{
-                            backgroundColor: getLevelColor(log.level) + '20',
-                            color: getLevelColor(log.level),
-                          }}
-                        >
-                          {LogLevel[log.level]}
-                        </span>
-                        <span className="text-xs text-gray-600">
-                          {log.context}
-                        </span>
-                        {log.action && (
-                          <span className="text-xs font-medium text-purple-600">
-                            {log.action}
+            <div className={styles.logListContent}>
+              {logs.map((log, index) => {
+                const levelClasses = getLevelClasses(log.level);
+                return (
+                  <div
+                    key={index}
+                    className={`${styles.logEntry} ${levelClasses.entry}`}
+                  >
+                    <div className={styles.logEntryHeader}>
+                      <div className={styles.logEntryBody}>
+                        <div className={styles.logMetaRow}>
+                          <span className={`${styles.levelBadge} ${levelClasses.badge}`}>
+                            {LogLevel[log.level]}
                           </span>
+                          <span className={styles.logContext}>
+                            {log.context}
+                          </span>
+                          {log.action && (
+                            <span className={styles.logAction}>
+                              {log.action}
+                            </span>
+                          )}
+                          {log.executionTime !== undefined && (
+                            <span className={styles.logTimestamp}>
+                              ({log.executionTime}ms)
+                            </span>
+                          )}
+                        </div>
+                        <div className={styles.logMessage}>{log.message}</div>
+                        {log.data && (
+                          <details className={styles.logDetails}>
+                            <summary className={styles.logDetailsSummary}>
+                              Data
+                            </summary>
+                            <pre className={styles.logDataPre}>
+                              {JSON.stringify(log.data, null, 2)}
+                            </pre>
+                          </details>
                         )}
-                        {log.executionTime !== undefined && (
-                          <span className="text-xs text-gray-500">
-                            ({log.executionTime}ms)
-                          </span>
+                        {log.stateBefore && log.stateAfter && (
+                          <details className={styles.logDetails}>
+                            <summary className={styles.logDetailsSummary}>
+                              State Change
+                            </summary>
+                            <div className={styles.stateChangeGrid}>
+                              <div>
+                                <div className={styles.stateChangeLabel}>
+                                  Before:
+                                </div>
+                                <pre className={styles.logDataPre}>
+                                  {JSON.stringify(log.stateBefore, null, 2)}
+                                </pre>
+                              </div>
+                              <div>
+                                <div className={styles.stateChangeLabel}>
+                                  After:
+                                </div>
+                                <pre className={styles.logDataPre}>
+                                  {JSON.stringify(log.stateAfter, null, 2)}
+                                </pre>
+                              </div>
+                            </div>
+                          </details>
                         )}
                       </div>
-                      <div className="text-sm">{log.message}</div>
-                      {log.data && (
-                        <details className="mt-1">
-                          <summary className="text-xs text-gray-500 cursor-pointer">
-                            Data
-                          </summary>
-                          <pre className="text-xs bg-gray-100 p-2 rounded mt-1 overflow-x-auto">
-                            {JSON.stringify(log.data, null, 2)}
-                          </pre>
-                        </details>
-                      )}
-                      {log.stateBefore && log.stateAfter && (
-                        <details className="mt-1">
-                          <summary className="text-xs text-gray-500 cursor-pointer">
-                            State Change
-                          </summary>
-                          <div className="grid grid-cols-2 gap-2 mt-1">
-                            <div>
-                              <div className="text-xs font-medium text-gray-600">
-                                Before:
-                              </div>
-                              <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto">
-                                {JSON.stringify(log.stateBefore, null, 2)}
-                              </pre>
-                            </div>
-                            <div>
-                              <div className="text-xs font-medium text-gray-600">
-                                After:
-                              </div>
-                              <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto">
-                                {JSON.stringify(log.stateAfter, null, 2)}
-                              </pre>
-                            </div>
-                          </div>
-                        </details>
-                      )}
+                      <span className={`${styles.logTimestamp} ${styles.timestampRight}`}>
+                        {log.timestamp.toLocaleTimeString()}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-400 ml-2">
-                      {log.timestamp.toLocaleTimeString()}
-                    </span>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-100 p-2 text-center text-xs text-gray-600">
+        <div className={styles.footer}>
           Showing {logs.length} of {logger.getLogCount()} total logs
         </div>
       </div>

@@ -95,6 +95,22 @@ function AppContent() {
               onError={error => logger.error('Summary', 'Summary error', error)}
             >
               <Summary />
+
+              {/* Optimization Progress */}
+              {optimizer.isOptimizing && (
+                <ErrorBoundary
+                  level="component"
+                  onError={error => {
+                    logger.error(
+                      'OptimizationProgress',
+                      'Progress component error',
+                      error
+                    );
+                  }}
+                >
+                  <OptimizationProgress />
+                </ErrorBoundary>
+              )}
             </ErrorBoundary>
           </section>
 

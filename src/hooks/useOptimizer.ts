@@ -5,6 +5,7 @@ import {
   OptimizationResult,
 } from '../types';
 import { useScheduleContext } from '../context/ScheduleContext';
+import { useProgress } from '../context/ProgressContext';
 import { logger } from '../utils/logger';
 import { createOptimizerWorker } from '../workers/workerFactory';
 
@@ -54,6 +55,16 @@ export function useOptimizer(): UseOptimizerReturn {
     shiftTypes,
   } = useScheduleContext();
 
+  const {
+    startOptimization: startProgressOptimization,
+    updateProgress,
+    completeOptimization,
+    cancelOptimization: cancelProgressOptimization,
+    pauseOptimization: pauseProgressOptimization,
+    resumeOptimization: resumeProgressOptimization,
+    setError: setProgressError,
+  } = useProgress();
+
   const [state, setState] = useState<UseOptimizerState>({
     isOptimizing: false,
     isPaused: false,
@@ -102,10 +113,12 @@ export function useOptimizer(): UseOptimizerReturn {
 
       switch (type) {
         case 'progress':
+          const progressData = data as OptimizationProgress;
           setState(prev => ({
             ...prev,
-            progress: data as OptimizationProgress,
+            progress: progressData,
           }));
+          updateProgress(progressData);
           break;
 
         case 'complete':
@@ -118,6 +131,9 @@ export function useOptimizer(): UseOptimizerReturn {
           if (result.formattedSchedule) {
             setCurrentSchedule(result.formattedSchedule);
           }
+
+          // Update progress context
+          completeOptimization(result);
 
           setState(prev => {
             const currentOpt = prev.currentOptimization;
@@ -155,6 +171,7 @@ export function useOptimizer(): UseOptimizerReturn {
           break;
 
         case 'error':
+          setProgressError(new Error(error || 'Unknown error occurred'));
           setState(prev => {
             const currentOpt = prev.currentOptimization;
             if (currentOpt) {
@@ -180,6 +197,7 @@ export function useOptimizer(): UseOptimizerReturn {
           break;
 
         case 'cancelled':
+          cancelProgressOptimization();
           setState(prev => {
             const currentOpt = prev.currentOptimization;
             if (currentOpt) {
@@ -205,11 +223,13 @@ export function useOptimizer(): UseOptimizerReturn {
 
         case 'paused':
           setState(prev => ({ ...prev, isPaused: true }));
+          pauseProgressOptimization();
           logger.info('useOptimizer', 'Optimization paused');
           break;
 
         case 'resumed':
           setState(prev => ({ ...prev, isPaused: false }));
+          resumeProgressOptimization();
           logger.info('useOptimizer', 'Optimization resumed');
           break;
       }
@@ -254,6 +274,11 @@ export function useOptimizer(): UseOptimizerReturn {
         error: null,
         currentOptimization: optimization,
       }));
+
+      console.log('Optimization started - isOptimizing set to true');
+
+      // Start progress tracking
+      startProgressOptimization();
 
       try {
         // Terminate existing worker if any

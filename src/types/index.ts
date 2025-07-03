@@ -56,6 +56,7 @@ export interface OptimizationProgress {
   workDays: number;
   balance: number;
   violations: number;
+  message?: string;
 }
 
 export interface OptimizationResult {
