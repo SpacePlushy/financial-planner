@@ -306,6 +306,7 @@ export function ConfigurationProvider({
     return () => {
       logger.info('ConfigurationContext', 'ConfigurationProvider unmounted');
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**

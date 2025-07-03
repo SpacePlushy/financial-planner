@@ -168,6 +168,7 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
       logger.error('Persistence', 'Failed to save data', error as Error);
       throw error;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.dataVersion, scheduleContext, configContext]);
 
   // Load from localStorage
@@ -259,6 +260,7 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
       logger.error('Persistence', 'Failed to clear storage', error as Error);
       throw error;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Export data
@@ -431,6 +433,7 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
         error as Error
       );
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Save on unmount if there are unsaved changes

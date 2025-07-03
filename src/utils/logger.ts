@@ -1,6 +1,5 @@
 /**
- * Logger utility for the Financial Schedule Optimizer
- * Provides configurable logging with different levels, context awareness, and performance timing
+ * Logger utility for consistent logging across the application
  */
 
 export enum LogLevel {
@@ -16,9 +15,9 @@ export interface LogEntry {
   context: string;
   action?: string;
   message: string;
-  data?: any;
-  stateBefore?: any;
-  stateAfter?: any;
+  data?: unknown;
+  stateBefore?: unknown;
+  stateAfter?: unknown;
   executionTime?: number;
   error?: Error;
 }
@@ -27,316 +26,242 @@ export interface LoggerConfig {
   enabled: boolean;
   minLevel: LogLevel;
   enableConsole: boolean;
-  maxLogSize: number;
-  performanceThreshold: number; // ms
+  enableLocalStorage: boolean;
+  maxStoredLogs: number;
 }
 
 class Logger {
+  private config: LoggerConfig = {
+    enabled: process.env.NODE_ENV !== 'production',
+    minLevel: LogLevel.INFO,
+    enableConsole: true,
+    enableLocalStorage: false,
+    maxStoredLogs: 1000,
+  };
+
   private logs: LogEntry[] = [];
-  private config: LoggerConfig;
 
-  constructor(config?: Partial<LoggerConfig>) {
-    this.config = {
-      enabled:
-        process.env.NODE_ENV === 'test'
-          ? false
-          : process.env.NODE_ENV !== 'production' ||
-            process.env.REACT_APP_ENABLE_LOGGING === 'true',
-      minLevel: LogLevel.INFO,
-      enableConsole:
-        process.env.NODE_ENV === 'test'
-          ? false
-          : process.env.NODE_ENV !== 'production',
-      maxLogSize: 1000,
-      performanceThreshold: 100,
-      ...config,
-    };
-  }
-
-  /**
-   * Updates logger configuration
-   */
   configure(config: Partial<LoggerConfig>): void {
     this.config = { ...this.config, ...config };
   }
 
-  /**
-   * Logs a debug message
-   */
-  debug(context: string, message: string, data?: any): void {
-    this.log(LogLevel.DEBUG, context, message, data);
+  private shouldLog(level: LogLevel): boolean {
+    return this.config.enabled && level >= this.config.minLevel;
   }
 
-  /**
-   * Logs an info message
-   */
-  info(context: string, message: string, data?: any): void {
-    this.log(LogLevel.INFO, context, message, data);
-  }
-
-  /**
-   * Logs a warning message
-   */
-  warn(context: string, message: string, data?: any): void {
-    this.log(LogLevel.WARN, context, message, data);
-  }
-
-  /**
-   * Logs an error message
-   */
-  error(context: string, message: string, error?: Error, data?: any): void {
-    this.log(LogLevel.ERROR, context, message, { ...data, error });
-  }
-
-  /**
-   * Logs an action with before/after state and timing
-   */
-  logAction(
-    context: string,
-    action: string,
-    stateBefore: any,
-    stateAfter: any,
-    executionTime: number
-  ): void {
-    if (!this.config.enabled) return;
-
-    const entry: LogEntry = {
-      timestamp: new Date(),
-      level:
-        executionTime > this.config.performanceThreshold
-          ? LogLevel.WARN
-          : LogLevel.INFO,
-      context,
-      action,
-      message: `Action: ${action} (${executionTime}ms)`,
-      stateBefore,
-      stateAfter,
-      executionTime,
-    };
-
-    this.addLog(entry);
-
-    if (executionTime > this.config.performanceThreshold) {
-      this.warn(
-        context,
-        `Slow action detected: ${action} took ${executionTime}ms`,
-        { action, executionTime }
-      );
-    }
-  }
-
-  /**
-   * Core logging method
-   */
-  private log(
+  private createLogEntry(
     level: LogLevel,
     context: string,
     message: string,
-    data?: any
-  ): void {
-    if (!this.config.enabled || level < this.config.minLevel) return;
-
-    const entry: LogEntry = {
+    data?: unknown
+  ): LogEntry {
+    return {
       timestamp: new Date(),
       level,
       context,
       message,
       data,
     };
-
-    this.addLog(entry);
   }
 
-  /**
-   * Adds a log entry and manages log size
-   */
-  private addLog(entry: LogEntry): void {
-    this.logs.push(entry);
+  private formatData(data: unknown): string {
+    if (data === undefined) return '';
+    try {
+      return JSON.stringify(data, null, 2);
+    } catch {
+      return String(data);
+    }
+  }
 
-    // Maintain max log size
-    if (this.logs.length > this.config.maxLogSize) {
-      this.logs = this.logs.slice(-this.config.maxLogSize);
+  info(context: string, message: string, data?: unknown): void {
+    if (!this.shouldLog(LogLevel.INFO)) return;
+    const entry = this.createLogEntry(LogLevel.INFO, context, message, data);
+    this.log(entry);
+  }
+
+  error(context: string, message: string, error?: unknown): void {
+    if (!this.shouldLog(LogLevel.ERROR)) return;
+    const entry = this.createLogEntry(LogLevel.ERROR, context, message);
+    entry.error = error instanceof Error ? error : new Error(String(error));
+    this.log(entry);
+  }
+
+  warn(context: string, message: string, data?: unknown): void {
+    if (!this.shouldLog(LogLevel.WARN)) return;
+    const entry = this.createLogEntry(LogLevel.WARN, context, message, data);
+    this.log(entry);
+  }
+
+  debug(context: string, message: string, data?: unknown): void {
+    if (!this.shouldLog(LogLevel.DEBUG)) return;
+    const entry = this.createLogEntry(LogLevel.DEBUG, context, message, data);
+    this.log(entry);
+  }
+
+  logAction(context: string, action: string, data?: unknown): void {
+    if (!this.shouldLog(LogLevel.INFO)) return;
+    const entry = this.createLogEntry(
+      LogLevel.INFO,
+      context,
+      `Action: ${action}`,
+      data
+    );
+    entry.action = action;
+    this.log(entry);
+  }
+
+  group(label: string, fn: () => unknown): void {
+    if (this.config.enableConsole && typeof console.group === 'function') {
+      console.group(label);
+    }
+    try {
+      fn();
+    } finally {
+      if (this.config.enableConsole && typeof console.groupEnd === 'function') {
+        console.groupEnd();
+      }
+    }
+  }
+
+  async groupAsync<T>(label: string, fn: () => Promise<T>): Promise<T> {
+    if (this.config.enableConsole && typeof console.group === 'function') {
+      console.group(label);
+    }
+    try {
+      return await fn();
+    } catch (error) {
+      this.error('Logger', 'Error in grouped async operation', error);
+      throw error;
+    } finally {
+      if (this.config.enableConsole && typeof console.groupEnd === 'function') {
+        console.groupEnd();
+      }
+    }
+  }
+
+  measure<T>(label: string, fn: () => T): T {
+    const start = performance.now();
+    try {
+      const result = fn();
+      const duration = performance.now() - start;
+      this.debug('Performance', label, {
+        duration: `${duration.toFixed(2)}ms`,
+      });
+      return result;
+    } catch (error) {
+      const duration = performance.now() - start;
+      this.error('Performance', `${label} failed`, error);
+      this.debug('Performance', label, {
+        duration: `${duration.toFixed(2)}ms`,
+      });
+      throw error;
+    }
+  }
+
+  private log(entry: LogEntry): void {
+    // Add to in-memory log store
+    this.logs.push(entry);
+    if (this.logs.length > this.config.maxStoredLogs) {
+      this.logs.shift();
     }
 
     // Console output
     if (this.config.enableConsole) {
-      this.consoleLog(entry);
+      this.logToConsole(entry);
+    }
+
+    // Local storage
+    if (this.config.enableLocalStorage) {
+      this.logToLocalStorage(entry);
     }
   }
 
-  /**
-   * Outputs log to console
-   */
-  private consoleLog(entry: LogEntry): void {
+  private logToConsole(entry: LogEntry): void {
+    const levelLabel = LogLevel[entry.level];
     const timestamp = entry.timestamp.toISOString();
-    const levelName = LogLevel[entry.level];
-    const prefix = `[${timestamp}] [${levelName}] [${entry.context}]`;
+    const prefix = `[${timestamp}] [${levelLabel}] [${entry.context}]`;
 
     switch (entry.level) {
-      case LogLevel.DEBUG:
-        // eslint-disable-next-line no-console
-        console.debug(prefix, entry.message, entry.data || '');
-        break;
-      case LogLevel.INFO:
-        // eslint-disable-next-line no-console
-        console.info(prefix, entry.message, entry.data || '');
-        break;
-      case LogLevel.WARN:
-        // eslint-disable-next-line no-console
-        console.warn(prefix, entry.message, entry.data || '');
-        break;
       case LogLevel.ERROR:
-        // eslint-disable-next-line no-console
         console.error(
           prefix,
           entry.message,
-          entry.data || '',
-          entry.error || ''
+          entry.error || '',
+          this.formatData(entry.data)
         );
         break;
-    }
-
-    if (entry.stateBefore && entry.stateAfter) {
-      // eslint-disable-next-line no-console
-      console.groupCollapsed(`${prefix} State Change`);
-      // eslint-disable-next-line no-console
-      console.log('Before:', entry.stateBefore);
-      // eslint-disable-next-line no-console
-      console.log('After:', entry.stateAfter);
-      // eslint-disable-next-line no-console
-      console.groupEnd();
+      case LogLevel.WARN:
+        console.warn(prefix, entry.message, this.formatData(entry.data));
+        break;
+      case LogLevel.INFO:
+        console.info(prefix, entry.message, this.formatData(entry.data));
+        break;
+      case LogLevel.DEBUG:
+        console.log(prefix, entry.message, this.formatData(entry.data));
+        break;
     }
   }
 
-  /**
-   * Exports logs for debugging
-   */
-  exportLogs(options?: {
-    startDate?: Date;
-    endDate?: Date;
+  private logToLocalStorage(entry: LogEntry): void {
+    try {
+      const key = 'app_logs';
+      const existingLogs = JSON.parse(localStorage.getItem(key) || '[]');
+      existingLogs.push(entry);
+
+      // Keep only recent logs
+      if (existingLogs.length > this.config.maxStoredLogs) {
+        existingLogs.splice(0, existingLogs.length - this.config.maxStoredLogs);
+      }
+
+      localStorage.setItem(key, JSON.stringify(existingLogs));
+    } catch (error) {
+      // Silently fail if localStorage is not available
+    }
+  }
+
+  getLogs(filter?: {
     level?: LogLevel;
     context?: string;
+    startTime?: Date;
+    endTime?: Date;
   }): LogEntry[] {
     let filtered = [...this.logs];
 
-    if (options?.startDate) {
-      filtered = filtered.filter(log => log.timestamp >= options.startDate!);
-    }
-
-    if (options?.endDate) {
-      filtered = filtered.filter(log => log.timestamp <= options.endDate!);
-    }
-
-    if (options?.level !== undefined) {
-      filtered = filtered.filter(log => log.level >= options.level!);
-    }
-
-    if (options?.context) {
-      filtered = filtered.filter(log => log.context === options.context);
+    if (filter) {
+      if (filter.level !== undefined) {
+        filtered = filtered.filter(log => log.level >= filter.level!);
+      }
+      if (filter.context) {
+        filtered = filtered.filter(log =>
+          log.context.toLowerCase().includes(filter.context!.toLowerCase())
+        );
+      }
+      if (filter.startTime) {
+        filtered = filtered.filter(log => log.timestamp >= filter.startTime!);
+      }
+      if (filter.endTime) {
+        filtered = filtered.filter(log => log.timestamp <= filter.endTime!);
+      }
     }
 
     return filtered;
   }
 
-  /**
-   * Exports logs as JSON string
-   */
-  exportAsJson(options?: Parameters<typeof this.exportLogs>[0]): string {
-    const logs = this.exportLogs(options);
-    return JSON.stringify(logs, null, 2);
-  }
-
-  /**
-   * Exports logs as CSV
-   */
-  exportAsCsv(options?: Parameters<typeof this.exportLogs>[0]): string {
-    const logs = this.exportLogs(options);
-    const headers = [
-      'Timestamp',
-      'Level',
-      'Context',
-      'Action',
-      'Message',
-      'Execution Time (ms)',
-    ];
-    const rows = logs.map(log => [
-      log.timestamp.toISOString(),
-      LogLevel[log.level],
-      log.context,
-      log.action || '',
-      log.message,
-      log.executionTime?.toString() || '',
-    ]);
-
-    return [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
-    ].join('\n');
-  }
-
-  /**
-   * Clears all logs
-   */
-  clear(): void {
+  clearLogs(): void {
     this.logs = [];
-  }
-
-  /**
-   * Gets current log count
-   */
-  getLogCount(): number {
-    return this.logs.length;
-  }
-
-  /**
-   * Gets logs by context
-   */
-  getLogsByContext(context: string): LogEntry[] {
-    return this.logs.filter(log => log.context === context);
-  }
-
-  /**
-   * Gets performance statistics
-   */
-  getPerformanceStats(context?: string): {
-    slowestAction: { action: string; time: number } | null;
-    averageExecutionTime: number;
-    totalActions: number;
-  } {
-    const actionLogs = this.logs.filter(
-      log =>
-        log.executionTime !== undefined && (!context || log.context === context)
-    );
-
-    if (actionLogs.length === 0) {
-      return {
-        slowestAction: null,
-        averageExecutionTime: 0,
-        totalActions: 0,
-      };
+    if (this.config.enableLocalStorage) {
+      try {
+        localStorage.removeItem('app_logs');
+      } catch {
+        // Silently fail
+      }
     }
+  }
 
-    const slowest = actionLogs.reduce((max, log) =>
-      log.executionTime! > (max?.executionTime || 0) ? log : max
-    );
-
-    const totalTime = actionLogs.reduce(
-      (sum, log) => sum + log.executionTime!,
-      0
-    );
-
-    return {
-      slowestAction: slowest
-        ? { action: slowest.action || 'unknown', time: slowest.executionTime! }
-        : null,
-      averageExecutionTime: totalTime / actionLogs.length,
-      totalActions: actionLogs.length,
-    };
+  exportLogs(): string {
+    return JSON.stringify(this.logs, null, 2);
   }
 }
 
-// Singleton instance
+// Export singleton instance
 export const logger = new Logger();
-
-// Re-export for convenience
-export default logger;

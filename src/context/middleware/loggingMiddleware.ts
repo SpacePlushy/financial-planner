@@ -1,17 +1,15 @@
-/**
- * Logging middleware for React context reducers
- * Wraps reducers to log actions, state changes, and performance metrics
- */
-
-import React from 'react';
 import { logger } from '../../utils/logger';
+import { Reducer } from 'react';
 
-export interface MiddlewareOptions {
+/**
+ * Options for the logging middleware
+ */
+interface LoggingMiddlewareOptions {
   contextName: string;
   enabled?: boolean;
   logStateDiff?: boolean;
-  sanitizeState?: (state: any) => any;
-  sanitizeAction?: (action: any) => any;
+  sanitizeState?: <T>(state: T) => T;
+  sanitizeAction?: <T>(action: T) => T;
 }
 
 /**
@@ -20,252 +18,176 @@ export interface MiddlewareOptions {
 function safeClone<T>(obj: T): T {
   const seen = new WeakSet();
 
-  function clone(value: any): any {
+  function clone(value: unknown): unknown {
     if (value === null || typeof value !== 'object') {
       return value;
     }
 
-    if (seen.has(value)) {
+    if (seen.has(value as object)) {
       return '[Circular Reference]';
     }
 
-    seen.add(value);
+    seen.add(value as object);
 
     if (Array.isArray(value)) {
       return value.map(clone);
     }
 
     if (value instanceof Date) {
-      return new Date(value);
+      return new Date(value.getTime());
     }
 
     if (value instanceof Map) {
-      return new Map(
-        Array.from(value.entries()).map(([k, v]) => [k, clone(v)])
-      );
+      const cloned = new Map();
+      value.forEach((val, key) => {
+        cloned.set(key, clone(val));
+      });
+      return cloned;
     }
 
     if (value instanceof Set) {
-      return new Set(Array.from(value).map(clone));
+      const cloned = new Set();
+      value.forEach(val => {
+        cloned.add(clone(val));
+      });
+      return cloned;
     }
 
-    const cloned: any = {};
-    for (const key in value) {
-      if (value.hasOwnProperty(key)) {
-        cloned[key] = clone(value[key]);
+    // Handle plain objects
+    const cloned = {} as Record<string, unknown>;
+    for (const key in value as object) {
+      if (Object.prototype.hasOwnProperty.call(value, key)) {
+        cloned[key] = clone((value as Record<string, unknown>)[key]);
       }
     }
 
     return cloned;
   }
 
-  return clone(obj);
+  return clone(obj) as T;
 }
 
 /**
- * Calculates the difference between two states
+ * Calculates the diff between two states
  */
-function calculateStateDiff(before: any, after: any): any {
-  const diff: any = {};
+function calculateDiff<T extends Record<string, unknown>>(
+  prevState: T,
+  nextState: T
+): Record<string, { prev: unknown; next: unknown }> {
+  const diff: Record<string, { prev: unknown; next: unknown }> = {};
+  const allKeys = new Set([
+    ...Object.keys(prevState),
+    ...Object.keys(nextState),
+  ]);
 
-  // Check for added or modified properties
-  for (const key in after) {
-    if (!(key in before)) {
-      diff[key] = { added: after[key] };
-    } else if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) {
-      diff[key] = { before: before[key], after: after[key] };
+  allKeys.forEach(key => {
+    const prevValue = prevState[key];
+    const nextValue = nextState[key];
+
+    if (prevValue !== nextValue) {
+      diff[key] = {
+        prev: safeClone(prevValue),
+        next: safeClone(nextValue),
+      };
     }
-  }
+  });
 
-  // Check for removed properties
-  for (const key in before) {
-    if (!(key in after)) {
-      diff[key] = { removed: before[key] };
-    }
-  }
-
-  return Object.keys(diff).length > 0 ? diff : null;
+  return diff;
 }
 
 /**
- * Creates a logging middleware for context reducers
+ * Default state sanitizer that removes sensitive data
+ */
+function defaultStateSanitizer<T extends Record<string, unknown>>(state: T): T {
+  const sanitized = { ...state };
+
+  // Remove any potentially sensitive fields
+  const sensitiveFields = ['password', 'token', 'secret', 'key', 'auth'];
+  sensitiveFields.forEach(field => {
+    if (field in sanitized) {
+      sanitized[field] = '[REDACTED]' as T[keyof T];
+    }
+  });
+
+  return sanitized;
+}
+
+/**
+ * Default action sanitizer
+ */
+function defaultActionSanitizer<T extends Record<string, unknown>>(
+  action: T
+): T {
+  return action;
+}
+
+/**
+ * Creates a logging middleware that wraps a reducer
  */
 export function createLoggingMiddleware<S, A>(
-  reducer: (state: S, action: A) => S,
-  options: MiddlewareOptions
-): (state: S, action: A) => S {
+  reducer: Reducer<S, A>,
+  options: LoggingMiddlewareOptions
+): Reducer<S, A> {
   const {
     contextName,
     enabled = true,
     logStateDiff = false,
-    sanitizeState = state => state,
-    sanitizeAction = action => action,
+    sanitizeState = defaultStateSanitizer,
+    sanitizeAction = defaultActionSanitizer,
   } = options;
 
-  // Return original reducer if logging is disabled
-  if (
-    !enabled ||
-    process.env.REACT_APP_DISABLE_LOGGING === 'true' ||
-    process.env.NODE_ENV === 'test' ||
-    contextName === 'GeneticOptimizer'
-  ) {
-    return reducer;
-  }
-
-  return (state: S, action: A) => {
-    const startTime = performance.now();
-
-    // Safely clone and sanitize the state before action
-    const stateBefore = sanitizeState(safeClone(state));
-    const sanitizedAction = sanitizeAction(safeClone(action));
-
-    let error: Error | undefined;
-    let newState: S;
+  return (state: S, action: A): S => {
+    if (!enabled) {
+      return reducer(state, action);
+    }
 
     try {
+      // Sanitize and clone the action for logging
+      const sanitizedAction = sanitizeAction(
+        action as unknown as Record<string, unknown>
+      ) as A;
+      const actionForLogging = safeClone(sanitizedAction);
+
+      // Log the action
+      logger.logAction(contextName, 'Dispatching', actionForLogging);
+
       // Execute the reducer
-      newState = reducer(state, action);
-    } catch (e) {
-      error = e instanceof Error ? e : new Error(String(e));
-      logger.error(
-        contextName,
-        `Reducer error for action ${(action as any).type || 'unknown'}`,
-        error,
-        { action: sanitizedAction }
-      );
-      throw e;
-    }
+      const nextState = reducer(state, action);
 
-    const endTime = performance.now();
-    const executionTime = endTime - startTime;
+      // Calculate and log the state diff if enabled
+      if (logStateDiff && state !== nextState) {
+        const sanitizedPrevState = sanitizeState(
+          state as unknown as Record<string, unknown>
+        ) as S;
+        const sanitizedNextState = sanitizeState(
+          nextState as unknown as Record<string, unknown>
+        ) as S;
+        const diff = calculateDiff(
+          sanitizedPrevState as unknown as Record<string, unknown>,
+          sanitizedNextState as unknown as Record<string, unknown>
+        );
 
-    // Safely clone and sanitize the state after action
-    const stateAfter = sanitizeState(safeClone(newState));
-
-    // Log the action
-    const actionType = (action as any).type || 'unknown';
-    logger.logAction(
-      contextName,
-      actionType,
-      stateBefore,
-      stateAfter,
-      executionTime
-    );
-
-    // Log state diff if enabled
-    if (logStateDiff) {
-      const diff = calculateStateDiff(stateBefore, stateAfter);
-      if (diff) {
-        logger.debug(contextName, `State diff for ${actionType}`, diff);
+        if (Object.keys(diff).length > 0) {
+          logger.debug(contextName, 'State diff', diff);
+        }
       }
+
+      return nextState;
+    } catch (error) {
+      // Log the error but don't break the reducer
+      logger.error(contextName, 'Error in logging middleware', error as Error);
+      // Fall back to executing the reducer without logging
+      return reducer(state, action);
     }
-
-    // Log action details
-    logger.debug(contextName, `Action dispatched: ${actionType}`, {
-      action: sanitizedAction,
-      executionTime: `${executionTime.toFixed(2)}ms`,
-    });
-
-    return newState;
   };
 }
 
 /**
- * Default state sanitizer that removes sensitive or large data
+ * Creates a simple logging wrapper without options
  */
-export function defaultStateSanitizer(state: any): any {
-  if (!state || typeof state !== 'object') {
-    return state;
-  }
-
-  const sanitized: any = {};
-
-  for (const key in state) {
-    const value = state[key];
-
-    // Skip functions
-    if (typeof value === 'function') {
-      sanitized[key] = '[Function]';
-      continue;
-    }
-
-    // Truncate large arrays
-    if (Array.isArray(value) && value.length > 10) {
-      sanitized[key] = [
-        ...value.slice(0, 10),
-        `... and ${value.length - 10} more items`,
-      ];
-      continue;
-    }
-
-    // Truncate large strings
-    if (typeof value === 'string' && value.length > 200) {
-      sanitized[key] = value.substring(0, 200) + '...';
-      continue;
-    }
-
-    // Recursively sanitize objects
-    if (typeof value === 'object' && value !== null) {
-      sanitized[key] = defaultStateSanitizer(value);
-      continue;
-    }
-
-    sanitized[key] = value;
-  }
-
-  return sanitized;
-}
-
-/**
- * Default action sanitizer that removes sensitive payload data
- */
-export function defaultActionSanitizer(action: any): any {
-  if (!action || typeof action !== 'object') {
-    return action;
-  }
-
-  const sanitized: any = { ...action };
-
-  // Sanitize payload if it exists
-  if (sanitized.payload && typeof sanitized.payload === 'object') {
-    // Remove any potential sensitive fields
-    const sensitiveFields = [
-      'password',
-      'token',
-      'secret',
-      'apiKey',
-      'creditCard',
-    ];
-
-    for (const field of sensitiveFields) {
-      if (field in sanitized.payload) {
-        sanitized.payload[field] = '[REDACTED]';
-      }
-    }
-
-    // Apply default state sanitizer to payload
-    sanitized.payload = defaultStateSanitizer(sanitized.payload);
-  }
-
-  return sanitized;
-}
-
-/**
- * HOC to wrap a context provider with logging
- */
-export function withLogging<P extends object>(
-  Component: React.ComponentType<P>,
+export function withLogging<S, A>(
+  reducer: Reducer<S, A>,
   contextName: string
-): React.ComponentType<P> {
-  return (props: P) => {
-    logger.debug(contextName, `${contextName} provider mounted`);
-
-    React.useEffect(() => {
-      return () => {
-        logger.debug(contextName, `${contextName} provider unmounted`);
-      };
-    }, []);
-
-    return React.createElement(Component, props);
-  };
+): Reducer<S, A> {
+  return createLoggingMiddleware(reducer, { contextName });
 }

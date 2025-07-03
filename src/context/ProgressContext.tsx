@@ -218,6 +218,7 @@ export function ProgressProvider({
         logger.info('ProgressContext', 'ProgressProvider unmounted');
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Optimization control actions

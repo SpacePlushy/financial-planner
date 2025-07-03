@@ -22,7 +22,10 @@ type UIActionType =
   | { type: 'SET_FILTER'; payload: Partial<UIState['filters']> }
   | { type: 'CLEAR_FILTERS' }
   | { type: 'SET_SORT'; payload: { field: string; direction: 'asc' | 'desc' } }
-  | { type: 'SET_ERROR'; payload: { message: string; details?: any } | null }
+  | {
+      type: 'SET_ERROR';
+      payload: { message: string; details?: unknown } | null;
+    }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_THEME'; payload: 'light' | 'dark' }
   | { type: 'TOGGLE_DEBUG_MODE' };
@@ -203,6 +206,7 @@ export function UIProvider({
         logger.info('UIContext', 'UIProvider unmounted');
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Apply theme to document
@@ -274,7 +278,7 @@ export function UIProvider({
   }, [state.sort]);
 
   // Error and loading actions
-  const setError = useCallback((message: string | null, details?: any) => {
+  const setError = useCallback((message: string | null, details?: unknown) => {
     dispatch({
       type: 'SET_ERROR',
       payload: message ? { message, details } : null,

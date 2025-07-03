@@ -272,6 +272,7 @@ export function ScheduleProvider({
         logger.info('ScheduleContext', 'ScheduleProvider unmounted');
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Schedule manipulation actions

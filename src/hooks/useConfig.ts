@@ -150,7 +150,7 @@ export function useConfig() {
 
       fields.forEach(field => {
         if (configA[field] !== configB[field]) {
-          (differences as any)[field] = configB[field];
+          (differences as Record<string, unknown>)[field] = configB[field];
         }
       });
 
