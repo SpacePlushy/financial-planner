@@ -131,17 +131,12 @@ export const ScheduleCalendar: React.FC = () => {
 
               sampleSchedule.push({
                 day,
-                dayOfWeek: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][
-                  (day - 1) % 7
-                ],
-                date: `2024-01-${day.toString().padStart(2, '0')}`,
                 shifts,
                 earnings,
                 expenses: dayExpenses,
-                deposits: dayDeposits,
-                balance,
-                isWorkDay: shifts.length > 0,
-                isWeekend,
+                deposit: dayDeposits,
+                startBalance: balance - earnings - dayDeposits + dayExpenses,
+                endBalance: balance,
               });
             }
 
