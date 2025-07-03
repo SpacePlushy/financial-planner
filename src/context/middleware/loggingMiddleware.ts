@@ -98,10 +98,12 @@ function calculateDiff<T extends Record<string, unknown>>(
 /**
  * Default state sanitizer that removes sensitive data
  */
-export function defaultStateSanitizer<T extends Record<string, unknown>>(
-  state: T
-): T {
-  const sanitized = { ...state };
+export function defaultStateSanitizer<T>(state: T): T {
+  if (typeof state !== 'object' || state === null) {
+    return state;
+  }
+
+  const sanitized = { ...(state as Record<string, unknown>) } as T;
 
   // Remove any potentially sensitive fields
   const sensitiveFields = ['password', 'token', 'secret', 'key', 'auth'];
@@ -117,9 +119,7 @@ export function defaultStateSanitizer<T extends Record<string, unknown>>(
 /**
  * Default action sanitizer
  */
-export function defaultActionSanitizer<T extends Record<string, unknown>>(
-  action: T
-): T {
+export function defaultActionSanitizer<T>(action: T): T {
   return action;
 }
 
