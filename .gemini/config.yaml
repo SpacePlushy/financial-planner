@@ -1,0 +1,35 @@
+# Gemini Code Assist Configuration
+# https://developers.google.com/gemini-code-assist/docs/customize-gemini-behavior-github
+
+# Enable fun features like poems in PR summaries
+have_fun: true
+
+# Files and directories to ignore during code reviews
+ignore_patterns:
+  - "node_modules/**"
+  - "build/**"
+  - "dist/**"
+  - "coverage/**"
+  - "*.min.js"
+  - "*.bundle.js"
+  - ".git/**"
+  - "docs/**/*.md"
+
+# Keep Gemini Code Assist enabled
+disable: false
+
+# Review settings
+review:
+  # Focus on important aspects for this React/TypeScript project
+  focus_areas:
+    - "TypeScript type safety"
+    - "React best practices"
+    - "Performance optimizations"
+    - "Security issues"
+    - "Code maintainability"
+    
+# Pull request summary settings
+summary:
+  include_breaking_changes: true
+  include_dependencies: true
+  max_length: 500
