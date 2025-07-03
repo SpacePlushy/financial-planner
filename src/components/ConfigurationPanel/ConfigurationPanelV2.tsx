@@ -126,8 +126,8 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
 
   // Check if form is valid
   const isFormValid = useMemo(() => {
-    return Object.keys(validationErrors).length === 0 && !isOptimizing;
-  }, [validationErrors, isOptimizing]);
+    return Object.keys(validationErrors).length === 0;
+  }, [validationErrors]);
 
   return (
     <div className={styles.panel}>
@@ -360,7 +360,7 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
           e.preventDefault();
           startOptimization(config);
         }}
-        disabled={!isFormValid}
+        disabled={!isFormValid || isOptimizing}
       >
         {isOptimizing ? 'Optimizing...' : 'Start Optimization'}
       </button>

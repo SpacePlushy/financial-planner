@@ -45,6 +45,7 @@ interface UseOptimizerReturn extends UseOptimizerState {
 const MAX_HISTORY_SIZE = 10;
 const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY = 1000;
+const OPTIMIZATION_TIMEOUT = 5 * 60 * 1000; // 5 minutes timeout
 
 export function useOptimizer(): UseOptimizerReturn {
   const {
@@ -118,6 +119,11 @@ export function useOptimizer(): UseOptimizerReturn {
           const totalTime = endTime - optimizationStartTimeRef.current;
           const result = data as OptimizationResult;
 
+          // Clear timeout if exists
+          if ((worker as any)._timeoutId) {
+            clearTimeout((worker as any)._timeoutId);
+          }
+
           // Update schedule context
           setOptimizationResult(result);
           if (result.formattedSchedule) {
@@ -163,6 +169,11 @@ export function useOptimizer(): UseOptimizerReturn {
           break;
 
         case 'error':
+          // Clear timeout if exists
+          if ((worker as any)._timeoutId) {
+            clearTimeout((worker as any)._timeoutId);
+          }
+
           setProgressError(new Error(error || 'Unknown error occurred'));
           setState(prev => {
             const currentOpt = prev.currentOptimization;
@@ -289,6 +300,31 @@ export function useOptimizer(): UseOptimizerReturn {
         // Create new worker
         workerRef.current = createWorker();
 
+        // Set up timeout
+        const timeoutId = setTimeout(() => {
+          if (state.isOptimizing) {
+            logger.error(
+              'useOptimizer',
+              'Optimization timeout after 5 minutes'
+            );
+            if (workerRef.current) {
+              workerRef.current.terminate();
+              workerRef.current = null;
+            }
+            setState(prev => ({
+              ...prev,
+              isOptimizing: false,
+              isPaused: false,
+              error: 'Optimization timed out after 5 minutes',
+              currentOptimization: null,
+            }));
+            setProgressError(new Error('Optimization timed out'));
+          }
+        }, OPTIMIZATION_TIMEOUT);
+
+        // Store timeout ID on worker so we can clear it
+        (workerRef.current as any)._timeoutId = timeoutId;
+
         // Start optimization
         workerRef.current.postMessage({
           type: 'start',
@@ -345,9 +381,24 @@ export function useOptimizer(): UseOptimizerReturn {
   const cancelOptimization = useCallback(() => {
     if (workerRef.current && state.isOptimizing) {
       logger.info('useOptimizer', 'Cancelling optimization');
+
+      // Clear timeout if exists
+      if ((workerRef.current as any)._timeoutId) {
+        clearTimeout((workerRef.current as any)._timeoutId);
+      }
+
       workerRef.current.postMessage({ type: 'cancel' });
       workerRef.current.terminate();
       workerRef.current = null;
+
+      // Ensure state is reset
+      setState(prev => ({
+        ...prev,
+        isOptimizing: false,
+        isPaused: false,
+        error: null,
+        currentOptimization: null,
+      }));
     }
   }, [state.isOptimizing]);
 
