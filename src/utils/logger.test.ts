@@ -134,12 +134,12 @@ describe('Logger', () => {
       logger.info('TestContext', 'Message 1');
       logger.info('TestContext', 'Message 2');
 
-      expect(logger.getLogCount()).toBe(2);
+      expect(logger.getLogs().length).toBe(2);
 
       logger.clearLogs();
 
-      expect(logger.getLogCount()).toBe(0);
-      expect(logger.exportLogs()).toHaveLength(0);
+      expect(logger.getLogs().length).toBe(0);
+      expect(logger.getLogs()).toHaveLength(0);
     });
   });
 
