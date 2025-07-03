@@ -1,11 +1,6 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import { useSchedule } from '../../hooks/useSchedule';
 import { useUI } from '../../context/UIContext';
-import {
-  SkeletonLoader,
-  LoadingOverlay,
-  useLoadingState,
-} from '../LoadingStates';
 import styles from './ScheduleTable.module.css';
 
 export const ScheduleTable: React.FC = () => {
@@ -15,21 +10,7 @@ export const ScheduleTable: React.FC = () => {
   const ui = useUI();
 
   // Loading state for data updates
-  const { isLoading: isUpdating, withLoading } = useLoadingState({
-    delay: 100,
-    minDuration: 200,
-  });
-
-  // Initial loading state
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-
-  // Simulate initial load
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Filter schedule based on UI settings
   const displaySchedule = useMemo(() => {
@@ -119,32 +100,15 @@ export const ScheduleTable: React.FC = () => {
   // Handle cell double click
   const handleCellDoubleClick = useCallback(
     async (day: number, field: string) => {
-      await withLoading(
-        new Promise<void>(resolve => {
-          setTimeout(() => {
-            ui.selectCell(day, field);
-            ui.openModal('edit');
-            resolve();
-          }, 50);
-        })
-      );
+      setIsUpdating(true);
+      setTimeout(() => {
+        ui.selectCell(day, field);
+        ui.openModal('edit');
+        setIsUpdating(false);
+      }, 50);
     },
-    [ui, withLoading]
+    [ui]
   );
-
-  // Render loading skeleton
-  if (isInitialLoading) {
-    return (
-      <div className={styles.tableWrapper}>
-        <div className={styles.skeletonTable}>
-          <SkeletonLoader height={40} width="100%" /> {/* Header */}
-          <div style={{ marginTop: 8 }}>
-            <SkeletonLoader height={48} count={10} spacing={4} />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Render empty state
   if (sortedSchedule.length === 0) {
@@ -164,141 +128,138 @@ export const ScheduleTable: React.FC = () => {
   }
 
   return (
-    <LoadingOverlay isLoading={isUpdating} blur>
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th
-                className={`${styles.th} ${ui.sort.field === 'day' ? styles.sorted : ''}`}
-                onClick={() => ui.setSort('day')}
-              >
-                Day{' '}
-                {ui.sort.field === 'day' &&
-                  (ui.sort.direction === 'asc' ? '↑' : '↓')}
-              </th>
-              <th
-                className={`${styles.th} ${ui.sort.field === 'shifts' ? styles.sorted : ''}`}
-                onClick={() => ui.setSort('shifts')}
-              >
-                Shifts{' '}
-                {ui.sort.field === 'shifts' &&
-                  (ui.sort.direction === 'asc' ? '↑' : '↓')}
-              </th>
-              <th
-                className={`${styles.th} ${ui.sort.field === 'earnings' ? styles.sorted : ''}`}
-                onClick={() => ui.setSort('earnings')}
-              >
-                Earnings{' '}
-                {ui.sort.field === 'earnings' &&
-                  (ui.sort.direction === 'asc' ? '↑' : '↓')}
-              </th>
-              <th
-                className={`${styles.th} ${ui.sort.field === 'expenses' ? styles.sorted : ''}`}
-                onClick={() => ui.setSort('expenses')}
-              >
-                Expenses{' '}
-                {ui.sort.field === 'expenses' &&
-                  (ui.sort.direction === 'asc' ? '↑' : '↓')}
-              </th>
-              <th
-                className={`${styles.th} ${ui.sort.field === 'deposit' ? styles.sorted : ''}`}
-                onClick={() => ui.setSort('deposit')}
-              >
-                Deposit{' '}
-                {ui.sort.field === 'deposit' &&
-                  (ui.sort.direction === 'asc' ? '↑' : '↓')}
-              </th>
-              <th
-                className={`${styles.th} ${ui.sort.field === 'startBalance' ? styles.sorted : ''}`}
-                onClick={() => ui.setSort('startBalance')}
-              >
-                Start Balance{' '}
-                {ui.sort.field === 'startBalance' &&
-                  (ui.sort.direction === 'asc' ? '↑' : '↓')}
-              </th>
-              <th
-                className={`${styles.th} ${ui.sort.field === 'endBalance' ? styles.sorted : ''}`}
-                onClick={() => ui.setSort('endBalance')}
-              >
-                End Balance{' '}
-                {ui.sort.field === 'endBalance' &&
-                  (ui.sort.direction === 'asc' ? '↑' : '↓')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedSchedule.map(day => {
-              const hasViolation = false; // TODO: Add violation highlighting back
-              const isWeekend = ui.isWeekend(day.day);
+    <div className={styles.tableWrapper}>
+      {isUpdating && <div className={styles.updatingMessage}>Updating...</div>}
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th
+              className={`${styles.th} ${ui.sort.field === 'day' ? styles.sorted : ''}`}
+              onClick={() => ui.setSort('day')}
+            >
+              Day{' '}
+              {ui.sort.field === 'day' &&
+                (ui.sort.direction === 'asc' ? '↑' : '↓')}
+            </th>
+            <th
+              className={`${styles.th} ${ui.sort.field === 'shifts' ? styles.sorted : ''}`}
+              onClick={() => ui.setSort('shifts')}
+            >
+              Shifts{' '}
+              {ui.sort.field === 'shifts' &&
+                (ui.sort.direction === 'asc' ? '↑' : '↓')}
+            </th>
+            <th
+              className={`${styles.th} ${ui.sort.field === 'earnings' ? styles.sorted : ''}`}
+              onClick={() => ui.setSort('earnings')}
+            >
+              Earnings{' '}
+              {ui.sort.field === 'earnings' &&
+                (ui.sort.direction === 'asc' ? '↑' : '↓')}
+            </th>
+            <th
+              className={`${styles.th} ${ui.sort.field === 'expenses' ? styles.sorted : ''}`}
+              onClick={() => ui.setSort('expenses')}
+            >
+              Expenses{' '}
+              {ui.sort.field === 'expenses' &&
+                (ui.sort.direction === 'asc' ? '↑' : '↓')}
+            </th>
+            <th
+              className={`${styles.th} ${ui.sort.field === 'deposit' ? styles.sorted : ''}`}
+              onClick={() => ui.setSort('deposit')}
+            >
+              Deposit{' '}
+              {ui.sort.field === 'deposit' &&
+                (ui.sort.direction === 'asc' ? '↑' : '↓')}
+            </th>
+            <th
+              className={`${styles.th} ${ui.sort.field === 'startBalance' ? styles.sorted : ''}`}
+              onClick={() => ui.setSort('startBalance')}
+            >
+              Start Balance{' '}
+              {ui.sort.field === 'startBalance' &&
+                (ui.sort.direction === 'asc' ? '↑' : '↓')}
+            </th>
+            <th
+              className={`${styles.th} ${ui.sort.field === 'endBalance' ? styles.sorted : ''}`}
+              onClick={() => ui.setSort('endBalance')}
+            >
+              End Balance{' '}
+              {ui.sort.field === 'endBalance' &&
+                (ui.sort.direction === 'asc' ? '↑' : '↓')}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {sortedSchedule.map(day => {
+            const hasViolation = false; // TODO: Add violation highlighting back
+            const isWeekend = ui.isWeekend(day.day);
 
-              return (
-                <tr
-                  key={day.day}
-                  className={`
+            return (
+              <tr
+                key={day.day}
+                className={`
                     ${styles.tr}
                     ${hasViolation ? styles.violation : ''}
                     ${isWeekend ? styles.weekend : ''}
                     ${ui.selectedDay === day.day ? styles.selected : ''}
                   `}
+              >
+                <td className={styles.td}>{day.day}</td>
+                <td
+                  className={`${styles.td} ${styles.editable} ${hasEditForField(day.day, 'shifts') ? styles.edited : ''}`}
+                  onDoubleClick={() => handleCellDoubleClick(day.day, 'shifts')}
                 >
-                  <td className={styles.td}>{day.day}</td>
-                  <td
-                    className={`${styles.td} ${styles.editable} ${hasEditForField(day.day, 'shifts') ? styles.edited : ''}`}
-                    onDoubleClick={() =>
-                      handleCellDoubleClick(day.day, 'shifts')
-                    }
-                  >
-                    {getCellValue(day.day, 'shifts', day.shifts)}
-                  </td>
-                  <td
-                    className={`${styles.td} ${styles.editable} ${styles.numeric} ${hasEditForField(day.day, 'earnings') ? styles.edited : ''}`}
-                    onDoubleClick={() =>
-                      handleCellDoubleClick(day.day, 'earnings')
-                    }
-                  >
-                    ${getCellValue(day.day, 'earnings', day.earnings)}
-                  </td>
-                  <td
-                    className={`${styles.td} ${styles.editable} ${styles.numeric} ${hasEditForField(day.day, 'expenses') ? styles.edited : ''}`}
-                    onDoubleClick={() =>
-                      handleCellDoubleClick(day.day, 'expenses')
-                    }
-                  >
-                    ${getCellValue(day.day, 'expenses', day.expenses)}
-                  </td>
-                  <td
-                    className={`${styles.td} ${styles.editable} ${styles.numeric} ${hasEditForField(day.day, 'deposit') ? styles.edited : ''}`}
-                    onDoubleClick={() =>
-                      handleCellDoubleClick(day.day, 'deposit')
-                    }
-                  >
-                    ${getCellValue(day.day, 'deposit', day.deposit)}
-                  </td>
-                  <td className={`${styles.td} ${styles.numeric}`}>
-                    ${day.startBalance.toFixed(2)}
-                  </td>
-                  <td
-                    className={`${styles.td} ${styles.numeric} ${day.endBalance < 0 ? styles.negative : ''}`}
-                  >
-                    ${day.endBalance.toFixed(2)}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                  {getCellValue(day.day, 'shifts', day.shifts)}
+                </td>
+                <td
+                  className={`${styles.td} ${styles.editable} ${styles.numeric} ${hasEditForField(day.day, 'earnings') ? styles.edited : ''}`}
+                  onDoubleClick={() =>
+                    handleCellDoubleClick(day.day, 'earnings')
+                  }
+                >
+                  ${getCellValue(day.day, 'earnings', day.earnings)}
+                </td>
+                <td
+                  className={`${styles.td} ${styles.editable} ${styles.numeric} ${hasEditForField(day.day, 'expenses') ? styles.edited : ''}`}
+                  onDoubleClick={() =>
+                    handleCellDoubleClick(day.day, 'expenses')
+                  }
+                >
+                  ${getCellValue(day.day, 'expenses', day.expenses)}
+                </td>
+                <td
+                  className={`${styles.td} ${styles.editable} ${styles.numeric} ${hasEditForField(day.day, 'deposit') ? styles.edited : ''}`}
+                  onDoubleClick={() =>
+                    handleCellDoubleClick(day.day, 'deposit')
+                  }
+                >
+                  ${getCellValue(day.day, 'deposit', day.deposit)}
+                </td>
+                <td className={`${styles.td} ${styles.numeric}`}>
+                  ${day.startBalance.toFixed(2)}
+                </td>
+                <td
+                  className={`${styles.td} ${styles.numeric} ${day.endBalance < 0 ? styles.negative : ''}`}
+                >
+                  ${day.endBalance.toFixed(2)}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
 
-        {/* Table footer with summary */}
-        <div className={styles.tableFooter}>
-          <span>
-            Showing {sortedSchedule.length} of {currentSchedule.length} days
-          </span>
-          {edits.length > 0 && (
-            <span className={styles.editCount}>{edits.length} edits</span>
-          )}
-        </div>
+      {/* Table footer with summary */}
+      <div className={styles.tableFooter}>
+        <span>
+          Showing {sortedSchedule.length} of {currentSchedule.length} days
+        </span>
+        {edits.length > 0 && (
+          <span className={styles.editCount}>{edits.length} edits</span>
+        )}
       </div>
-    </LoadingOverlay>
+    </div>
   );
 };

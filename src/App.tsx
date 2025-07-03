@@ -14,7 +14,6 @@ import { Summary } from './components/Summary/SummaryV2';
 import { OptimizationProgress } from './components/OptimizationProgress/OptimizationProgressV2';
 import { EditModal } from './components/EditModal/EditModalV2';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
-import { OptimizationLoadingOverlay } from './components/OptimizationLoadingOverlay';
 import { useUI } from './context/UIContext';
 import { usePersistence } from './hooks/usePersistence';
 import { useOptimizer } from './hooks/useOptimizer';
@@ -269,9 +268,6 @@ function AppContent() {
 
       {/* Debug mode indicator */}
       {ui.debugMode && <div className="debug-indicator">Debug Mode</div>}
-
-      {/* Full-screen optimization loading overlay */}
-      <OptimizationLoadingOverlay isVisible={optimizer.isOptimizing} />
     </div>
   );
 }

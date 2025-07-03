@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useOptimizer } from '../../hooks/useOptimizer';
 import { useProgress } from '../../context/ProgressContext';
 import { useConfig } from '../../hooks/useConfig';
-import { SkeletonLoader } from '../LoadingStates';
 import styles from './OptimizationProgress.module.css';
 
 /**
@@ -126,7 +125,7 @@ export const OptimizationProgress: React.FC = () => {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
-          <SkeletonLoader height={24} width={200} variant="text" />
+          <h3 className={styles.title}>Optimization Progress</h3>
         </div>
         <div className={styles.content}>
           <div className={styles.loadingContainer}>

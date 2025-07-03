@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import { useUI } from '../../context/UIContext';
 import { useEdits } from '../../hooks/useEdits';
 import { useSchedule } from '../../hooks/useSchedule';
-import { LoadingOverlay, useLoadingState } from '../LoadingStates';
 import { Edit } from '../../types';
 import styles from './EditModal.module.css';
 
@@ -21,10 +20,7 @@ export const EditModal: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  const { isLoading: isSaving, withLoading } = useLoadingState({
-    delay: 100,
-    minDuration: 300,
-  });
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const isOpen =
     ui.activeModal === 'edit' &&
@@ -180,37 +176,34 @@ export const EditModal: React.FC = () => {
       return;
     }
 
-    await withLoading(
-      new Promise<void>((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            // Convert value based on field type
-            let finalValue: any;
-            if (field === 'shifts') {
-              finalValue = value
-                .split(',')
-                .map(s => s.trim())
-                .filter(s => s);
-            } else {
-              finalValue = parseFloat(value);
-            }
+    setIsSaving(true);
+    setTimeout(() => {
+      try {
+        // Convert value based on field type
+        let finalValue: any;
+        if (field === 'shifts') {
+          finalValue = value
+            .split(',')
+            .map(s => s.trim())
+            .filter(s => s);
+        } else {
+          finalValue = parseFloat(value);
+        }
 
-            // Apply the edit
-            addEdit({
-              day,
-              field: field as Edit['field'],
-              originalValue: currentValue,
-              newValue: finalValue,
-            });
-            ui.closeModal();
-            resolve();
-          } catch (err) {
-            setError('Failed to save. Please try again.');
-            reject(err);
-          }
-        }, 100);
-      })
-    );
+        // Apply the edit
+        addEdit({
+          day,
+          field: field as Edit['field'],
+          originalValue: currentValue,
+          newValue: finalValue,
+        });
+        ui.closeModal();
+      } catch (err) {
+        setError('Failed to save. Please try again.');
+      } finally {
+        setIsSaving(false);
+      }
+    }, 100);
   };
 
   // Handle form submission
@@ -278,68 +271,67 @@ export const EditModal: React.FC = () => {
       aria-labelledby="edit-modal-title"
       aria-describedby="edit-modal-description"
     >
-      <LoadingOverlay isLoading={isSaving} message="Saving..." blur>
-        <div className={styles.modal} ref={modalRef}>
-          <div className={styles.header}>
-            <h2 id="edit-modal-title">Edit {getFieldLabel()}</h2>
-            <button
-              className={styles.closeButton}
-              onClick={() => ui.closeModal()}
-              aria-label="Close modal"
+      <div className={styles.modal} ref={modalRef}>
+        {isSaving && <div className={styles.savingMessage}>Saving...</div>}
+        <div className={styles.header}>
+          <h2 id="edit-modal-title">Edit {getFieldLabel()}</h2>
+          <button
+            className={styles.closeButton}
+            onClick={() => ui.closeModal()}
+            aria-label="Close modal"
+            disabled={isSaving}
+          >
+            ×
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label htmlFor="edit-input" className={styles.label}>
+              {getFieldLabel()} for Day {day}
+            </label>
+            <p id="edit-modal-description" className={styles.description}>
+              {field === 'shifts'
+                ? 'Enter shifts separated by commas'
+                : `Enter the ${getFieldLabel().toLowerCase()} amount in dollars`}
+            </p>
+            <input
+              id="edit-input"
+              ref={inputRef}
+              className={`${styles.input} ${error ? styles.inputError : ''}`}
+              value={value}
+              onChange={handleInputChange}
               disabled={isSaving}
-            >
-              ×
-            </button>
+              aria-invalid={!!error}
+              aria-describedby={error ? 'edit-error' : undefined}
+              {...getInputAttributes()}
+            />
+            {error && (
+              <div id="edit-error" className={styles.error} role="alert">
+                {error}
+              </div>
+            )}
           </div>
 
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.formGroup}>
-              <label htmlFor="edit-input" className={styles.label}>
-                {getFieldLabel()} for Day {day}
-              </label>
-              <p id="edit-modal-description" className={styles.description}>
-                {field === 'shifts'
-                  ? 'Enter shifts separated by commas'
-                  : `Enter the ${getFieldLabel().toLowerCase()} amount in dollars`}
-              </p>
-              <input
-                id="edit-input"
-                ref={inputRef}
-                className={`${styles.input} ${error ? styles.inputError : ''}`}
-                value={value}
-                onChange={handleInputChange}
-                disabled={isSaving}
-                aria-invalid={!!error}
-                aria-describedby={error ? 'edit-error' : undefined}
-                {...getInputAttributes()}
-              />
-              {error && (
-                <div id="edit-error" className={styles.error} role="alert">
-                  {error}
-                </div>
-              )}
-            </div>
-
-            <div className={styles.actions}>
-              <button
-                type="button"
-                className={styles.cancelButton}
-                onClick={() => ui.closeModal()}
-                disabled={isSaving}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className={styles.saveButton}
-                disabled={isSaving || !!error}
-              >
-                Save
-              </button>
-            </div>
-          </form>
-        </div>
-      </LoadingOverlay>
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className={styles.cancelButton}
+              onClick={() => ui.closeModal()}
+              disabled={isSaving}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={styles.saveButton}
+              disabled={isSaving || !!error}
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
     </div>,
     document.body
   );

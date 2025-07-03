@@ -3,6 +3,11 @@
   box-sizing: border-box;
 }
 
+html {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 body {
   margin: 0;
   font-family:
@@ -10,6 +15,11 @@ body {
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* CSS Variables for theming */
