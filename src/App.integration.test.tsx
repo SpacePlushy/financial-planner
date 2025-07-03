@@ -14,7 +14,7 @@ beforeEach(() => {
     length: 0,
     key: jest.fn(),
   };
-  global.localStorage = localStorageMock as any;
+  global.localStorage = localStorageMock as Storage;
 
   // Mock console to reduce noise
   jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -65,12 +65,10 @@ describe('App Integration Tests', () => {
   it('should show schedule table with proper controls', async () => {
     render(<App />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Table View')).toBeInTheDocument();
-      expect(screen.getByText('Calendar View')).toBeInTheDocument();
-      expect(screen.getByLabelText(/Show Weekends/)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Highlight Violations/)).toBeInTheDocument();
-    });
+    await screen.findByText('Table View');
+    expect(screen.getByText('Calendar View')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Show Weekends/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Highlight Violations/)).toBeInTheDocument();
   });
 
   it('should handle configuration changes', async () => {
@@ -109,21 +107,16 @@ describe('App Integration Tests', () => {
     await user.click(optimizeButton);
 
     // Should show pause and cancel buttons
-    await waitFor(() => {
-      expect(screen.getByText('Pause')).toBeInTheDocument();
-      expect(screen.getByText('Cancel')).toBeInTheDocument();
-    });
+    await screen.findByText('Pause');
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
   });
 
   it('should handle data persistence actions', async () => {
-    const user = userEvent.setup();
     render(<App />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Save')).toBeInTheDocument();
-      expect(screen.getByText('Export')).toBeInTheDocument();
-      expect(screen.getByText('Import')).toBeInTheDocument();
-    });
+    await screen.findByText('Save');
+    expect(screen.getByText('Export')).toBeInTheDocument();
+    expect(screen.getByText('Import')).toBeInTheDocument();
 
     // Save button should be disabled initially (no changes)
     const saveButton = screen.getByText('Save');
@@ -157,20 +150,17 @@ describe('App Integration Tests', () => {
   it('should display schedule metrics in summary', async () => {
     render(<App />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Total Earnings/)).toBeInTheDocument();
-      expect(screen.getByText(/Total Expenses/)).toBeInTheDocument();
-      expect(screen.getByText(/Net Income/)).toBeInTheDocument();
-    });
+    await screen.findByText(/Total Earnings/);
+    expect(screen.getByText(/Total Expenses/)).toBeInTheDocument();
+    expect(screen.getByText(/Net Income/)).toBeInTheDocument();
   });
 
   it('should handle responsive layout', async () => {
     render(<App />);
 
-    await waitFor(() => {
-      const mainElement = screen.getByRole('main');
-      expect(mainElement).toHaveClass('app-main');
-    });
+    await waitFor(() =>
+      expect(screen.getByRole('main')).toHaveClass('app-main')
+    );
 
     // Check that sections are properly structured
     const sections = screen.getAllByRole('region');

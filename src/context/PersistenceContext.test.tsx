@@ -10,12 +10,7 @@ import {
   ConfigurationProvider,
   useConfigurationContext,
 } from './ConfigurationContext';
-import {
-  storage,
-  compressionUtils,
-  storageQuota,
-  fileUtils,
-} from '../utils/storage';
+import { storage, storageQuota, fileUtils } from '../utils/storage';
 import { StoredAppData } from './types';
 
 // Mock storage utilities
@@ -334,13 +329,12 @@ describe('PersistenceContext', () => {
 
       await user.click(screen.getByText('Export'));
 
-      await waitFor(() => {
-        expect(storage.export).toHaveBeenCalled();
-        expect(fileUtils.download).toHaveBeenCalledWith(
-          '{"exported": true}',
-          expect.stringMatching(/^financial-schedule-.*\.json$/)
-        );
-      });
+      await waitFor(() => expect(storage.export).toHaveBeenCalled());
+
+      expect(fileUtils.download).toHaveBeenCalledWith(
+        '{"exported": true}',
+        expect.stringMatching(/^financial-schedule-.*\.json$/)
+      );
     });
 
     it('should import data', async () => {

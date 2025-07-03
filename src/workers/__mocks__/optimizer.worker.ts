@@ -7,7 +7,7 @@ export default class MockWorker {
   private _paused = false;
 
   // Jest mocks for tracking calls
-  postMessage = jest.fn((data: any) => {
+  postMessage = jest.fn((data: unknown) => {
     this._postMessage(data);
   });
 
@@ -15,7 +15,7 @@ export default class MockWorker {
     this._terminate();
   });
 
-  private _postMessage(data: any) {
+  private _postMessage(data: unknown) {
     // Don't process messages if terminated
     if (this._terminated) {
       return;
@@ -24,7 +24,8 @@ export default class MockWorker {
     // Simulate async response
     setTimeout(() => {
       if (this.onmessage && !this._terminated) {
-        switch (data.type) {
+        const message = data as { type: string };
+        switch (message.type) {
           case 'start':
             // Send progress updates
             this.onmessage({
@@ -119,9 +120,9 @@ export default class MockWorker {
   // Mock addEventListener method for compatibility
   addEventListener(type: string, listener: EventListenerOrEventListenerObject) {
     if (type === 'message' && typeof listener === 'function') {
-      this.onmessage = listener as any;
+      this.onmessage = listener as (event: MessageEvent) => void;
     } else if (type === 'error' && typeof listener === 'function') {
-      this.onerror = listener as any;
+      this.onerror = listener as (event: ErrorEvent) => void;
     }
   }
 

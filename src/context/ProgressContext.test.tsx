@@ -6,11 +6,6 @@ import {
   useProgressContext,
   useProgress,
 } from './ProgressContext';
-import {
-  OptimizationProgress,
-  OptimizationResult,
-  GenerationStatistics,
-} from '../types';
 
 // Mock logger
 jest.mock('../utils/logger', () => ({

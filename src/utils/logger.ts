@@ -111,20 +111,26 @@ class Logger {
   }
 
   group(label: string, fn: () => unknown): void {
+    // eslint-disable-next-line no-console
     if (this.config.enableConsole && typeof console.group === 'function') {
+      // eslint-disable-next-line no-console
       console.group(label);
     }
     try {
       fn();
     } finally {
+      // eslint-disable-next-line no-console
       if (this.config.enableConsole && typeof console.groupEnd === 'function') {
+        // eslint-disable-next-line no-console
         console.groupEnd();
       }
     }
   }
 
   async groupAsync<T>(label: string, fn: () => Promise<T>): Promise<T> {
+    // eslint-disable-next-line no-console
     if (this.config.enableConsole && typeof console.group === 'function') {
+      // eslint-disable-next-line no-console
       console.group(label);
     }
     try {
@@ -133,7 +139,9 @@ class Logger {
       this.error('Logger', 'Error in grouped async operation', error);
       throw error;
     } finally {
+      // eslint-disable-next-line no-console
       if (this.config.enableConsole && typeof console.groupEnd === 'function') {
+        // eslint-disable-next-line no-console
         console.groupEnd();
       }
     }
@@ -183,6 +191,7 @@ class Logger {
 
     switch (entry.level) {
       case LogLevel.ERROR:
+        // eslint-disable-next-line no-console
         console.error(
           prefix,
           entry.message,
@@ -191,12 +200,15 @@ class Logger {
         );
         break;
       case LogLevel.WARN:
+        // eslint-disable-next-line no-console
         console.warn(prefix, entry.message, this.formatData(entry.data));
         break;
       case LogLevel.INFO:
+        // eslint-disable-next-line no-console
         console.info(prefix, entry.message, this.formatData(entry.data));
         break;
       case LogLevel.DEBUG:
+        // eslint-disable-next-line no-console
         console.log(prefix, entry.message, this.formatData(entry.data));
         break;
     }

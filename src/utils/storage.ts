@@ -23,9 +23,8 @@ export const compressionUtils = {
       const encoder = new TextEncoder();
       const encoded = encoder.encode(data);
 
-      const cs = new (window as Record<string, unknown>).CompressionStream(
-        'gzip'
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cs = new (window as any).CompressionStream('gzip');
       const writer = cs.writable.getWriter();
       writer.write(encoded);
       writer.close();
@@ -59,9 +58,8 @@ export const compressionUtils = {
         bytes[i] = binaryString.charCodeAt(i);
       }
 
-      const ds = new (window as Record<string, unknown>).DecompressionStream(
-        'gzip'
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ds = new (window as any).DecompressionStream('gzip');
       const writer = ds.writable.getWriter();
       writer.write(bytes);
       writer.close();

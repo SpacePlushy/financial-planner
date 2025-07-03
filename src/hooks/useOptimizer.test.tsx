@@ -13,18 +13,20 @@ import React from 'react';
 import { useOptimizer } from './useOptimizer';
 import { DaySchedule } from '../types';
 
-// Import the mock worker class
-import MockWorker from '../workers/__mocks__/optimizer.worker';
+// Mock the worker module
+jest.mock('../workers/optimizer.worker');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const MockWorker = require('../workers/optimizer.worker').default;
 
 const mockWorker = new MockWorker();
 
 // Mock URL constructor to handle import.meta.url
-(global as any).URL = class URL {
+(global as unknown as { URL: typeof URL }).URL = class URL {
   constructor(url: string) {
-    return { href: url };
+    return { href: url } as unknown as URL;
   }
   static createObjectURL = jest.fn().mockReturnValue('mock-blob-url');
-};
+} as unknown as typeof URL;
 
 // Mock the worker factory to return our specific mock instance
 let mockCreateOptimizerWorker: jest.Mock;

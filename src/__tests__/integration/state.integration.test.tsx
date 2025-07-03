@@ -26,7 +26,7 @@ beforeEach(() => {
     length: 0,
     key: jest.fn(),
   };
-  global.localStorage = localStorageMock as any;
+  global.localStorage = localStorageMock as unknown as Storage;
 
   jest.spyOn(console, 'log').mockImplementation(() => {});
   jest.spyOn(console, 'info').mockImplementation(() => {});

@@ -103,8 +103,10 @@ const localStorageMock = {
   setItem: jest.fn(),
   removeItem: jest.fn(),
   clear: jest.fn(),
+  length: 0,
+  key: jest.fn(),
 };
-global.localStorage = localStorageMock as any;
+global.localStorage = localStorageMock as unknown as Storage;
 
 // Mock Worker
 class WorkerMock {
@@ -117,7 +119,7 @@ class WorkerMock {
   onmessageerror = jest.fn();
   onerror = jest.fn();
 }
-global.Worker = WorkerMock as any;
+global.Worker = WorkerMock as unknown as typeof Worker;
 
 describe('App Integration', () => {
   beforeEach(() => {
@@ -147,11 +149,9 @@ describe('App Integration', () => {
   it('should render all main components', async () => {
     render(<App />);
 
-    await waitFor(() => {
-      expect(screen.getByTestId('configuration-panel')).toBeInTheDocument();
-      expect(screen.getByTestId('summary')).toBeInTheDocument();
-      expect(screen.getByTestId('schedule-table')).toBeInTheDocument();
-    });
+    await screen.findByTestId('configuration-panel');
+    expect(screen.getByTestId('summary')).toBeInTheDocument();
+    expect(screen.getByTestId('schedule-table')).toBeInTheDocument();
   });
 
   it('should show loading state when restoring data', () => {
@@ -212,42 +212,37 @@ describe('App Integration', () => {
     });
 
     const themeButton = screen.getByLabelText('Toggle theme');
-    const appElement = document.querySelector('.app');
+    const appElement = screen.getByTestId('app');
 
     // Should start with light theme
     expect(appElement).toHaveClass('light');
-    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    expect(appElement).toHaveAttribute('data-theme', 'light');
 
     // Click to toggle to dark
     await user.click(themeButton);
     expect(appElement).toHaveClass('dark');
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(appElement).toHaveAttribute('data-theme', 'dark');
   });
 
   it('should show view controls', async () => {
     render(<App />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Table View')).toBeInTheDocument();
-      expect(screen.getByText('Calendar View')).toBeInTheDocument();
-      expect(screen.getByLabelText(/Show Weekends/)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Highlight Violations/)).toBeInTheDocument();
-    });
+    await screen.findByText('Table View');
+    expect(screen.getByText('Calendar View')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Show Weekends/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Highlight Violations/)).toBeInTheDocument();
   });
 
   it('should show action buttons', async () => {
     render(<App />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Save')).toBeInTheDocument();
-      expect(screen.getByText('Export')).toBeInTheDocument();
-      expect(screen.getByText('Import')).toBeInTheDocument();
-      expect(screen.getByText('Start Optimization')).toBeInTheDocument();
-    });
+    await screen.findByText('Save');
+    expect(screen.getByText('Export')).toBeInTheDocument();
+    expect(screen.getByText('Import')).toBeInTheDocument();
+    expect(screen.getByText('Start Optimization')).toBeInTheDocument();
   });
 
   it('should handle save button click', async () => {
-    const user = userEvent.setup();
     render(<App />);
 
     await waitFor(() => {

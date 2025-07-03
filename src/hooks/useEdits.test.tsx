@@ -222,7 +222,7 @@ describe('useEdits', () => {
         day: 1,
         field: 'earnings',
         originalValue: 250,
-        newValue: 'not a number' as any,
+        newValue: 'not a number' as unknown as number,
       };
 
       const validation = result.current.validateEdit(invalidEdit);
@@ -893,6 +893,7 @@ describe('useEdits', () => {
       // Try to undo 50 times (should succeed)
       let undoCount = 0;
       for (let i = 0; i < 50; i++) {
+        // eslint-disable-next-line no-loop-func
         act(() => {
           if (result.current.undo()) {
             undoCount++;
@@ -932,7 +933,7 @@ describe('useEdits', () => {
         day: 1,
         field: 'earnings',
         originalValue: 250,
-        newValue: '300' as any,
+        newValue: '300' as unknown as number,
       };
 
       act(() => {

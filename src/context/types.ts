@@ -128,7 +128,7 @@ export interface UIState {
   };
 
   // Error handling
-  error: { message: string; details?: any } | null;
+  error: { message: string; details?: unknown } | null;
 
   // Loading states
   isLoading: boolean;
@@ -164,7 +164,7 @@ export interface UIActions {
   toggleSortDirection: () => void;
 
   // Error and loading actions
-  setError: (message: string | null, details?: any) => void;
+  setError: (message: string | null, details?: unknown) => void;
   clearError: () => void;
   setLoading: (loading: boolean) => void;
 

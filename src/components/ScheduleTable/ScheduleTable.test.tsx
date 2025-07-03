@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ScheduleTable } from './ScheduleTable';
 import { DaySchedule, Edit } from '../../types';
@@ -474,7 +480,7 @@ describe('ScheduleTable', () => {
         },
       ];
 
-      const { container } = renderWithProvider(
+      renderWithProvider(
         <ScheduleTable
           schedule={mockSchedule}
           edits={multipleEdits}
@@ -484,11 +490,16 @@ describe('ScheduleTable', () => {
       );
 
       // Should show only one row as edited
-      const editedRows = container.querySelectorAll('.hasEdits');
+      const table = screen.getByTestId('schedule-table');
+      const editedRows = within(table)
+        .getAllByRole('row')
+        .filter(row => row.classList.contains('hasEdits'));
       expect(editedRows).toHaveLength(1);
 
       // But three cells should be marked as edited
-      const editedCells = container.querySelectorAll('.edited');
+      const editedCells = within(table)
+        .getAllByRole('cell')
+        .filter(cell => cell.classList.contains('edited'));
       expect(editedCells).toHaveLength(3);
     });
   });

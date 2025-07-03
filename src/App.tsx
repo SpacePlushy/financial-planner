@@ -43,7 +43,7 @@ function AppContent() {
   }
 
   return (
-    <div className={`app ${ui.theme}`} data-theme={ui.theme}>
+    <div className={`app ${ui.theme}`} data-theme={ui.theme} data-testid="app">
       {/* Header */}
       <header className="app-header">
         <div className="header-content">

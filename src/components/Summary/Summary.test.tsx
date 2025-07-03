@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Summary } from './Summary';
 import { useSchedule } from '../../hooks/useSchedule';
@@ -23,8 +23,8 @@ global.URL.revokeObjectURL = mockRevokeObjectURL;
 
 // Mock document methods
 const mockCreateElement = jest.spyOn(document, 'createElement');
-const mockAppendChild = jest.spyOn(document.body, 'appendChild');
-const mockRemoveChild = jest.spyOn(document.body, 'removeChild');
+jest.spyOn(document.body, 'appendChild');
+jest.spyOn(document.body, 'removeChild');
 
 describe('Summary Component', () => {
   const mockScheduleData = {
@@ -158,21 +158,19 @@ describe('Summary Component', () => {
     });
 
     it('applies custom className', () => {
-      const { container } = render(<Summary className="custom-class" />);
-      expect(container.firstChild).toHaveClass('custom-class');
+      render(<Summary className="custom-class" />);
+      expect(screen.getByTestId('summary')).toHaveClass('custom-class');
     });
   });
 
   describe('Metric Calculations', () => {
     it('calculates average earnings per work day', () => {
-      // Skip rendering for now due to DOM issues
-      // render(<Summary />);
+      render(<Summary />);
       expect(screen.getByText('$210.00')).toBeInTheDocument(); // 420/2
     });
 
     it('calculates balance difference from target', () => {
-      // Skip rendering for now due to DOM issues
-      // render(<Summary />);
+      render(<Summary />);
       expect(screen.getByText('-$5.00 (0.4%)')).toBeInTheDocument(); // 1195-1200
     });
 
@@ -222,20 +220,16 @@ describe('Summary Component', () => {
         getViolationDays: jest.fn(() => [5]),
       });
 
-      // Skip rendering for now due to DOM issues
-      // render(<Summary />);
-      const violationsCard = screen
-        .getByText('Constraint Violations')
-        .closest('div');
+      render(<Summary />);
+      const violationsHeading = screen.getByText('Constraint Violations');
+      const violationsCard = violationsHeading.closest('[class*="metricCard"]');
       expect(violationsCard).toHaveClass('error');
     });
 
     it('applies success styling when no violations', () => {
-      // Skip rendering for now due to DOM issues
-      // render(<Summary />);
-      const violationsCard = screen
-        .getByText('Constraint Violations')
-        .closest('div');
+      render(<Summary />);
+      const violationsHeading = screen.getByText('Constraint Violations');
+      const violationsCard = violationsHeading.closest('[class*="metricCard"]');
       expect(violationsCard).toHaveClass('success');
       expect(screen.getByText('All constraints satisfied')).toBeInTheDocument();
     });
@@ -246,9 +240,9 @@ describe('Summary Component', () => {
         minimumBalance: 400, // Below required 500
       });
 
-      // Skip rendering for now due to DOM issues
-      // render(<Summary />);
-      const minBalanceCard = screen.getByText('Minimum Balance').closest('div');
+      render(<Summary />);
+      const minBalanceHeading = screen.getByText('Minimum Balance');
+      const minBalanceCard = minBalanceHeading.closest('[class*="metricCard"]');
       expect(minBalanceCard).toHaveClass('warning');
     });
   });

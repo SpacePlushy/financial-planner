@@ -32,7 +32,7 @@ afterEach(() => {
 });
 
 // Mock import.meta.url for Jest
-(global as any).import = {
+(global as unknown as { import: { meta: { url: string } } }).import = {
   meta: {
     url: 'file:///mock/path/to/file.js',
   },

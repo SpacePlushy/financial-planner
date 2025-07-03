@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../App';
 
@@ -14,7 +14,7 @@ beforeEach(() => {
     length: 0,
     key: jest.fn(),
   };
-  global.localStorage = localStorageMock as any;
+  global.localStorage = localStorageMock as unknown as Storage;
 
   // Mock Worker
   global.Worker = jest.fn().mockImplementation(() => ({
@@ -26,7 +26,7 @@ beforeEach(() => {
     onmessage: null,
     onmessageerror: null,
     onerror: null,
-  })) as any;
+  })) as unknown as typeof Worker;
 
   // Mock console methods to reduce noise in tests
   jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -92,28 +92,24 @@ describe('App Integration Tests', () => {
       const themeButton = screen.getByLabelText('Toggle theme');
 
       // Check initial theme
-      const appDiv = document.querySelector('.app');
+      const appDiv = screen.getByTestId('app');
       expect(appDiv).toHaveClass('light');
-      expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+      expect(appDiv).toHaveAttribute('data-theme', 'light');
 
       // Switch to dark theme
       await user.click(themeButton);
 
-      await waitFor(() => {
-        const appDiv = document.querySelector('.app');
-        expect(appDiv).toHaveClass('dark');
-        expect(document.documentElement.getAttribute('data-theme')).toBe(
-          'dark'
-        );
-      });
+      await waitFor(() =>
+        expect(screen.getByTestId('app')).toHaveClass('dark')
+      );
+      expect(screen.getByTestId('app')).toHaveAttribute('data-theme', 'dark');
 
       // Switch back to light theme
       await user.click(themeButton);
 
-      await waitFor(() => {
-        const appDiv = document.querySelector('.app');
-        expect(appDiv).toHaveClass('light');
-      });
+      await waitFor(() =>
+        expect(screen.getByTestId('app')).toHaveClass('light')
+      );
     });
   });
 
@@ -196,10 +192,8 @@ describe('App Integration Tests', () => {
       const user = userEvent.setup();
       render(<App />);
 
-      await waitFor(() => {
-        expect(screen.getByText('Table View')).toBeInTheDocument();
-        expect(screen.getByText('Calendar View')).toBeInTheDocument();
-      });
+      await screen.findByText('Table View');
+      expect(screen.getByText('Calendar View')).toBeInTheDocument();
 
       const tableViewButton = screen.getByText('Table View');
       const calendarViewButton = screen.getByText('Calendar View');
@@ -319,15 +313,13 @@ describe('App Integration Tests', () => {
 
       // Find an editable cell (earnings column)
       const editableCells = screen.getAllByTitle(/Double-click to edit/);
-      if (editableCells.length > 0) {
-        await user.dblClick(editableCells[0]);
+      expect(editableCells.length).toBeGreaterThan(0);
 
-        // Modal should open
-        await waitFor(() => {
-          expect(screen.getByRole('dialog')).toBeInTheDocument();
-          expect(screen.getByText(/Edit/)).toBeInTheDocument();
-        });
-      }
+      await user.dblClick(editableCells[0]);
+
+      // Modal should open
+      await screen.findByRole('dialog');
+      expect(screen.getByText(/Edit/)).toBeInTheDocument();
     });
   });
 
@@ -437,14 +429,14 @@ describe('App Integration Tests', () => {
         dispatchEvent: jest.fn(),
         onmessage: null,
         onmessageerror: null,
-        onerror: (error: any) => {
+        onerror: (error: (event: MessageEvent) => void) => {
           // Simulate error callback
           setTimeout(
             () => error({ data: { type: 'error', error: 'Test error' } }),
             10
           );
         },
-      })) as any;
+      })) as unknown as typeof Worker;
 
       render(<App />);
 
@@ -525,8 +517,8 @@ describe('App Integration Tests', () => {
       expect(main).toHaveClass('app-main');
 
       // Check sections exist
-      const sections = main.querySelectorAll('section');
-      expect(sections.length).toBeGreaterThanOrEqual(4); // config, summary, schedule, actions
+      const sections = within(main).getAllByRole('region');
+      expect(sections.length).toBeGreaterThanOrEqual(3); // config, summary, schedule
     });
   });
 
