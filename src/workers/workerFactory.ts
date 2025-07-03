@@ -5,6 +5,13 @@
 export function createOptimizerWorker(): Worker {
   try {
     console.log('[WorkerFactory] Creating optimizer worker...');
+    
+    // Check if we're in a test environment (Jest doesn't support import.meta)
+    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+      // In test environment, this function should be mocked
+      throw new Error('createOptimizerWorker should be mocked in tests');
+    }
+    
     // In production/development, create the worker directly
     // The build system (webpack/vite) will handle the worker bundling
     const worker = new Worker(

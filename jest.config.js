@@ -5,7 +5,8 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/index.tsx',
     '!src/serviceWorker.ts',
-    '!src/reportWebVitals.ts'
+    '!src/reportWebVitals.ts',
+    '!src/workers/**/*.worker.ts'
   ],
   coverageThreshold: {
     global: {
@@ -21,6 +22,12 @@ module.exports = {
   ],
   modulePaths: ['<rootDir>/src/'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(worker)$': '<rootDir>/src/workers/__mocks__/optimizer.worker.ts'
+  },
+  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
+  testEnvironment: 'jsdom',
+  testEnvironmentOptions: {
+    url: 'http://localhost:3000'
   }
 };

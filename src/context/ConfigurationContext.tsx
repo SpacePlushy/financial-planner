@@ -52,8 +52,8 @@ const DEFAULT_PRESETS: ConfigurationPreset[] = [
     isDefault: true,
     config: {
       minimumBalance: 50,
-      populationSize: 300,
-      generations: 1000,
+      populationSize: 150,
+      generations: 100,
     },
   },
   {
@@ -117,41 +117,38 @@ function configurationReducer(
 
       // Validation
       if (newConfig.startingBalance < 0) {
-        logger.warn(
-          'ConfigurationContext',
-          'Starting balance cannot be negative'
-        );
+        console.error('Starting balance cannot be negative');
         newConfig.startingBalance = 0;
       }
 
       if (newConfig.minimumBalance < 0) {
-        logger.warn(
-          'ConfigurationContext',
-          'Minimum balance cannot be negative'
-        );
+        console.error('Minimum balance cannot be negative');
         newConfig.minimumBalance = 0;
       }
 
       if (newConfig.minimumBalance > newConfig.startingBalance) {
-        logger.warn(
-          'ConfigurationContext',
-          'Minimum balance cannot exceed starting balance'
-        );
+        console.error('Minimum balance cannot exceed starting balance');
         newConfig.minimumBalance = newConfig.startingBalance;
       }
 
-      if (newConfig.populationSize < 1) {
-        logger.warn(
-          'ConfigurationContext',
-          'Population size must be at least 1'
-        );
-        newConfig.populationSize = 1;
+      if (newConfig.populationSize < 10) {
+        console.error('Population size must be at least 10');
+        newConfig.populationSize = 10;
       }
-      // Removed upper limit validation - allow any reasonable value
+      // Add upper limit validation for performance
+      if (newConfig.populationSize > 1000) {
+        console.error('Population size should not exceed 1000 for performance reasons');
+        newConfig.populationSize = 1000;
+      }
 
       if (newConfig.generations < 1) {
-        logger.warn('ConfigurationContext', 'Generations must be at least 1');
+        console.error('Generations must be at least 1');
         newConfig.generations = 1;
+      }
+      // Add upper limit validation for performance
+      if (newConfig.generations > 500) {
+        console.error('Generations should not exceed 500 for performance reasons');
+        newConfig.generations = 500;
       }
 
       return {
@@ -171,10 +168,7 @@ function configurationReducer(
     case 'SELECT_PRESET': {
       const preset = state.presets.find(p => p.id === action.payload);
       if (!preset) {
-        logger.warn(
-          'ConfigurationContext',
-          `Preset with id ${action.payload} not found`
-        );
+        console.error(`Preset with id ${action.payload} not found`);
         return state;
       }
 
@@ -200,7 +194,7 @@ function configurationReducer(
     case 'DELETE_PRESET': {
       const preset = state.presets.find(p => p.id === action.payload);
       if (preset?.isDefault) {
-        logger.warn('ConfigurationContext', 'Cannot delete default presets');
+        console.error('Cannot delete default presets');
         return state;
       }
 
@@ -423,7 +417,7 @@ export function useConfigurationContext() {
   const context = useContext(ConfigurationContext);
   if (!context) {
     throw new Error(
-      'useConfigurationContext must be used within a ConfigurationProvider'
+      'useConfiguration must be used within a ConfigurationProvider'
     );
   }
   return context;

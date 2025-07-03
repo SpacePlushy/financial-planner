@@ -96,16 +96,8 @@ export function useOptimizer(): UseOptimizerReturn {
     if (process.env.NODE_ENV === 'test') {
       worker = createOptimizerWorker();
     } else {
-      try {
-        // Try factory first (works in tests)
-        worker = createOptimizerWorker();
-      } catch (error) {
-        // Fallback to direct creation (works in browser)
-        worker = new Worker(
-          new URL('../workers/optimizer.worker.ts', import.meta.url),
-          { type: 'module' }
-        );
-      }
+      // In browser environment, use the worker factory which handles URL creation
+      worker = createOptimizerWorker();
     }
 
     worker.onmessage = event => {

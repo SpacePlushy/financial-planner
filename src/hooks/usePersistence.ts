@@ -196,26 +196,40 @@ export function useFileImport(onFileSelect: (file: File) => void) {
 
   const triggerFileInput = useCallback(() => {
     if (!fileInputRef.current) {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      input.style.display = 'none';
-
-      input.addEventListener('change', event => {
-        const target = event.target as HTMLInputElement;
-        const file = target.files?.[0];
-        if (file) {
-          onFileSelect(file);
+      try {
+        const input = document.createElement('input');
+        
+        // Ensure we have a valid DOM element and document.body exists
+        if (!input || !document.body || typeof document.body.appendChild !== 'function') {
+          console.warn('DOM manipulation not available in this environment');
+          return;
         }
-        // Reset the input so the same file can be selected again
-        input.value = '';
-      });
+        
+        input.type = 'file';
+        input.accept = '.json';
+        input.style.display = 'none';
 
-      document.body.appendChild(input);
-      fileInputRef.current = input;
+        input.addEventListener('change', event => {
+          const target = event.target as HTMLInputElement;
+          const file = target.files?.[0];
+          if (file) {
+            onFileSelect(file);
+          }
+          // Reset the input so the same file can be selected again
+          input.value = '';
+        });
+
+        document.body.appendChild(input);
+        fileInputRef.current = input;
+      } catch (error) {
+        console.error('Failed to create file input:', error);
+        return;
+      }
     }
 
-    fileInputRef.current.click();
+    if (fileInputRef.current && typeof fileInputRef.current.click === 'function') {
+      fileInputRef.current.click();
+    }
   }, [onFileSelect]);
 
   return triggerFileInput;

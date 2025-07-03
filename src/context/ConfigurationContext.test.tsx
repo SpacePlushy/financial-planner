@@ -57,7 +57,7 @@ describe('ConfigurationContext', () => {
 
     it('should validate and correct negative starting balance', () => {
       const { result } = renderHook(() => useConfiguration(), { wrapper });
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       act(() => {
         result.current.updateConfig({ startingBalance: -100 });
@@ -73,7 +73,7 @@ describe('ConfigurationContext', () => {
 
     it('should validate and correct negative minimum balance', () => {
       const { result } = renderHook(() => useConfiguration(), { wrapper });
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       act(() => {
         result.current.updateConfig({ minimumBalance: -50 });
@@ -89,7 +89,7 @@ describe('ConfigurationContext', () => {
 
     it('should adjust minimum balance if it exceeds starting balance', () => {
       const { result } = renderHook(() => useConfiguration(), { wrapper });
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       act(() => {
         result.current.updateConfig({
@@ -108,7 +108,7 @@ describe('ConfigurationContext', () => {
 
     it('should validate population size constraints', () => {
       const { result } = renderHook(() => useConfiguration(), { wrapper });
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       act(() => {
         result.current.updateConfig({ populationSize: 5 });
@@ -124,7 +124,7 @@ describe('ConfigurationContext', () => {
 
     it('should validate generations constraints', () => {
       const { result } = renderHook(() => useConfiguration(), { wrapper });
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       act(() => {
         result.current.updateConfig({ generations: 0 });
@@ -207,7 +207,7 @@ describe('ConfigurationContext', () => {
 
       it('should warn if preset not found', () => {
         const { result } = renderHook(() => useConfiguration(), { wrapper });
-        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
         act(() => {
           result.current.selectPreset('non-existent');
@@ -292,7 +292,7 @@ describe('ConfigurationContext', () => {
 
       it('should not delete default presets', () => {
         const { result } = renderHook(() => useConfiguration(), { wrapper });
-        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
         const initialPresetCount = result.current.presets.length;
 

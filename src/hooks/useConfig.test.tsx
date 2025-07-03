@@ -114,14 +114,15 @@ describe('useConfig hook', () => {
     it('should update config when valid', () => {
       const { result } = renderHook(() => useConfig(), { wrapper });
 
-      const success = act(() => {
-        return result.current.safeUpdateConfig({
+      let success: boolean;
+      act(() => {
+        success = result.current.safeUpdateConfig({
           startingBalance: 2000,
           targetEndingBalance: 4000,
         });
       });
 
-      expect(success).toBe(true);
+      expect(success!).toBe(true);
       expect(result.current.config.startingBalance).toBe(2000);
       expect(result.current.config.targetEndingBalance).toBe(4000);
     });
@@ -130,14 +131,15 @@ describe('useConfig hook', () => {
       const { result } = renderHook(() => useConfig(), { wrapper });
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      const success = act(() => {
-        return result.current.safeUpdateConfig({
+      let success: boolean;
+      act(() => {
+        success = result.current.safeUpdateConfig({
           populationSize: 5,
           generations: -1,
         });
       });
 
-      expect(success).toBe(false);
+      expect(success!).toBe(false);
       expect(consoleSpy).toHaveBeenCalled();
       expect(result.current.config.populationSize).not.toBe(5);
 
@@ -273,11 +275,12 @@ describe('useConfig hook', () => {
       it('should create preset with validation', () => {
         const { result } = renderHook(() => useConfig(), { wrapper });
 
-        const success = act(() => {
-          return result.current.createPreset('Valid Preset', 'A valid preset');
+        let success: boolean;
+        act(() => {
+          success = result.current.createPreset('Valid Preset', 'A valid preset');
         });
 
-        expect(success).toBe(true);
+        expect(success!).toBe(true);
         expect(
           result.current.presets.some(p => p.name === 'Valid Preset')
         ).toBe(true);
@@ -287,11 +290,12 @@ describe('useConfig hook', () => {
         const { result } = renderHook(() => useConfig(), { wrapper });
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-        const success = act(() => {
-          return result.current.createPreset('', 'No name');
+        let success: boolean;
+        act(() => {
+          success = result.current.createPreset('', 'No name');
         });
 
-        expect(success).toBe(false);
+        expect(success!).toBe(false);
         expect(consoleSpy).toHaveBeenCalledWith('Preset name cannot be empty');
 
         consoleSpy.mockRestore();
@@ -301,11 +305,12 @@ describe('useConfig hook', () => {
         const { result } = renderHook(() => useConfig(), { wrapper });
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-        const success = act(() => {
-          return result.current.createPreset('Conservative', 'Duplicate');
+        let success: boolean;
+        act(() => {
+          success = result.current.createPreset('Conservative', 'Duplicate');
         });
 
-        expect(success).toBe(false);
+        expect(success!).toBe(false);
         expect(consoleSpy).toHaveBeenCalledWith(
           'A preset with this name already exists'
         );
@@ -385,11 +390,12 @@ describe('useConfig hook', () => {
           ],
         };
 
-        const success = act(() => {
-          return result.current.importConfig(JSON.stringify(toImport));
+        let success: boolean;
+        act(() => {
+          success = result.current.importConfig(JSON.stringify(toImport));
         });
 
-        expect(success).toBe(true);
+        expect(success!).toBe(true);
         expect(result.current.config.startingBalance).toBe(3000);
         expect(
           result.current.presets.some(p => p.name === 'Imported Preset')
@@ -400,11 +406,12 @@ describe('useConfig hook', () => {
         const { result } = renderHook(() => useConfig(), { wrapper });
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-        const success = act(() => {
-          return result.current.importConfig('invalid json');
+        let success: boolean;
+        act(() => {
+          success = result.current.importConfig('invalid json');
         });
 
-        expect(success).toBe(false);
+        expect(success!).toBe(false);
         expect(consoleSpy).toHaveBeenCalled();
 
         consoleSpy.mockRestore();
@@ -414,13 +421,14 @@ describe('useConfig hook', () => {
         const { result } = renderHook(() => useConfig(), { wrapper });
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-        const success = act(() => {
-          return result.current.importConfig(
+        let success: boolean;
+        act(() => {
+          success = result.current.importConfig(
             JSON.stringify({ invalid: 'format' })
           );
         });
 
-        expect(success).toBe(false);
+        expect(success!).toBe(false);
         expect(consoleSpy).toHaveBeenCalledWith('Invalid configuration format');
 
         consoleSpy.mockRestore();
@@ -437,11 +445,12 @@ describe('useConfig hook', () => {
           },
         };
 
-        const success = act(() => {
-          return result.current.importConfig(JSON.stringify(toImport));
+        let success: boolean;
+        act(() => {
+          success = result.current.importConfig(JSON.stringify(toImport));
         });
 
-        expect(success).toBe(false);
+        expect(success!).toBe(false);
         expect(consoleSpy).toHaveBeenCalled();
 
         consoleSpy.mockRestore();

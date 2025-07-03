@@ -282,18 +282,30 @@ export const fileUtils = {
    * Download data as a file
    */
   download(data: string, filename: string): void {
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    try {
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
 
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
+      // Ensure we have a valid DOM element and document.body exists
+      if (!link || !document.body || typeof document.body.appendChild !== 'function') {
+        console.warn('DOM manipulation not available in this environment');
+        return;
+      }
 
-    // Cleanup
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      if (link.parentNode) {
+        document.body.removeChild(link);
+      }
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download file:', error);
+    }
   },
 
   /**

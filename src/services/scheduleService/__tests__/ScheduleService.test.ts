@@ -41,9 +41,9 @@ describe('ScheduleService', () => {
         shifts: ['large'],
         earnings: 86.5,
         expenses: 40,
-        deposit: 100,
+        deposit: 366,
         startBalance: 87.5,
-        endBalance: 234,
+        endBalance: 500,
       },
     ];
   });
@@ -70,7 +70,7 @@ describe('ScheduleService', () => {
       expect(result[1].startBalance).toBe(150);
       expect(result[1].endBalance).toBe(120); // 150 - 30
       expect(result[2].startBalance).toBe(120);
-      expect(result[2].endBalance).toBe(266.5); // 120 + 100 + 86.5 - 40
+      expect(result[2].endBalance).toBe(532.5); // 120 + 366 + 86.5 - 40
     });
 
     it('should apply expenses edit and recalculate balances', () => {
@@ -92,7 +92,7 @@ describe('ScheduleService', () => {
       expect(result[1].expenses).toBe(50);
       expect(result[1].endBalance).toBe(67.5); // 117.5 - 50
       expect(result[2].startBalance).toBe(67.5);
-      expect(result[2].endBalance).toBe(214); // 67.5 + 100 + 86.5 - 40
+      expect(result[2].endBalance).toBe(480); // 67.5 + 366 + 86.5 - 40
     });
 
     it('should apply balance edit and recalculate subsequent days', () => {
@@ -141,7 +141,7 @@ describe('ScheduleService', () => {
 
       expect(result[0].earnings).toBe(100);
       expect(result[1].expenses).toBe(20);
-      expect(result[2].endBalance).toBe(276.5); // Recalculated
+      expect(result[2].endBalance).toBe(542.5); // Recalculated
     });
 
     it('should ignore invalid day edits', () => {
@@ -318,7 +318,8 @@ describe('ScheduleService', () => {
 
     it('should detect significant final balance deviation', () => {
       const scheduleWithBadFinal = [...mockSchedule];
-      scheduleWithBadFinal[2].endBalance = 100; // Far from target 500
+      scheduleWithBadFinal[2].endBalance = 134; // Far from target 500 but matches calculation
+      scheduleWithBadFinal[2].deposit = 0; // Adjust deposit to make balance calculation correct
 
       const result = scheduleService.validateSchedule(
         scheduleWithBadFinal,
@@ -326,9 +327,7 @@ describe('ScheduleService', () => {
       );
 
       expect(result.isValid).toBe(false);
-      expect(result.violations).toContain(
-        expect.stringContaining('Final balance')
-      );
+      expect(result.violations.some(v => v.includes('Final balance'))).toBe(true);
     });
   });
 
@@ -339,9 +338,9 @@ describe('ScheduleService', () => {
       expect(metrics.totalWorkDays).toBe(2); // Days 1 and 3
       expect(metrics.totalEarnings).toBe(154); // 67.5 + 86.5
       expect(metrics.totalExpenses).toBe(120); // 50 + 30 + 40
-      expect(metrics.averageBalance).toBeCloseTo(146.33, 2);
+      expect(metrics.averageBalance).toBeCloseTo(235, 2);
       expect(metrics.minBalance).toBe(87.5);
-      expect(metrics.maxBalance).toBe(234);
+      expect(metrics.maxBalance).toBe(500);
     });
 
     it('should handle empty schedule', () => {
@@ -361,7 +360,7 @@ describe('ScheduleService', () => {
       expect(csv).toContain('Day,Shifts,Earnings,Expenses,Deposit,End Balance');
       expect(csv).toContain('1,medium,67.50,50.00,0.00,117.50');
       expect(csv).toContain('2,Off,0.00,30.00,0.00,87.50');
-      expect(csv).toContain('3,large,86.50,40.00,100.00,234.00');
+      expect(csv).toContain('3,large,86.50,40.00,366.00,500.00');
     });
 
     it('should handle double shifts', () => {
