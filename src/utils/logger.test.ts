@@ -19,7 +19,7 @@ describe('Logger', () => {
     it('should log debug messages', () => {
       logger.debug('TestContext', 'Debug message', { test: true });
 
-      const logs = logger.exportLogs();
+      const logs = logger.getLogs();
       expect(logs).toHaveLength(1);
       expect(logs[0].level).toBe(LogLevel.DEBUG);
       expect(logs[0].context).toBe('TestContext');
@@ -30,7 +30,7 @@ describe('Logger', () => {
     it('should log info messages', () => {
       logger.info('TestContext', 'Info message');
 
-      const logs = logger.exportLogs();
+      const logs = logger.getLogs();
       expect(logs).toHaveLength(1);
       expect(logs[0].level).toBe(LogLevel.INFO);
     });
@@ -38,7 +38,7 @@ describe('Logger', () => {
     it('should log warn messages', () => {
       logger.warn('TestContext', 'Warning message');
 
-      const logs = logger.exportLogs();
+      const logs = logger.getLogs();
       expect(logs).toHaveLength(1);
       expect(logs[0].level).toBe(LogLevel.WARN);
     });
@@ -49,7 +49,7 @@ describe('Logger', () => {
         additional: 'data',
       });
 
-      const logs = logger.exportLogs();
+      const logs = logger.getLogs();
       expect(logs).toHaveLength(1);
       expect(logs[0].level).toBe(LogLevel.ERROR);
       expect(logs[0].data).toEqual({ additional: 'data', error });
@@ -65,7 +65,7 @@ describe('Logger', () => {
       logger.warn('TestContext', 'Warning message');
       logger.error('TestContext', 'Error message');
 
-      const logs = logger.exportLogs();
+      const logs = logger.getLogs();
       expect(logs).toHaveLength(2);
       expect(logs[0].level).toBe(LogLevel.WARN);
       expect(logs[1].level).toBe(LogLevel.ERROR);
@@ -76,7 +76,7 @@ describe('Logger', () => {
 
       logger.info('TestContext', 'This should not be logged');
 
-      const logs = logger.exportLogs();
+      const logs = logger.getLogs();
       expect(logs).toHaveLength(0);
     });
   });
@@ -94,7 +94,7 @@ describe('Logger', () => {
         50
       );
 
-      const logs = logger.exportLogs();
+      const logs = logger.getLogs();
       expect(logs).toHaveLength(1);
       expect(logs[0].action).toBe('TEST_ACTION');
       expect(logs[0].stateBefore).toEqual(stateBefore);
@@ -108,7 +108,7 @@ describe('Logger', () => {
 
       logger.logAction('TestContext', 'SLOW_ACTION', {}, {}, 100);
 
-      const logs = logger.exportLogs();
+      const logs = logger.getLogs();
       expect(logs).toHaveLength(2);
       expect(logs[0].level).toBe(LogLevel.WARN); // Action log with warning level
       expect(logs[1].level).toBe(LogLevel.WARN); // Additional warning about slow action
@@ -124,7 +124,7 @@ describe('Logger', () => {
         logger.info('TestContext', `Message ${i}`);
       }
 
-      const logs = logger.exportLogs();
+      const logs = logger.getLogs();
       expect(logs).toHaveLength(5);
       expect(logs[0].message).toBe('Message 5');
       expect(logs[4].message).toBe('Message 9');
