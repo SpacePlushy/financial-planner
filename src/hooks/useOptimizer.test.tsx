@@ -26,7 +26,7 @@ const mockWorker = new MockWorker();
   static createObjectURL = jest.fn().mockReturnValue('mock-blob-url');
 };
 
-// Mock the worker factory to return our specific mock instance  
+// Mock the worker factory to return our specific mock instance
 let mockCreateOptimizerWorker: jest.Mock;
 jest.mock('../workers/workerFactory', () => ({
   createOptimizerWorker: jest.fn(),
@@ -95,9 +95,7 @@ const mockSchedule: DaySchedule[] = [
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <ScheduleProvider>
     <ConfigurationProvider>
-      <ProgressProvider>
-        {children}
-      </ProgressProvider>
+      <ProgressProvider>{children}</ProgressProvider>
     </ConfigurationProvider>
   </ScheduleProvider>
 );
@@ -106,7 +104,7 @@ beforeEach(() => {
   // Get the mock function from the module
   const { createOptimizerWorker } = require('../workers/workerFactory');
   mockCreateOptimizerWorker = createOptimizerWorker as jest.Mock;
-  
+
   jest.clearAllMocks();
   // Reset the mock worker state
   mockWorker.onmessage = null;

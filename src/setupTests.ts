@@ -7,6 +7,9 @@ import '@testing-library/jest-dom';
 // Ensure DOM is properly set up for tests
 import { configure } from '@testing-library/react';
 
+// Setup DOM for Jest
+import { TextEncoder, TextDecoder } from 'util';
+
 // Configure testing library
 configure({
   testIdAttribute: 'data-testid',
@@ -34,9 +37,6 @@ afterEach(() => {
     url: 'file:///mock/path/to/file.js',
   },
 };
-
-// Setup DOM for Jest
-import { TextEncoder, TextDecoder } from 'util';
 
 // Polyfills for Jest environment
 global.TextEncoder = TextEncoder;

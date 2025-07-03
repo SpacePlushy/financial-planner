@@ -2,7 +2,7 @@
 export default class MockWorker {
   onmessage: ((event: MessageEvent) => void) | null = null;
   onerror: ((event: ErrorEvent) => void) | null = null;
-  
+
   private _terminated = false;
   private _paused = false;
 
@@ -10,7 +10,7 @@ export default class MockWorker {
   postMessage = jest.fn((data: any) => {
     this._postMessage(data);
   });
-  
+
   terminate = jest.fn(() => {
     this._terminate();
   });
@@ -35,7 +35,13 @@ export default class MockWorker {
                   bestFitness: 0.5,
                   message: 'Generation 1 of 10',
                   totalGenerations: 10,
-                  currentBestSchedule: ['large', 'medium', null, 'small,small', null],
+                  currentBestSchedule: [
+                    'large',
+                    'medium',
+                    null,
+                    'small,small',
+                    null,
+                  ],
                   estimatedTimeRemaining: '0.5s',
                 },
               },
@@ -120,7 +126,10 @@ export default class MockWorker {
   }
 
   // Mock removeEventListener method for compatibility
-  removeEventListener(type: string, listener: EventListenerOrEventListenerObject) {
+  removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject
+  ) {
     if (type === 'message') {
       this.onmessage = null;
     } else if (type === 'error') {

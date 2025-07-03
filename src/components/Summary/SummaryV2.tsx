@@ -99,14 +99,18 @@ export const Summary: React.FC<SummaryProps> = ({ className }) => {
           type: 'text/csv;charset=utf-8;',
         });
         const link = document.createElement('a');
-        
+
         // Ensure we have a valid DOM element and document.body exists
-        if (!link || !document.body || typeof document.body.appendChild !== 'function') {
+        if (
+          !link ||
+          !document.body ||
+          typeof document.body.appendChild !== 'function'
+        ) {
           console.warn('DOM manipulation not available in this environment');
           setIsExporting(false);
           return;
         }
-        
+
         const url = URL.createObjectURL(blob);
 
         link.setAttribute('href', url);
@@ -118,7 +122,7 @@ export const Summary: React.FC<SummaryProps> = ({ className }) => {
 
         document.body.appendChild(link);
         link.click();
-        
+
         // Safely remove the link
         if (link.parentNode) {
           document.body.removeChild(link);

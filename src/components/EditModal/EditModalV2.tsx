@@ -180,7 +180,7 @@ export const EditModal: React.FC = () => {
     setTimeout(() => {
       try {
         // Convert value based on field type
-        let finalValue: any;
+        let finalValue: string[] | number;
         if (field === 'shifts') {
           finalValue = value
             .split(',')

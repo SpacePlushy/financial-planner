@@ -288,7 +288,11 @@ export const fileUtils = {
       const link = document.createElement('a');
 
       // Ensure we have a valid DOM element and document.body exists
-      if (!link || !document.body || typeof document.body.appendChild !== 'function') {
+      const canAppend =
+        link &&
+        document.body &&
+        typeof document.body.appendChild === 'function';
+      if (!canAppend) {
         console.warn('DOM manipulation not available in this environment');
         return;
       }

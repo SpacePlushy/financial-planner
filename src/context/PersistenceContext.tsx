@@ -367,16 +367,19 @@ export function PersistenceProvider({ children }: PersistenceProviderProps) {
   }, [state.autoSaveEnabled, safeDispatch]);
 
   // Set auto-save interval
-  const setAutoSaveInterval = useCallback((seconds: number) => {
-    if (seconds < 10) {
-      logger.warn(
-        'Persistence',
-        'Auto-save interval too short, using minimum of 10 seconds'
-      );
-      seconds = 10;
-    }
-    safeDispatch({ type: 'SET_AUTO_SAVE_INTERVAL', payload: seconds });
-  }, [safeDispatch]);
+  const setAutoSaveInterval = useCallback(
+    (seconds: number) => {
+      if (seconds < 10) {
+        logger.warn(
+          'Persistence',
+          'Auto-save interval too short, using minimum of 10 seconds'
+        );
+        seconds = 10;
+      }
+      safeDispatch({ type: 'SET_AUTO_SAVE_INTERVAL', payload: seconds });
+    },
+    [safeDispatch]
+  );
 
   // Mark as changed
   const markAsChanged = useCallback(() => {

@@ -19,9 +19,7 @@ const AllTheProviders = ({ children }: AllTheProvidersProps) => {
       <ScheduleProvider>
         <ConfigurationProvider>
           <ProgressProvider>
-            <PersistenceProvider>
-              {children}
-            </PersistenceProvider>
+            <PersistenceProvider>{children}</PersistenceProvider>
           </ProgressProvider>
         </ConfigurationProvider>
       </ScheduleProvider>
@@ -41,11 +39,7 @@ const customRender = (
  * Lightweight wrapper for components that only need minimal providers
  */
 const MinimalProviders = ({ children }: { children: ReactNode }) => {
-  return (
-    <UIProvider>
-      {children}
-    </UIProvider>
-  );
+  return <UIProvider>{children}</UIProvider>;
 };
 
 /**
@@ -59,16 +53,13 @@ const renderWithMinimalProviders = (
 /**
  * Custom render function for isolated component testing (no providers)
  */
-const renderIsolated = (
-  ui: ReactElement,
-  options?: RenderOptions
-) => {
+const renderIsolated = (ui: ReactElement, options?: RenderOptions) => {
   // Ensure we have a clean DOM container for each test
   const container = document.createElement('div');
   document.body.appendChild(container);
-  
+
   const result = render(ui, { container, ...options });
-  
+
   return result;
 };
 

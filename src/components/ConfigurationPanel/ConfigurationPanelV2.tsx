@@ -347,7 +347,6 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
           const defaultData = getDefaultData();
           scheduleContext.setExpenses(defaultData.expenses);
           scheduleContext.setDeposits(defaultData.deposits);
-          console.log('Loaded sample data:', defaultData);
         }}
       >
         Load Sample Data
@@ -359,11 +358,6 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
         className={`${styles.button} ${styles.optimizeButton}`}
         onClick={e => {
           e.preventDefault();
-          console.log('Button clicked!', { config, isFormValid });
-          // Log current data state for debugging
-          console.log('Current expenses:', scheduleContext.expenses);
-          console.log('Current deposits:', scheduleContext.deposits);
-          console.log('Using config:', config);
           startOptimization(config);
         }}
         disabled={!isFormValid}

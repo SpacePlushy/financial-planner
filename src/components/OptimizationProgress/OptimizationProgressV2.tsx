@@ -59,13 +59,6 @@ export const OptimizationProgress: React.FC = () => {
     }
   }, [isOptimizing]);
 
-  console.log('OptimizationProgress render:', {
-    isOptimizing,
-    isPaused,
-    currentProgress,
-    isInitializing,
-  });
-
   // Update previous values and trigger animations when progress changes
   useEffect(() => {
     if (currentProgress) {

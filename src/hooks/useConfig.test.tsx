@@ -277,7 +277,10 @@ describe('useConfig hook', () => {
 
         let success: boolean;
         act(() => {
-          success = result.current.createPreset('Valid Preset', 'A valid preset');
+          success = result.current.createPreset(
+            'Valid Preset',
+            'A valid preset'
+          );
         });
 
         expect(success!).toBe(true);

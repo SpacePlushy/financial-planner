@@ -327,7 +327,9 @@ describe('ScheduleService', () => {
       );
 
       expect(result.isValid).toBe(false);
-      expect(result.violations.some(v => v.includes('Final balance'))).toBe(true);
+      expect(result.violations.some(v => v.includes('Final balance'))).toBe(
+        true
+      );
     });
   });
 

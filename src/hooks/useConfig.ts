@@ -65,7 +65,9 @@ export function useConfig() {
           errors.push('Population size must be at least 10');
         }
         if (config.populationSize > 1000) {
-          errors.push('Population size should not exceed 1000 for performance reasons');
+          errors.push(
+            'Population size should not exceed 1000 for performance reasons'
+          );
         }
       }
 
@@ -75,7 +77,9 @@ export function useConfig() {
           errors.push('Generations must be at least 1');
         }
         if (config.generations > 500) {
-          errors.push('Generations should not exceed 500 for performance reasons');
+          errors.push(
+            'Generations should not exceed 500 for performance reasons'
+          );
         }
       }
 

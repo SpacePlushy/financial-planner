@@ -198,13 +198,17 @@ export function useFileImport(onFileSelect: (file: File) => void) {
     if (!fileInputRef.current) {
       try {
         const input = document.createElement('input');
-        
+
         // Ensure we have a valid DOM element and document.body exists
-        if (!input || !document.body || typeof document.body.appendChild !== 'function') {
+        if (
+          !input ||
+          !document.body ||
+          typeof document.body.appendChild !== 'function'
+        ) {
           console.warn('DOM manipulation not available in this environment');
           return;
         }
-        
+
         input.type = 'file';
         input.accept = '.json';
         input.style.display = 'none';
@@ -227,7 +231,10 @@ export function useFileImport(onFileSelect: (file: File) => void) {
       }
     }
 
-    if (fileInputRef.current && typeof fileInputRef.current.click === 'function') {
+    if (
+      fileInputRef.current &&
+      typeof fileInputRef.current.click === 'function'
+    ) {
       fileInputRef.current.click();
     }
   }, [onFileSelect]);

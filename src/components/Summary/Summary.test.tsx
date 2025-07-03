@@ -94,7 +94,7 @@ describe('Summary Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Properly mock the hooks
     (useSchedule as jest.Mock).mockReturnValue(mockScheduleData);
     (useConfiguration as jest.Mock).mockReturnValue(mockConfig);
@@ -158,8 +158,7 @@ describe('Summary Component', () => {
     });
 
     it('applies custom className', () => {
-      // Skip rendering for now due to DOM issues
-    // const { container } = render(<Summary className="custom-class" />);
+      const { container } = render(<Summary className="custom-class" />);
       expect(container.firstChild).toHaveClass('custom-class');
     });
   });
@@ -400,8 +399,7 @@ describe('Summary Component', () => {
     });
 
     it('uses configuration context data correctly', () => {
-      // Skip rendering for now due to DOM issues
-      // render(<Summary />);
+      render(<Summary />);
 
       expect(useConfiguration).toHaveBeenCalled();
       expect(screen.getByText('$1,200.00')).toBeInTheDocument(); // target balance
@@ -409,8 +407,7 @@ describe('Summary Component', () => {
     });
 
     it('recalculates when context data changes', () => {
-      // Skip rendering for now due to DOM issues
-    // const { rerender } = render(<Summary />);
+      const { rerender } = render(<Summary />);
 
       // Update mock data
       (useSchedule as jest.Mock).mockReturnValue({

@@ -101,9 +101,9 @@ export interface FitnessContext {
 
 export interface Edit {
   day: number;
-  field: 'earnings' | 'expenses' | 'balance' | 'notes';
-  originalValue: string | number;
-  newValue: string | number;
+  field: 'earnings' | 'expenses' | 'balance' | 'notes' | 'shifts' | 'deposit';
+  originalValue: string | number | string[];
+  newValue: string | number | string[];
 }
 
 export interface GenerationStatistics {

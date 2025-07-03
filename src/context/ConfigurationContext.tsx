@@ -137,7 +137,9 @@ function configurationReducer(
       }
       // Add upper limit validation for performance
       if (newConfig.populationSize > 1000) {
-        console.error('Population size should not exceed 1000 for performance reasons');
+        console.error(
+          'Population size should not exceed 1000 for performance reasons'
+        );
         newConfig.populationSize = 1000;
       }
 
@@ -147,7 +149,9 @@ function configurationReducer(
       }
       // Add upper limit validation for performance
       if (newConfig.generations > 500) {
-        console.error('Generations should not exceed 500 for performance reasons');
+        console.error(
+          'Generations should not exceed 500 for performance reasons'
+        );
         newConfig.generations = 500;
       }
 
