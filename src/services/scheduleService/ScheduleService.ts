@@ -308,13 +308,10 @@ export class ScheduleService {
     };
 
     const executionTime = Date.now() - startTime;
-    logger.logAction(
-      'ScheduleService',
-      'calculateMetrics',
-      {},
+    logger.logAction('ScheduleService', 'calculateMetrics', {
       metrics,
-      executionTime
-    );
+      executionTime: `${executionTime}ms`,
+    });
 
     return metrics;
   }

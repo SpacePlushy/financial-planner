@@ -439,13 +439,13 @@ export class GeneticOptimizer {
       balanceConstraintViolations * constraintPenaltyMultiplier;
 
     const executionTime = Date.now() - startTime;
-    logger.logAction(
-      'GeneticOptimizer',
-      'evaluateFitness',
-      { chromosomeWorkDays: workDays },
-      { fitness, balance, violations },
-      executionTime
-    );
+    logger.logAction('GeneticOptimizer', 'evaluateFitness', {
+      chromosomeWorkDays: workDays,
+      fitness,
+      balance,
+      violations,
+      executionTime: `${executionTime}ms`,
+    });
 
     return {
       fitness,
