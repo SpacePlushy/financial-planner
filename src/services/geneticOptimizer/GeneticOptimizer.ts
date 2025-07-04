@@ -260,11 +260,6 @@ export class GeneticOptimizer {
       );
     }
 
-    const avgEarnings =
-      (this.shifts.large.net + this.shifts.medium.net + this.shifts.small.net) /
-      Object.keys(this.shifts).length;
-    const estimatedWorkDays = Math.ceil(this.requiredFlexNet / avgEarnings);
-
     // Cover critical days with randomized coverage
     for (const criticalDay of this.criticalDays) {
       // Randomize work day placement 2-5 days before critical day

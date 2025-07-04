@@ -40,7 +40,6 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
     selectPreset,
     clearPreset,
     createPreset,
-    validateConfig,
     safeUpdateConfig,
     isPresetNameTaken,
   } = useConfig();
@@ -199,7 +198,7 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
     setPresetName('');
     setPresetDescription('');
     setValidationErrors({});
-  }, [presetName, presetDescription, config, createPreset, isPresetNameTaken]);
+  }, [presetName, presetDescription, createPreset, isPresetNameTaken]);
 
   // Load sample data
   const handleLoadSampleData = useCallback(() => {

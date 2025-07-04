@@ -1,10 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import {
-  ErrorBoundary,
-  useErrorHandler,
-  withErrorBoundary,
-} from './ErrorBoundary';
+import { ErrorBoundary, withErrorBoundary } from './ErrorBoundary';
 
 // Test component that throws an error
 const ThrowError: React.FC<{ shouldThrow?: boolean; message?: string }> = ({
@@ -15,17 +11,6 @@ const ThrowError: React.FC<{ shouldThrow?: boolean; message?: string }> = ({
     throw new Error(message);
   }
   return <div>No error</div>;
-};
-
-// Test component that throws error on click
-const ThrowErrorOnClick: React.FC = () => {
-  const throwError = useErrorHandler();
-
-  return (
-    <button onClick={() => throwError(new Error('Clicked error'))}>
-      Throw Error
-    </button>
-  );
 };
 
 // Mock console.error to avoid noise in tests
@@ -201,8 +186,8 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    const container = screen.getByText('Test content').parentElement;
-    expect(container).toHaveClass('error-boundary__isolated');
+    const isolatedContainer = screen.getByTestId('error-boundary-isolated');
+    expect(isolatedContainer).toBeInTheDocument();
   });
 });
 

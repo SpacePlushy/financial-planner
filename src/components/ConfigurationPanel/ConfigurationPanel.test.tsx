@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ConfigurationPanel } from './ConfigurationPanel';
 import { OptimizationConfig } from '../../types';
@@ -75,7 +75,7 @@ describe('ConfigurationPanel', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseConfig.mockReturnValue(createMockUseConfig() as any);
+    mockUseConfig.mockReturnValue(createMockUseConfig());
   });
 
   it('renders all configuration fields', () => {
@@ -168,7 +168,7 @@ describe('ConfigurationPanel', () => {
     });
 
     mockUseConfig.mockReturnValue(
-      createMockUseConfig({ validateConfig: mockValidateConfig }) as any
+      createMockUseConfig({ validateConfig: mockValidateConfig })
     );
 
     render(
@@ -201,7 +201,7 @@ describe('ConfigurationPanel', () => {
     });
 
     mockUseConfig.mockReturnValue(
-      createMockUseConfig({ validateConfig: mockValidateConfig }) as any
+      createMockUseConfig({ validateConfig: mockValidateConfig })
     );
 
     render(
@@ -238,7 +238,7 @@ describe('ConfigurationPanel', () => {
   it('handles preset selection', async () => {
     const mockSelectPreset = jest.fn();
     mockUseConfig.mockReturnValue(
-      createMockUseConfig({ selectPreset: mockSelectPreset }) as any
+      createMockUseConfig({ selectPreset: mockSelectPreset })
     );
 
     render(
@@ -320,7 +320,7 @@ describe('ConfigurationPanel', () => {
     const mockIsPresetNameTaken = jest.fn().mockReturnValue(true);
 
     mockUseConfig.mockReturnValue(
-      createMockUseConfig({ isPresetNameTaken: mockIsPresetNameTaken }) as any
+      createMockUseConfig({ isPresetNameTaken: mockIsPresetNameTaken })
     );
 
     render(
@@ -348,7 +348,7 @@ describe('ConfigurationPanel', () => {
     const mockCreatePreset = jest.fn().mockReturnValue(true);
 
     mockUseConfig.mockReturnValue(
-      createMockUseConfig({ createPreset: mockCreatePreset }) as any
+      createMockUseConfig({ createPreset: mockCreatePreset })
     );
 
     render(
@@ -409,7 +409,7 @@ describe('ConfigurationPanel', () => {
     mockOnChange({ ...defaultConfig, balanceEditDay: 15 });
 
     // Re-render with updated config
-    const { rerender } = render(
+    render(
       <TestWrapper>
         <ConfigurationPanel
           config={{ ...defaultConfig, balanceEditDay: 15 }}

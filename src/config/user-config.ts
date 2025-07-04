@@ -82,17 +82,24 @@ function deepMerge<T extends object>(target: T, source: DeepPartial<T>): T {
 
   for (const key in source) {
     if (source[key] !== undefined) {
+      const sourceValue = source[key];
+      const targetValue = target[key];
       if (
-        typeof source[key] === 'object' &&
-        source[key] !== null &&
-        !Array.isArray(source[key])
+        typeof sourceValue === 'object' &&
+        sourceValue !== null &&
+        !Array.isArray(sourceValue) &&
+        typeof targetValue === 'object' &&
+        targetValue !== null &&
+        !Array.isArray(targetValue)
       ) {
-        (result as any)[key] = deepMerge(
-          (target as any)[key],
-          source[key] as any
-        );
+        // TypeScript now knows both values are objects
+        (result as T)[key] = deepMerge(
+          targetValue as T[keyof T] & object,
+          sourceValue as DeepPartial<T[keyof T] & object>
+        ) as T[keyof T];
       } else {
-        (result as any)[key] = source[key] as any;
+        // Direct assignment for non-object values
+        (result as T)[key] = sourceValue as T[keyof T];
       }
     }
   }

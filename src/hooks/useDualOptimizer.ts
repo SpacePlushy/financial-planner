@@ -226,7 +226,6 @@ export function useDualOptimizer(): UseDualOptimizerReturn {
       runClientOptimization,
       runServerOptimization,
       setCurrentSchedule,
-      progressContext,
     ]
   );
 

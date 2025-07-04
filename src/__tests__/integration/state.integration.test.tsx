@@ -123,7 +123,7 @@ describe('State Management Integration Tests', () => {
               endBalance: 1250,
             },
           ]);
-        }, []);
+        }, [context]);
 
         const addEdit = () => {
           context.addEdit({
@@ -165,8 +165,8 @@ describe('State Management Integration Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('earnings')).toHaveTextContent('500');
-        expect(screen.getByTestId('edit-count')).toHaveTextContent('0');
       });
+      expect(screen.getByTestId('edit-count')).toHaveTextContent('0');
     });
   });
 
@@ -228,8 +228,10 @@ describe('State Management Integration Tests', () => {
     it('should validate configuration correctly', () => {
       const TestComponent = () => {
         const { validateConfig } = useConfiguration();
-        const [validationResult, setValidationResult] =
-          React.useState<any>(null);
+        const [validationResult, setValidationResult] = React.useState<{
+          isValid: boolean;
+          errors: string[];
+        } | null>(null);
 
         const testValidation = () => {
           const result = validateConfig({
@@ -444,8 +446,8 @@ describe('State Management Integration Tests', () => {
       // Wait for update
       await waitFor(() => {
         expect(screen.getByTestId('is-running')).toHaveTextContent('yes');
-        expect(screen.getByTestId('progress-percent')).toHaveTextContent('50');
       });
+      expect(screen.getByTestId('progress-percent')).toHaveTextContent('50');
 
       // Complete progress
       act(() => {
@@ -514,9 +516,9 @@ describe('State Management Integration Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('is-saving')).toHaveTextContent('no');
-        expect(screen.getByTestId('has-changes')).toHaveTextContent('no');
-        expect(screen.getByTestId('last-save')).toHaveTextContent('saved');
       });
+      expect(screen.getByTestId('has-changes')).toHaveTextContent('no');
+      expect(screen.getByTestId('last-save')).toHaveTextContent('saved');
 
       // Verify localStorage was called
       expect(localStorage.setItem).toHaveBeenCalled();
@@ -609,11 +611,11 @@ describe('State Management Integration Tests', () => {
         expect(screen.getByTestId('starting-balance')).toHaveTextContent(
           '3000'
         );
-        expect(screen.getByTestId('schedule-length')).toHaveTextContent('1');
-        expect(screen.getByTestId('view-mode')).toHaveTextContent('calendar');
-        expect(screen.getByTestId('theme')).toHaveTextContent('dark');
-        expect(screen.getByTestId('has-changes')).toHaveTextContent('yes');
       });
+      expect(screen.getByTestId('schedule-length')).toHaveTextContent('1');
+      expect(screen.getByTestId('view-mode')).toHaveTextContent('calendar');
+      expect(screen.getByTestId('theme')).toHaveTextContent('dark');
+      expect(screen.getByTestId('has-changes')).toHaveTextContent('yes');
     });
   });
 });
