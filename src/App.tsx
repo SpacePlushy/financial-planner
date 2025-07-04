@@ -261,8 +261,8 @@ function AppContent() {
         </div>
       )}
 
-      {/* Vercel Analytics - Only in production */}
-      {process.env.NODE_ENV === 'production' && <Analytics />}
+      {/* Vercel Analytics */}
+      <Analytics />
 
       {/* Global Footer Action Bar */}
       <footer className="app-footer">
