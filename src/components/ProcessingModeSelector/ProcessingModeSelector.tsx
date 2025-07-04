@@ -70,7 +70,9 @@ export const ProcessingModeSelector: React.FC<ProcessingModeSelectorProps> = ({
         </div>
       </div>
 
-      {(mode === 'both' || metrics.clientTime || metrics.serverTime) && (
+      {(metrics.clientStarted ||
+        metrics.serverStarted ||
+        (mode === 'both' && (metrics.clientTime || metrics.serverTime))) && (
         <div className="performance-metrics">
           <h4>Performance Metrics</h4>
 
@@ -156,25 +158,27 @@ export const ProcessingModeSelector: React.FC<ProcessingModeSelectorProps> = ({
         </div>
       )}
 
-      <div className="mode-description">
-        {mode === 'client' && (
-          <p>
-            Processing on your device using Web Workers. Works offline, no data
-            sent to server.
-          </p>
-        )}
-        {mode === 'server' && (
-          <p>
-            Processing on Vercel's edge servers. Faster for complex schedules,
-            requires internet.
-          </p>
-        )}
-        {mode === 'both' && (
-          <p>
-            Run optimization on both client and server to compare performance.
-          </p>
-        )}
-      </div>
+      {!isOptimizing && (
+        <div className="mode-description">
+          {mode === 'client' && (
+            <p>
+              Processing on your device using Web Workers. Works offline, no
+              data sent to server.
+            </p>
+          )}
+          {mode === 'server' && (
+            <p>
+              Processing on Vercel's edge servers. Faster for complex schedules,
+              requires internet.
+            </p>
+          )}
+          {mode === 'both' && (
+            <p>
+              Run optimization on both client and server to compare performance.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

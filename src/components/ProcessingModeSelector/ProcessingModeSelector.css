@@ -123,6 +123,9 @@
   font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
 }
 
 .metric-progress {
@@ -177,9 +180,10 @@
 }
 
 .mode-description {
-  margin-top: 16px;
+  margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid var(--border-color);
+  clear: both;
 }
 
 .mode-description p {
