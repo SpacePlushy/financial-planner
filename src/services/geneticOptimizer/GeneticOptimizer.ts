@@ -663,9 +663,13 @@ export class GeneticOptimizer {
 
         if (isExtremeDeficit) {
           const rand = Math.random();
-          if (rand < PROBABILITIES.CRISIS_MODE.LARGE_LARGE) {
+          if (rand < PROBABILITIES.CRISIS_MODE.DOUBLE_LARGE) {
             mutated[day] = 'large+large';
-          } else if (rand < PROBABILITIES.CRISIS_MODE.MIXED_SHIFTS) {
+          } else if (
+            rand <
+            PROBABILITIES.CRISIS_MODE.DOUBLE_LARGE +
+              PROBABILITIES.CRISIS_MODE.MIXED_LARGE
+          ) {
             mutated[day] =
               Math.random() < 0.5 ? 'medium+large' : 'large+medium';
           } else {

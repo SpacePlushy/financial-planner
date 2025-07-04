@@ -9,6 +9,7 @@ import {
   Deposit,
   ShiftTypes,
 } from '../types';
+import { PERFORMANCE_CONSTANTS } from '../config/user-config';
 
 interface WorkerMessage {
   type: 'start' | 'cancel' | 'pause' | 'resume';
@@ -62,7 +63,9 @@ self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
 
           // Handle pause
           while (isPaused && !isCancelled) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve =>
+              setTimeout(resolve, PERFORMANCE_CONSTANTS.DEBOUNCE.RESIZE)
+            );
           }
 
           // Send progress update

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { UI_CONSTANTS, STORAGE_CONSTANTS } from '../config/user-config';
 
 interface PanelSizes {
   left: number;
@@ -6,14 +7,10 @@ interface PanelSizes {
   right: number;
 }
 
-const DEFAULT_SIZES: PanelSizes = {
-  left: 320,
-  center: 400,
-  right: 600,
-};
+const DEFAULT_SIZES: PanelSizes = UI_CONSTANTS.PANELS.DEFAULT_WIDTHS;
 
-const MIN_PANEL_WIDTH = 280;
-const STORAGE_KEY = 'panel-sizes';
+const MIN_PANEL_WIDTH = UI_CONSTANTS.PANELS.MIN_WIDTH;
+const STORAGE_KEY = STORAGE_CONSTANTS.KEYS.PANEL_SIZES;
 
 export const usePanelResize = () => {
   const [sizes, setSizes] = useState<PanelSizes>(() => {
@@ -55,7 +52,7 @@ export const usePanelResize = () => {
       const deltaX = e.clientX - startXRef.current;
       const containerWidth = containerRef.current.offsetWidth;
       // Account for gaps between panels (2 gaps of 16px each)
-      const totalGaps = 32;
+      const totalGaps = UI_CONSTANTS.PANELS.TOTAL_GAPS;
       const availableWidth = containerWidth - totalGaps;
 
       if (isResizing === 'left') {
@@ -127,11 +124,14 @@ export const usePanelResize = () => {
       if (!containerRef.current) return;
 
       const containerWidth = containerRef.current.offsetWidth;
-      const totalGaps = 32; // 2 gaps of 16px each
+      const totalGaps = UI_CONSTANTS.PANELS.TOTAL_GAPS; // 2 gaps of 16px each
       const availableWidth = containerWidth - totalGaps;
       const totalCurrentWidth = sizes.left + sizes.center + sizes.right;
 
-      if (Math.abs(availableWidth - totalCurrentWidth) > 10) {
+      if (
+        Math.abs(availableWidth - totalCurrentWidth) >
+        UI_CONSTANTS.PANELS.RESIZE_HANDLE.WIDTH * 2.5
+      ) {
         // Redistribute widths proportionally
         const scale = availableWidth / totalCurrentWidth;
         setSizes({

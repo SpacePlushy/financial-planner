@@ -177,6 +177,12 @@ export const PROBABILITIES = {
     TO_LARGE: 0.15, // 0.85 - 0.7
     /** Add shift to empty day */
     ADD_SHIFT: 0.5,
+    /** Probability to keep a well-spaced work day */
+    KEEP_WELL_SPACED: 0.8,
+    /** Probability to add work day adjacent to existing */
+    ADD_ADJACENT: 0.2,
+    /** Probability to remove a work day */
+    REMOVE_WORK_DAY: 0.3,
   },
 } as const;
 
@@ -461,6 +467,8 @@ export const TEST_CONSTANTS = {
 export const DEBUG_CONSTANTS = {
   /** Log viewer refresh interval */
   LOG_REFRESH_INTERVAL: 1000,
+  /** Maximum number of logs to store in memory */
+  MAX_STORED_LOGS: 1000,
   /** Console log colors */
   LOG_COLORS: {
     INFO: 'blue',

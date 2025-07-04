@@ -20,6 +20,7 @@ import { useDualOptimizer } from './hooks/useDualOptimizer';
 import { usePanelResize } from './hooks/usePanelResize';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { logger } from './utils/logger';
+import { UI_CONSTANTS } from './config/user-config';
 import './App.css';
 
 /**
@@ -41,7 +42,7 @@ function AppContent() {
 
   React.useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 1024);
+      setIsMobile(window.innerWidth <= UI_CONSTANTS.BREAKPOINTS.TABLET);
     };
 
     checkMobile();

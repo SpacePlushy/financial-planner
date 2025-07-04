@@ -5,6 +5,7 @@ import {
   Deposit,
   ShiftTypes,
 } from '../types';
+import { API_CONSTANTS } from '../config/user-config';
 
 export interface ServerOptimizationResponse {
   success: boolean;
@@ -26,7 +27,7 @@ export class ServerOptimizer {
     this.baseUrl =
       process.env.NODE_ENV === 'production'
         ? window.location.origin
-        : 'http://localhost:3000';
+        : `http://${API_CONSTANTS.SERVER.HOST}:3000`;
   }
 
   async optimize(
@@ -38,18 +39,21 @@ export class ServerOptimizer {
     const startTime = Date.now();
 
     try {
-      const response = await fetch(`${this.baseUrl}/api/optimize`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          config,
-          expenses,
-          deposits,
-          shiftTypes,
-        }),
-      });
+      const response = await fetch(
+        `${this.baseUrl}${API_CONSTANTS.ENDPOINTS.OPTIMIZE}`,
+        {
+          method: API_CONSTANTS.METHODS.POST,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            config,
+            expenses,
+            deposits,
+            shiftTypes,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Server error: ${response.statusText}`);

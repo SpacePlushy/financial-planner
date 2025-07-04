@@ -2,6 +2,8 @@
  * Logger utility for consistent logging across the application
  */
 
+import { DEBUG_CONSTANTS } from '../config/user-config';
+
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
@@ -36,7 +38,7 @@ class Logger {
     minLevel: LogLevel.INFO,
     enableConsole: true,
     enableLocalStorage: false,
-    maxStoredLogs: 1000,
+    maxStoredLogs: DEBUG_CONSTANTS.MAX_STORED_LOGS,
   };
 
   private logs: LogEntry[] = [];

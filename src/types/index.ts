@@ -114,3 +114,12 @@ export interface GenerationStatistics {
   violations: number;
   balance: number;
 }
+
+/**
+ * Utility type for making all properties of T optional recursively
+ */
+export type DeepPartial<T> = T extends object
+  ? {
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
+  : T;

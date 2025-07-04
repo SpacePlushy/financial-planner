@@ -87,9 +87,12 @@ function deepMerge<T extends object>(target: T, source: DeepPartial<T>): T {
         source[key] !== null &&
         !Array.isArray(source[key])
       ) {
-        result[key] = deepMerge(target[key] as any, source[key] as any);
+        (result as any)[key] = deepMerge(
+          (target as any)[key],
+          source[key] as any
+        );
       } else {
-        result[key] = source[key] as any;
+        (result as any)[key] = source[key] as any;
       }
     }
   }
