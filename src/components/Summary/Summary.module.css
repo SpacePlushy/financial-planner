@@ -53,10 +53,10 @@
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
-/* Compact 2x2 grid */
+/* Responsive grid layout */
 .metricsGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -79,6 +79,18 @@
 .metricsGrid > *:nth-child(4) {
   animation-delay: 0.4s;
 }
+.metricsGrid > *:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.metricsGrid > *:nth-child(6) {
+  animation-delay: 0.6s;
+}
+.metricsGrid > *:nth-child(7) {
+  animation-delay: 0.7s;
+}
+.metricsGrid > *:nth-child(8) {
+  animation-delay: 0.8s;
+}
 
 .metricCard {
   padding: 12px;
@@ -86,9 +98,7 @@
   border: 1px solid var(--border-color);
   border-radius: 6px;
   transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: block; /* Changed from flex to block */
 }
 
 .metricCard:hover {
@@ -166,7 +176,14 @@
 }
 
 .metricDetails {
-  display: none; /* Hidden in compact view */
+  display: block; /* Show metric details */
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.metricLabel {
+  color: var(--text-secondary);
+  margin-right: 4px;
 }
 
 /* Compact sub-value display */
