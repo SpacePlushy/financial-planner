@@ -92,7 +92,6 @@ export const ScheduleCalendar: React.FC = () => {
         >
           <p>Debug Info:</p>
           <p>Schedule length: {currentSchedule.length}</p>
-          <p>Is optimizing: {isOptimizing ? 'Yes' : 'No'}</p>
           <p>Has optimization result: {optimizationResult ? 'Yes' : 'No'}</p>
         </div>
         <button
