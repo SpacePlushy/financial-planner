@@ -147,20 +147,18 @@ function AppContent() {
 
               {/* Optimization progress */}
               {(optimizer.isOptimizing || progress.lastResult) && (
-                <div className="progress-section fade-in">
-                  <ErrorBoundary
-                    level="section"
-                    onError={error =>
-                      logger.error(
-                        'OptimizationProgress',
-                        'Progress error',
-                        error
-                      )
-                    }
-                  >
-                    <OptimizationProgress />
-                  </ErrorBoundary>
-                </div>
+                <ErrorBoundary
+                  level="section"
+                  onError={error =>
+                    logger.error(
+                      'OptimizationProgress',
+                      'Progress error',
+                      error
+                    )
+                  }
+                >
+                  <OptimizationProgress />
+                </ErrorBoundary>
               )}
             </div>
           </div>
