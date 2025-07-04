@@ -85,30 +85,11 @@
   letter-spacing: 0.5px;
 }
 
-.metrics-grid {
-  display: grid;
-  grid-template-columns: 1fr;
+.processing-mode-selector .metrics-grid {
+  display: flex !important;
+  flex-direction: column !important;
   gap: 12px;
   margin-bottom: 16px;
-}
-
-/* Keep single column layout for configuration panel */
-/* Only use 2 columns if container is wide enough */
-@container (min-width: 500px) {
-  .metrics-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-}
-
-/* Fallback for browsers without container query support */
-@supports not (container-type: inline-size) {
-  @media (min-width: 768px) {
-    .metrics-grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-  }
 }
 
 .metric-card {
@@ -116,6 +97,8 @@
   border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .metric-card.client {
@@ -240,10 +223,6 @@
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
-  .metrics-grid {
-    grid-template-columns: 1fr;
-  }
-
   .mode-buttons {
     flex-direction: column;
   }
