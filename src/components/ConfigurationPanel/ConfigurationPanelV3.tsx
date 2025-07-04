@@ -57,37 +57,92 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
   // Loading state for preset operations
   const [isLoadingPreset, setIsLoadingPreset] = useState(false);
 
+  // Field-specific validation
+  const validateFieldSpecific = useCallback(
+    (
+      updates: Partial<OptimizationConfig>,
+      fullConfig: OptimizationConfig
+    ): ValidationErrors => {
+      const errors: ValidationErrors = {};
+
+      // Check each updated field
+      if (updates.startingBalance !== undefined) {
+        if (updates.startingBalance < 0) {
+          errors.startingBalance = 'Starting balance must be non-negative';
+        } else if (fullConfig.minimumBalance > updates.startingBalance) {
+          errors.startingBalance =
+            'Starting balance must be >= minimum balance';
+        }
+      }
+
+      if (updates.targetEndingBalance !== undefined) {
+        if (updates.targetEndingBalance < 0) {
+          errors.targetEndingBalance =
+            'Target ending balance must be non-negative';
+        }
+      }
+
+      if (updates.minimumBalance !== undefined) {
+        if (updates.minimumBalance < 0) {
+          errors.minimumBalance = 'Minimum balance must be non-negative';
+        } else if (updates.minimumBalance > fullConfig.startingBalance) {
+          errors.minimumBalance =
+            'Minimum balance cannot exceed starting balance';
+        }
+      }
+
+      if (updates.populationSize !== undefined) {
+        if (updates.populationSize < 10) {
+          errors.populationSize = 'Population size must be at least 10';
+        }
+      }
+
+      if (updates.generations !== undefined) {
+        if (updates.generations < 1) {
+          errors.generations = 'Generations must be at least 1';
+        }
+      }
+
+      return errors;
+    },
+    []
+  );
+
   // Validate configuration on changes
   const handleConfigChange = useCallback(
     (updates: Partial<typeof config>) => {
       const newConfig = { ...config, ...updates };
-      const validation = validateConfig(newConfig);
 
-      if (!validation.isValid) {
-        const errors: ValidationErrors = {};
-        validation.errors.forEach((error, index) => {
-          errors[`error_${index}`] = error;
+      // Get field-specific validation errors
+      const fieldErrors = validateFieldSpecific(updates, newConfig);
+
+      // Update validation errors state
+      setValidationErrors(prev => {
+        // Clear errors for fields that were updated and are now valid
+        const newErrors = { ...prev };
+        Object.keys(updates).forEach(key => {
+          if (!fieldErrors[key]) {
+            delete newErrors[key];
+          }
         });
-        setValidationErrors(errors);
-      } else {
-        setValidationErrors({});
-      }
+        // Add new errors
+        return { ...newErrors, ...fieldErrors };
+      });
 
       safeUpdateConfig(updates);
       clearPreset();
     },
-    [config, validateConfig, safeUpdateConfig, clearPreset]
+    [config, validateFieldSpecific, safeUpdateConfig, clearPreset]
   );
 
   // Handle optimization start
   const handleStartOptimization = useCallback(async () => {
-    const validation = validateConfig(config);
-    if (!validation.isValid) {
-      const errors: ValidationErrors = {};
-      validation.errors.forEach((error, index) => {
-        errors[`error_${index}`] = error;
-      });
-      setValidationErrors(errors);
+    // Validate all fields
+    const allFieldErrors = validateFieldSpecific(config, config);
+
+    // Check if there are any errors
+    if (Object.keys(allFieldErrors).length > 0) {
+      setValidationErrors(allFieldErrors);
       return;
     }
 
@@ -96,7 +151,7 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
     } catch (error) {
       console.error('Failed to start optimization:', error);
     }
-  }, [config, validateConfig, startOptimization, processingMode]);
+  }, [config, validateFieldSpecific, startOptimization, processingMode]);
 
   // Calculate progress for the optimizer based on processing mode
   const optimizerProgress = useMemo(() => {
