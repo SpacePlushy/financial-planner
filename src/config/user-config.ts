@@ -88,15 +88,16 @@ function deepMerge<T extends Record<string, any>>(
   const result = { ...target };
 
   for (const key in source) {
-    if (source[key] !== undefined) {
+    const sourceValue = source[key];
+    if (sourceValue !== undefined) {
       if (
-        typeof source[key] === 'object' &&
-        source[key] !== null &&
-        !Array.isArray(source[key])
+        typeof sourceValue === 'object' &&
+        sourceValue !== null &&
+        !Array.isArray(sourceValue)
       ) {
-        result[key] = deepMerge(target[key], source[key]);
+        result[key] = deepMerge(target[key], sourceValue);
       } else {
-        result[key] = source[key] as T[keyof T];
+        result[key] = sourceValue as T[keyof T];
       }
     }
   }
