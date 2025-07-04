@@ -184,7 +184,7 @@ class SimpleGeneticOptimizer {
     return {
       schedule: best.schedule,
       workDays: this.getWorkDaysList(best.schedule),
-      totalEarnings: this.calculateTotalEarnings(best.schedule)
+      totalEarnings: this.calculateTotalEarnings(best.schedule),
       finalBalance: best.balance,
       minBalance: best.balance - 500, // Approximate
       violations: best.violations,
