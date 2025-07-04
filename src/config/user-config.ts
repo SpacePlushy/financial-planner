@@ -12,8 +12,12 @@
  * @module user-config
  */
 
-import { DeepPartial } from '../types';
 import * as DEFAULT_CONSTANTS from './constants';
+
+// Utility type for deep partial objects
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
 
 /**
  * User configuration overrides
@@ -77,7 +81,10 @@ export const USER_CONFIG: DeepPartial<typeof DEFAULT_CONSTANTS> = {
 /**
  * Deep merge utility to combine user config with defaults
  */
-function deepMerge<T extends object>(target: T, source: DeepPartial<T>): T {
+function deepMerge<T extends Record<string, any>>(
+  target: T,
+  source: DeepPartial<T>
+): T {
   const result = { ...target };
 
   for (const key in source) {
@@ -87,9 +94,9 @@ function deepMerge<T extends object>(target: T, source: DeepPartial<T>): T {
         source[key] !== null &&
         !Array.isArray(source[key])
       ) {
-        result[key] = deepMerge(target[key] as any, source[key] as any);
+        result[key] = deepMerge(target[key], source[key]);
       } else {
-        result[key] = source[key] as any;
+        result[key] = source[key] as T[keyof T];
       }
     }
   }
