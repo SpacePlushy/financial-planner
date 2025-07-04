@@ -21,6 +21,24 @@ class SimpleGeneticOptimizer {
     this.config = config;
     this.expenses = expenses || [];
     this.deposits = deposits || [];
+    
+    // Calculate daily expenses and deposits
+    this.expensesByDay = new Array(31).fill(0);
+    this.depositsByDay = new Array(31).fill(0);
+    
+    // Process expenses
+    for (const exp of this.expenses) {
+      if (exp.day >= 1 && exp.day <= 30) {
+        this.expensesByDay[exp.day] += exp.amount;
+      }
+    }
+    
+    // Process deposits
+    for (const dep of this.deposits) {
+      if (dep.day >= 1 && dep.day <= 30) {
+        this.depositsByDay[dep.day] += dep.amount;
+      }
+    }
     // Handle both formats: {value: X} or {net: X}
     if (shiftTypes) {
       this.shiftTypes = {};
@@ -84,11 +102,10 @@ class SimpleGeneticOptimizer {
         consecutiveDays = 0;
       }
       
-      // Apply daily expenses
-      const dailyExpenses = this.expenses
-        .filter(e => e.frequency === 'daily')
-        .reduce((sum, e) => sum + e.amount, 0);
-      balance -= dailyExpenses;
+      // Apply actual expenses for this day
+      const dayNumber = day + 1; // Convert 0-based index to 1-based day
+      balance -= this.expensesByDay[dayNumber] || 0;
+      balance += this.depositsByDay[dayNumber] || 0;
       
       // Check minimum balance
       if (balance < (this.config.minimumBalance || 100)) {
@@ -167,7 +184,7 @@ class SimpleGeneticOptimizer {
     return {
       schedule: best.schedule,
       workDays: this.getWorkDaysList(best.schedule),
-      totalEarnings: best.workDays * 70, // Average earning
+      totalEarnings: this.calculateTotalEarnings(best.schedule)
       finalBalance: best.balance,
       minBalance: best.balance - 500, // Approximate
       violations: best.violations,
@@ -202,6 +219,16 @@ class SimpleGeneticOptimizer {
     return workDays;
   }
 
+  calculateTotalEarnings(schedule) {
+    let totalEarnings = 0;
+    for (const shift of schedule) {
+      if (shift && this.shiftTypes[shift]) {
+        totalEarnings += this.shiftTypes[shift].value || 0;
+      }
+    }
+    return totalEarnings;
+  }
+
   formatSchedule(schedule) {
     let balance = this.config.startingBalance || 1000;
     
@@ -212,8 +239,8 @@ class SimpleGeneticOptimizer {
       if (shift && this.shiftTypes[shift]) {
         earnings = this.shiftTypes[shift].value || 0;
       }
-      const expenses = 10; // Default daily expense
-      const deposit = 0; // No deposits for now
+      const expenses = this.expensesByDay[dayNumber] || 0;
+      const deposit = this.depositsByDay[dayNumber] || 0
       
       const startBalance = balance;
       balance = balance + earnings - expenses + deposit;
