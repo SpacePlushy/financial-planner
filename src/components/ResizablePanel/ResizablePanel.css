@@ -1,0 +1,99 @@
+/* Resizable Panel Container */
+.resizable-panel {
+  height: 100%;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Resize Divider */
+.resize-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  cursor: col-resize;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.resize-divider:hover {
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+.resize-divider.left {
+  right: -8px;
+}
+
+.resize-divider.right {
+  left: -8px;
+}
+
+/* Resize Handle Visual */
+.resize-handle {
+  width: 4px;
+  height: 40px;
+  background: var(--border-color);
+  border-radius: 2px;
+  opacity: 0;
+  transition:
+    opacity 0.2s,
+    background-color 0.2s;
+}
+
+.resize-divider:hover .resize-handle,
+.resize-divider.resizing .resize-handle {
+  opacity: 1;
+}
+
+.resize-divider:hover .resize-handle {
+  background: var(--primary-color);
+}
+
+.resize-divider.resizing .resize-handle {
+  background: var(--primary-color);
+  opacity: 1;
+}
+
+/* Prevent text selection during resize */
+.resizing-active {
+  user-select: none;
+  cursor: col-resize !important;
+}
+
+.resizing-active * {
+  cursor: col-resize !important;
+}
+
+/* Panel content adjustments */
+.resizable-panel.left {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.resizable-panel.center {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.resizable-panel.right {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Responsive adjustments for narrow panels */
+@media (max-width: 1200px) {
+  .resize-divider {
+    width: 12px;
+  }
+
+  .resize-divider.left {
+    right: -6px;
+  }
+
+  .resize-divider.right {
+    left: -6px;
+  }
+}

@@ -13,9 +13,11 @@ import { OptimizationProgress } from './components/OptimizationProgress/Optimiza
 import { EditModal } from './components/EditModal/EditModalV2';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { ActionBar } from './components/ActionBar/ActionBar';
+import { ResizablePanel, ResizableDivider } from './components/ResizablePanel';
 import { useUI } from './context/UIContext';
 import { usePersistence } from './hooks/usePersistence';
 import { useDualOptimizer } from './hooks/useDualOptimizer';
+import { usePanelResize } from './hooks/usePanelResize';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { logger } from './utils/logger';
 import './App.css';
@@ -28,6 +30,7 @@ function AppContent() {
   const persistence = usePersistence();
   const optimizer = useDualOptimizer();
   const progress = useProgress();
+  const panelResize = usePanelResize();
   // const { config } = useConfiguration(); // Available if needed
 
   // Enable keyboard shortcuts
@@ -92,9 +95,16 @@ function AppContent() {
 
       {/* Main Dashboard Grid */}
       <main className="app-main" role="main">
-        <div className="dashboard-grid">
+        <div
+          className={`dashboard-grid resizable-container ${panelResize.isResizing ? 'resizing-active' : ''}`}
+          ref={panelResize.containerRef}
+        >
           {/* Left Panel: Configuration */}
-          <div className="panel config-panel">
+          <ResizablePanel
+            position="left"
+            width={panelResize.sizes.left}
+            className="panel config-panel"
+          >
             <div className="panel-header">
               <h2 className="panel-title">Configuration</h2>
             </div>
@@ -142,10 +152,21 @@ function AppContent() {
                 }
               />
             )}
-          </div>
+          </ResizablePanel>
+
+          {/* Resize Divider between Left and Center */}
+          <ResizableDivider
+            position="left"
+            onMouseDown={panelResize.handleMouseDown}
+            isResizing={panelResize.isResizing === 'left'}
+          />
 
           {/* Center Panel: Results & Progress */}
-          <div className="panel results-panel">
+          <ResizablePanel
+            position="center"
+            width={panelResize.sizes.center}
+            className="panel results-panel"
+          >
             <div className="panel-header">
               <h2 className="panel-title">Results & Analysis</h2>
             </div>
@@ -175,10 +196,21 @@ function AppContent() {
                 </ErrorBoundary>
               )}
             </div>
-          </div>
+          </ResizablePanel>
+
+          {/* Resize Divider between Center and Right */}
+          <ResizableDivider
+            position="right"
+            onMouseDown={panelResize.handleMouseDown}
+            isResizing={panelResize.isResizing === 'right'}
+          />
 
           {/* Right Panel: Schedule */}
-          <div className="panel schedule-panel">
+          <ResizablePanel
+            position="right"
+            width={panelResize.sizes.right}
+            className="panel schedule-panel"
+          >
             <div className="schedule-controls">
               <div className="view-toggle">
                 <button
@@ -229,7 +261,7 @@ function AppContent() {
                 )}
               </ErrorBoundary>
             </div>
-          </div>
+          </ResizablePanel>
         </div>
       </main>
 

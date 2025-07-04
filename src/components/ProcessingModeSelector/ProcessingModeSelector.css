@@ -9,6 +9,15 @@
   container-type: inline-size;
 }
 
+/* When panel is wider, allow side-by-side metrics */
+@container (min-width: 400px) {
+  .processing-mode-selector .metrics-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    flex-direction: unset !important;
+  }
+}
+
 .mode-selector-header {
   margin-bottom: 16px;
   position: relative;
