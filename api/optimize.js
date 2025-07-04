@@ -303,35 +303,66 @@ class SimpleGeneticOptimizer {
       }
     }
     
-    // Calculate fitness based on multiple factors
-    let fitness = 0;
-    
-    // Primary goal: Meet target ending balance
-    const balanceDiff = Math.abs(balance - this.config.targetEndingBalance);
-    fitness -= balanceDiff * 10;
-    
-    // Heavily penalize violations
-    fitness -= violations * 1000;
-    
-    // Penalize too many consecutive days
-    if (maxConsecutiveDays > 5) {
-      fitness -= (maxConsecutiveDays - 5) * 200;
-    }
-    
-    // Prefer reasonable number of work days
+    // EXACT copy of client NormalFitnessStrategy.evaluate()
+    const targetEndingBalance = this.config.targetEndingBalance;
+    const minimumBalance = this.config.minimumBalance;
+    const finalBalanceDiff = Math.abs(balance - targetEndingBalance);
     const idealWorkDays = Math.ceil(this.requiredFlexNet / this.shiftTypes.large.net);
     const workDayDiff = Math.abs(workDays - idealWorkDays);
-    fitness -= workDayDiff * 50;
     
-    // Bonus for meeting target exactly
-    if (balanceDiff < 50) {
-      fitness += 500;
+    // Work day penalty
+    const workDayPenalty = workDayDiff * 200;
+    
+    // Consecutive penalty  
+    let consecutivePenalty = 0;
+    if (maxConsecutiveDays > 5) {
+      consecutivePenalty = (maxConsecutiveDays - 5) * 500;
     }
     
-    // Bonus for no violations
-    if (violations === 0) {
-      fitness += 1000;
+    // Gap variance and too small gaps
+    let gapVariance = 0;
+    let tooSmallGapsPenalty = 0;
+    if (workDaysList.length > 1) {
+      const gaps = [];
+      for (let i = 1; i < workDaysList.length; i++) {
+        gaps.push(workDaysList[i] - workDaysList[i - 1]);
+      }
+      const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+      gapVariance = gaps.reduce((sum, gap) => sum + Math.pow(gap - avgGap, 2), 0) / gaps.length;
+      tooSmallGapsPenalty = gaps.filter(g => g < 2).length * 150;
     }
+    
+    // Clustering penalty
+    let clusteringPenalty = 0;
+    for (let day = 1; day <= 26; day++) {
+      let workDaysInWindow = 0;
+      for (const workDay of workDaysList) {
+        if (workDay >= day && workDay < day + 5) {
+          workDaysInWindow++;
+        }
+      }
+      if (workDaysInWindow > 3) {
+        clusteringPenalty += (workDaysInWindow - 3) * 300;
+      }
+    }
+    
+    // Balance penalty with progressive overshooting
+    let balancePenalty = finalBalanceDiff * 100;
+    if (balance > targetEndingBalance) {
+      const overshootRatio = (balance - targetEndingBalance) / targetEndingBalance;
+      balancePenalty *= 1 + overshootRatio * 2;
+    }
+    
+    // Final fitness calculation (EXACTLY matching client)
+    const fitness = 
+      violations * 5000 +
+      balancePenalty +
+      workDayPenalty +
+      consecutivePenalty +
+      Math.sqrt(gapVariance) * 150 +
+      tooSmallGapsPenalty +
+      clusteringPenalty +
+      (minBalance < minimumBalance ? Math.abs(minBalance - minimumBalance) * 100 : 0);
     
     return {
       fitness,
@@ -377,7 +408,7 @@ class SimpleGeneticOptimizer {
       const newPopulation = [];
       
       // Keep best 10%
-      const eliteSize = Math.floor(populationSize * 0.1);
+      const eliteSize = Math.max(30, Math.floor(populationSize * 0.2)); // EXACT match client
       for (let i = 0; i < eliteSize; i++) {
         newPopulation.push(population[i]);
       }
@@ -433,7 +464,7 @@ class SimpleGeneticOptimizer {
   }
 
   mutate(chromosome) {
-    const mutationRate = 0.1;
+    const mutationRate = 0.15; // EXACT match client
     const mutated = [...chromosome];
     const startDay = this.config.balanceEditDay ? this.config.balanceEditDay + 1 : 1;
     
@@ -544,7 +575,7 @@ class SimpleGeneticOptimizer {
   
   tournamentSelect(population) {
     const tournament = [];
-    const tournamentSize = 5;
+    const tournamentSize = 7; // EXACT match client
     
     for (let i = 0; i < tournamentSize; i++) {
       const idx = Math.floor(Math.random() * population.length);
