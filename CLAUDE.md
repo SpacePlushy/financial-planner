@@ -3,6 +3,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Note**: This is a focused subset of documentation for Claude Code. For complete documentation framework and all guidelines, see [CONDUCTOR.md](CONDUCTOR.md).
+
 ## Critical Context (Read First)
 - **Tech Stack**: React 19.1.0, TypeScript 4.9.5, Create React App 5.0.1
 - **Main File**: src/index.tsx → src/App.tsx (entry point)
@@ -55,6 +57,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - [ ] Cloud sync capabilities
 
 ## Development Workflow
+
+### IMPORTANT: Pull Request Requirement
+**All code changes MUST go through Pull Requests** to enable Gemini Code Assist review:
+1. Create a feature branch: `git checkout -b feature/your-feature-name`
+2. Make your changes and commit them
+3. Push to GitHub: `git push origin feature/your-feature-name`
+4. Create a Pull Request on GitHub
+5. Wait for Gemini Code Assist to review (usually within 5 minutes)
+6. Address any feedback from Gemini
+7. Merge the PR once satisfied with the review
+
+### Local Development Steps
 1. Run `npm start` to start development server on port 3000
 2. Make changes to components in `src/components/`
 3. Update tests in `src/__tests__/` or component test files
@@ -84,6 +98,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 5. Test file download in browser
 
 ## Anti-Patterns (Avoid These)
+❌ **Don't push directly to main branch** - Always use PRs for Gemini Code Assist review  
 ❌ **Don't modify genetic algorithm without testing convergence** - Can break optimization  
 ❌ **Don't update state directly in components** - Use Context API methods  
 ❌ **Don't run optimization on main thread** - Always use Web Workers  

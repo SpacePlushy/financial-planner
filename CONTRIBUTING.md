@@ -182,15 +182,18 @@ WIP
 
 ## Pull Request Process
 
+### MANDATORY: All Changes Must Go Through PRs
+**Important**: Direct pushes to main branch are not allowed. All changes must go through Pull Requests to enable Gemini Code Assist automated review.
+
 ### Before Submitting
+- [ ] Created feature branch (not working on main)
 - [ ] Code follows style guidelines
 - [ ] Self-review of code performed
 - [ ] Comments added for complex logic
 - [ ] Documentation updated
-- [ ] Tests added/updated
-- [ ] All tests passing
-- [ ] Lint checks passing
-- [ ] Build successful
+- [ ] Tests added/updated (if applicable)
+- [ ] Manual testing completed
+- [ ] Ready for Gemini Code Assist review
 
 ### PR Template
 ```markdown
@@ -222,10 +225,19 @@ Fixes #(issue number)
 
 ### Review Process
 1. Submit PR with clear description
-2. Address reviewer feedback
-3. Keep PR updated with main branch
-4. Squash commits if requested
-5. Delete branch after merge
+2. **Wait for Gemini Code Assist automated review** (usually within 5 minutes)
+3. Review Gemini's feedback and suggestions
+4. Address any issues identified by Gemini
+5. Request human review if needed
+6. Keep PR updated with main branch
+7. Merge once all feedback is addressed
+8. Delete branch after merge
+
+### Working with Gemini Code Assist
+- Gemini automatically reviews all PRs
+- It will comment on code quality, potential bugs, and improvements
+- You can interact with Gemini by commenting with `/gemini` command
+- Take Gemini's suggestions seriously - it helps maintain code quality
 
 ## Testing Guidelines
 

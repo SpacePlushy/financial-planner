@@ -56,11 +56,13 @@
 
 ## Development Workflow
 1. **Start Dev Server**: `npm start` (runs on http://localhost:3000)
-2. **Make Changes**: Edit components in `src/components/`, contexts in `src/context/`
-3. **Run Tests**: `npm test` for unit tests, `npm run e2e` for Cypress tests
-4. **Lint Code**: `npm run lint` to check code quality
-5. **Build**: `npm run build` creates production build in `build/`
-6. **Deploy**: `npm run server:start` to run production server
+2. **Create Feature Branch**: `git checkout -b feature/your-feature-name`
+3. **Make Changes**: Edit components in `src/components/`, contexts in `src/context/`
+4. **Test Locally**: Manual testing in browser (automated tests removed)
+5. **Lint Code**: `npm run lint` to check code quality
+6. **Commit & Push**: Push to your feature branch
+7. **Create PR**: Open pull request for Gemini Code Assist review
+8. **Merge**: After Gemini approval, merge to main
 
 ## Task Templates
 ### 1. Add New Shift Type
@@ -92,6 +94,7 @@
 5. Test download in browser with different data scenarios
 
 ## Anti-Patterns (Avoid These)
+❌ **Don't push directly to main branch** - Always use PRs for Gemini Code Assist review  
 ❌ **Don't run optimization on main thread** - Blocks UI and causes poor UX  
 ❌ **Don't mutate context state directly** - Always use provided update methods  
 ❌ **Don't hardcode shift values** - Use constants from geneticOptimizer.ts  
