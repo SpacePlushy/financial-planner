@@ -1,4 +1,5 @@
 import React from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { ScheduleProvider } from './context/ScheduleContext';
 import { ConfigurationProvider } from './context/ConfigurationContext';
 import { PersistenceProvider } from './context/PersistenceContext';
@@ -259,6 +260,9 @@ function AppContent() {
           />
         </div>
       )}
+
+      {/* Vercel Analytics */}
+      <Analytics />
 
       {/* Global Footer Action Bar */}
       <footer className="app-footer">
