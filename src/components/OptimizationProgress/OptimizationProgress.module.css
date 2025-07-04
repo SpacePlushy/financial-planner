@@ -1,9 +1,3 @@
-.container {
-  padding: 8px;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
 /* Dark mode now handled by CSS variables */
 
 .header {

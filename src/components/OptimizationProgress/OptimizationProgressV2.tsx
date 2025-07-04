@@ -150,7 +150,7 @@ export const OptimizationProgress: React.FC = () => {
       (currentProgress.generation === 0 && progressPercentage === 0))
   ) {
     return (
-      <div className={styles.container}>
+      <>
         <div className={styles.header}>
           <h3 className={styles.title}>Optimization Progress</h3>
         </div>
@@ -162,12 +162,12 @@ export const OptimizationProgress: React.FC = () => {
             </span>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className={styles.container}>
+    <>
       <div className={styles.header}>
         <h3 className={styles.title}>
           {isCompleted ? 'Optimization Complete' : 'Optimization Progress'}
@@ -404,7 +404,7 @@ export const OptimizationProgress: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
