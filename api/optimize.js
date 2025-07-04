@@ -21,19 +21,31 @@ class SimpleGeneticOptimizer {
     this.config = config;
     this.expenses = expenses || [];
     this.deposits = deposits || [];
-    this.shiftTypes = shiftTypes || {
-      large: { value: 86.5, percentage: 0.5 },
-      medium: { value: 67.5, percentage: 0.3 },
-      small: { value: 56.0, percentage: 0.2 }
-    };
+    // Handle both formats: {value: X} or {net: X}
+    if (shiftTypes) {
+      this.shiftTypes = {};
+      for (const [key, shift] of Object.entries(shiftTypes)) {
+        this.shiftTypes[key] = {
+          value: shift.net || shift.value || 0,
+          net: shift.net || shift.value || 0,
+          gross: shift.gross || shift.value || 0
+        };
+      }
+    } else {
+      this.shiftTypes = {
+        large: { value: 86.5, net: 86.5, gross: 94.5 },
+        medium: { value: 67.5, net: 67.5, gross: 75.5 },
+        small: { value: 56.0, net: 56.0, gross: 64.0 }
+      };
+    }
     
     // Calculate total days based on expenses/deposits
     this.totalDays = this.calculateTotalDays();
   }
 
   calculateTotalDays() {
-    // Simple calculation - 45 days default or based on target
-    return 45;
+    // Always use 30 days to match client-side optimizer
+    return 30;
   }
 
   generateRandomSchedule() {
@@ -195,7 +207,11 @@ class SimpleGeneticOptimizer {
     
     return schedule.map((shift, index) => {
       const dayNumber = index + 1;
-      const earnings = shift ? this.shiftTypes[shift].value : 0;
+      // Get the actual shift value from shiftTypes
+      let earnings = 0;
+      if (shift && this.shiftTypes[shift]) {
+        earnings = this.shiftTypes[shift].value || 0;
+      }
       const expenses = 10; // Default daily expense
       const deposit = 0; // No deposits for now
       
