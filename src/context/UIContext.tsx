@@ -252,7 +252,7 @@ export function UIProvider({
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-    const handleThemeChange = (e: MediaQueryListEvent | MediaQueryList) => {
+    const handleThemeChange = (e: MediaQueryListEvent) => {
       // Only update theme if user hasn't manually overridden it
       if (!hasUserOverride.current) {
         const newTheme: 'light' | 'dark' = e.matches ? 'dark' : 'light';
@@ -264,19 +264,11 @@ export function UIProvider({
       }
     };
 
-    // Use addEventListener for modern browsers, addListener for legacy
-    if ('addEventListener' in mediaQuery) {
-      mediaQuery.addEventListener('change', handleThemeChange);
-      return () => {
-        mediaQuery.removeEventListener('change', handleThemeChange);
-      };
-    } else {
-      // Legacy browser support
-      mediaQuery.addListener(handleThemeChange);
-      return () => {
-        mediaQuery.removeListener(handleThemeChange);
-      };
-    }
+    // All modern browsers support addEventListener
+    mediaQuery.addEventListener('change', handleThemeChange);
+    return () => {
+      mediaQuery.removeEventListener('change', handleThemeChange);
+    };
   }, []);
 
   // View mode actions
