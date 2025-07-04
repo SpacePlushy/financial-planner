@@ -213,7 +213,7 @@ class SimpleGeneticOptimizer {
           if (rand < PROBABILITIES.CRISIS_MODE.DOUBLE_LARGE) {
             chromosome[workDay] = 'large+large';
           } else if (rand < (PROBABILITIES.CRISIS_MODE.DOUBLE_LARGE + PROBABILITIES.CRISIS_MODE.MIXED_LARGE)) {
-            chromosome[workDay] = Math.random() < 0.5 ? 'medium+large' : 'large+medium';
+            chromosome[workDay] = Math.random() < PROBABILITIES.SHIFT_PLACEMENT.MIXED_SHIFT_CHOICE ? 'medium+large' : 'large+medium';
           } else {
             chromosome[workDay] = 'medium+medium';
           }
@@ -284,7 +284,7 @@ class SimpleGeneticOptimizer {
             if (rand < PROBABILITIES.CRISIS_MODE.SECOND_PASS.DOUBLE_LARGE) {
               chromosome[day] = 'large+large';
             } else if (rand < (PROBABILITIES.CRISIS_MODE.SECOND_PASS.DOUBLE_LARGE + PROBABILITIES.CRISIS_MODE.SECOND_PASS.MIXED_LARGE)) {
-              chromosome[day] = Math.random() < 0.5 ? 'medium+large' : 'large+medium';
+              chromosome[day] = Math.random() < PROBABILITIES.SHIFT_PLACEMENT.MIXED_SHIFT_CHOICE ? 'medium+large' : 'large+medium';
             } else {
               chromosome[day] = 'medium+medium';
             }
@@ -619,7 +619,7 @@ class SimpleGeneticOptimizer {
           if (rand < PROBABILITIES.CRISIS_MODE.DOUBLE_LARGE) {
             mutated[i] = 'large+large';
           } else if (rand < (PROBABILITIES.CRISIS_MODE.DOUBLE_LARGE + PROBABILITIES.CRISIS_MODE.MIXED_LARGE)) {
-            mutated[i] = Math.random() < 0.5 ? 'medium+large' : 'large+medium';
+            mutated[i] = Math.random() < PROBABILITIES.SHIFT_PLACEMENT.MIXED_SHIFT_CHOICE ? 'medium+large' : 'large+medium';
           } else {
             mutated[i] = 'medium+medium';
           }
@@ -682,7 +682,7 @@ class SimpleGeneticOptimizer {
     for (const shift of schedule) {
       if (shift) {
         // Handle double shifts
-        if (shift.includes && shift.includes('+')) {
+        if (shift.includes('+')) {
           const shifts = shift.split('+');
           for (const s of shifts) {
             const shiftType = s.trim();
@@ -713,7 +713,7 @@ class SimpleGeneticOptimizer {
   }
 
   formatSchedule(schedule) {
-    let balance = this.config.startingBalance || VALIDATION.BALANCE.MIN_STARTING;
+    let balance = this.config.startingBalance || 0;
     
     return schedule.map((shift, index) => {
       const dayNumber = index + SCHEDULE_CONSTANTS.MIN_DAY;

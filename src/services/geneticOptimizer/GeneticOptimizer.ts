@@ -283,7 +283,9 @@ export class GeneticOptimizer {
               PROBABILITIES.CRISIS_MODE.MIXED_LARGE
           ) {
             chromosome[workDay] =
-              Math.random() < 0.5 ? 'medium+large' : 'large+medium';
+              Math.random() < PROBABILITIES.SHIFT_PLACEMENT.MIXED_SHIFT_CHOICE
+                ? 'medium+large'
+                : 'large+medium';
           } else {
             chromosome[workDay] = 'medium+medium';
           }
@@ -389,7 +391,9 @@ export class GeneticOptimizer {
                 PROBABILITIES.CRISIS_MODE.SECOND_PASS.MIXED_LARGE
             ) {
               chromosome[day] =
-                Math.random() < 0.5 ? 'medium+large' : 'large+medium';
+                Math.random() < PROBABILITIES.SHIFT_PLACEMENT.MIXED_SHIFT_CHOICE
+                  ? 'medium+large'
+                  : 'large+medium';
             } else {
               chromosome[day] = 'medium+medium';
             }
@@ -397,18 +401,25 @@ export class GeneticOptimizer {
             const rand = Math.random();
             if (rand < PROBABILITIES.SHIFT_PLACEMENT.FILL_SMALL) {
               chromosome[day] = 'small';
-            } else if (rand < 0.5) {
+            } else if (
+              rand <
+              PROBABILITIES.SHIFT_PLACEMENT.FILL_SMALL +
+                PROBABILITIES.SHIFT_PLACEMENT.FILL_MEDIUM
+            ) {
               chromosome[day] = 'medium';
             } else {
               chromosome[day] = 'large';
             }
 
-            const doubleShiftProbability = 0.3;
             if (
-              Math.random() < doubleShiftProbability &&
+              Math.random() <
+                PROBABILITIES.SHIFT_PLACEMENT.DOUBLE_SHIFT_PROBABILITY &&
               chromosome[day] !== 'large'
             ) {
-              const secondShift = Math.random() < 0.5 ? 'small' : 'medium';
+              const secondShift =
+                Math.random() < PROBABILITIES.SHIFT_PLACEMENT.SECOND_SHIFT_SMALL
+                  ? 'small'
+                  : 'medium';
               chromosome[day] = chromosome[day] + '+' + secondShift;
             }
           }
@@ -434,7 +445,10 @@ export class GeneticOptimizer {
                   PROBABILITIES.CRISIS_MODE.SECOND_PASS.MIXED_LARGE
               ) {
                 chromosome[day] =
-                  Math.random() < 0.5 ? 'medium+large' : 'large+medium';
+                  Math.random() <
+                  PROBABILITIES.SHIFT_PLACEMENT.MIXED_SHIFT_CHOICE
+                    ? 'medium+large'
+                    : 'large+medium';
               } else {
                 chromosome[day] = 'medium+medium';
               }
@@ -452,12 +466,16 @@ export class GeneticOptimizer {
                 chromosome[day] = 'large';
               }
 
-              const doubleShiftProbability = 0.3;
               if (
-                Math.random() < doubleShiftProbability &&
+                Math.random() <
+                  PROBABILITIES.SHIFT_PLACEMENT.DOUBLE_SHIFT_PROBABILITY &&
                 chromosome[day] !== 'large'
               ) {
-                const secondShift = Math.random() < 0.5 ? 'small' : 'medium';
+                const secondShift =
+                  Math.random() <
+                  PROBABILITIES.SHIFT_PLACEMENT.SECOND_SHIFT_SMALL
+                    ? 'small'
+                    : 'medium';
                 chromosome[day] = chromosome[day] + '+' + secondShift;
               }
             }
@@ -671,7 +689,9 @@ export class GeneticOptimizer {
               PROBABILITIES.CRISIS_MODE.MIXED_LARGE
           ) {
             mutated[day] =
-              Math.random() < 0.5 ? 'medium+large' : 'large+medium';
+              Math.random() < PROBABILITIES.SHIFT_PLACEMENT.MIXED_SHIFT_CHOICE
+                ? 'medium+large'
+                : 'large+medium';
           } else {
             mutated[day] = 'medium+medium';
           }
@@ -695,16 +715,20 @@ export class GeneticOptimizer {
             }
           }
 
-          if (rand < PROBABILITIES.MUTATION.REMOVE_WORK_DAY) {
+          if (rand < PROBABILITIES.MUTATION.REMOVE) {
             mutated[day] = null;
-          } else if (rand < 0.5) {
-            mutated[day] = 'medium';
           } else if (
             rand <
-            PROBABILITIES.SHIFT_PLACEMENT.FILL_SMALL +
-              PROBABILITIES.SHIFT_PLACEMENT.FILL_MEDIUM
+            PROBABILITIES.MUTATION.REMOVE + PROBABILITIES.MUTATION.TO_SMALL
           ) {
-            mutated[day] = 'medium+medium';
+            mutated[day] = 'small';
+          } else if (
+            rand <
+            PROBABILITIES.MUTATION.REMOVE +
+              PROBABILITIES.MUTATION.TO_SMALL +
+              PROBABILITIES.MUTATION.TO_MEDIUM
+          ) {
+            mutated[day] = 'medium';
           } else if (
             rand <
             PROBABILITIES.MUTATION.REMOVE +

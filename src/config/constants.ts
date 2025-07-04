@@ -164,6 +164,12 @@ export const PROBABILITIES = {
     FILL_MEDIUM: 0.3, // 0.8 - 0.5
     /** Probability of small shift when filling remaining days */
     FILL_SMALL: 0.2, // 1.0 - 0.8
+    /** Probability of adding double shift */
+    DOUBLE_SHIFT_PROBABILITY: 0.3,
+    /** Probability of choosing small shift as second shift */
+    SECOND_SHIFT_SMALL: 0.5,
+    /** Probability of choosing medium+large over large+medium in mixed shifts */
+    MIXED_SHIFT_CHOICE: 0.5,
   },
   /** Mutation probabilities */
   MUTATION: {
