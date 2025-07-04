@@ -5,7 +5,7 @@ import { ConfigurationProvider } from './context/ConfigurationContext';
 import { PersistenceProvider } from './context/PersistenceContext';
 import { UIProvider } from './context/UIContext';
 import { ProgressProvider, useProgress } from './context/ProgressContext';
-import { ConfigurationPanel } from './components/ConfigurationPanel/ConfigurationPanelV2';
+import { ConfigurationPanel } from './components/ConfigurationPanel/ConfigurationPanelV3';
 import { ScheduleTable } from './components/ScheduleTable/ScheduleTableV2';
 import { ScheduleCalendar } from './components/ScheduleCalendar';
 import { Summary } from './components/Summary/SummaryV2';
@@ -15,7 +15,7 @@ import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { ActionBar } from './components/ActionBar/ActionBar';
 import { useUI } from './context/UIContext';
 import { usePersistence } from './hooks/usePersistence';
-import { useOptimizer } from './hooks/useOptimizer';
+import { useDualOptimizer } from './hooks/useDualOptimizer';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { logger } from './utils/logger';
 import './App.css';
@@ -26,7 +26,7 @@ import './App.css';
 function AppContent() {
   const ui = useUI();
   const persistence = usePersistence();
-  const optimizer = useOptimizer();
+  const optimizer = useDualOptimizer();
   const progress = useProgress();
   // const { config } = useConfiguration(); // Available if needed
 
@@ -113,6 +113,19 @@ function AppContent() {
                 <ConfigurationPanel
                   startOptimization={optimizer.startOptimization}
                   isOptimizing={optimizer.isOptimizing}
+                  processingMode={optimizer.processingMode}
+                  setProcessingMode={optimizer.setProcessingMode}
+                  metrics={optimizer.metrics}
+                  clientProgress={
+                    optimizer.clientProgress
+                      ? optimizer.clientProgress.progress
+                      : null
+                  }
+                  serverProgress={
+                    optimizer.serverProgress
+                      ? optimizer.serverProgress.progress
+                      : null
+                  }
                 />
               </ErrorBoundary>
             </div>
