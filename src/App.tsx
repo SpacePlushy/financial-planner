@@ -17,20 +17,18 @@ import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { useUI } from './context/UIContext';
 import { usePersistence } from './hooks/usePersistence';
 import { useOptimizer } from './hooks/useOptimizer';
-// import { useSchedule } from './hooks/useSchedule'; // TODO: Add for future features
 import { logger } from './utils/logger';
 import './App.css';
 
 /**
- * Main application content component
+ * Main application content component with new dashboard layout
  */
 function AppContent() {
   const ui = useUI();
   const persistence = usePersistence();
   const optimizer = useOptimizer();
   const progress = useProgress();
-  // const schedule = useSchedule(); // TODO: Use for future features
-  const { config } = useConfiguration();
+  // const { config } = useConfiguration(); // Available if needed
 
   // Show loading state while restoring data
   if (persistence.isRestoring) {
@@ -57,7 +55,9 @@ function AppContent() {
                 </span>
               )}
               {persistence.hasUnsavedChanges && (
-                <span className="unsaved-indicator">●</span>
+                <span className="unsaved-indicator" title="Unsaved changes">
+                  ●
+                </span>
               )}
             </div>
 
@@ -66,6 +66,7 @@ function AppContent() {
               className="theme-toggle"
               onClick={() => ui.toggleTheme()}
               aria-label="Toggle theme"
+              title={`Switch to ${ui.theme === 'light' ? 'dark' : 'light'} mode`}
             >
               {ui.theme === 'light' ? '🌙' : '☀️'}
             </button>
@@ -73,175 +74,165 @@ function AppContent() {
         </div>
       </header>
 
-      {/* Main content */}
+      {/* Main Dashboard Grid */}
       <main className="app-main">
-        <div className="app-container">
-          {/* Configuration section */}
-          <section className="configuration-section">
-            <ErrorBoundary
-              level="section"
-              resetKeys={[]}
-              onError={error =>
-                logger.error('ConfigurationPanel', 'Configuration error', error)
-              }
-            >
-              <ConfigurationPanel
-                startOptimization={optimizer.startOptimization}
-                isOptimizing={optimizer.isOptimizing}
-              />
-            </ErrorBoundary>
-          </section>
+        <div className="dashboard-grid">
+          {/* Left Panel: Configuration */}
+          <div className="panel config-panel">
+            <div className="panel-header">
+              <h2 className="panel-title">Configuration</h2>
+            </div>
+            <div className="panel-content">
+              <ErrorBoundary
+                level="section"
+                resetKeys={[]}
+                onError={error =>
+                  logger.error(
+                    'ConfigurationPanel',
+                    'Configuration error',
+                    error
+                  )
+                }
+              >
+                <ConfigurationPanel
+                  startOptimization={optimizer.startOptimization}
+                  isOptimizing={optimizer.isOptimizing}
+                />
+              </ErrorBoundary>
 
-          {/* Summary section */}
-          <section className="summary-section">
-            <ErrorBoundary
-              level="section"
-              onError={error => logger.error('Summary', 'Summary error', error)}
-            >
-              <Summary />
-            </ErrorBoundary>
-          </section>
+              {/* Action buttons at bottom of config panel */}
+              <div className="action-bar">
+                <button
+                  className="action-button save"
+                  onClick={() => persistence.save()}
+                  disabled={
+                    persistence.isSaving || !persistence.hasUnsavedChanges
+                  }
+                  title="Save current configuration"
+                >
+                  {persistence.isSaving ? '...' : 'Save'}
+                </button>
 
-          {/* Schedule table section */}
-          <section className="schedule-section">
-            <div className="section-header">
-              <h2>Schedule</h2>
-              <div className="view-controls">
+                <button
+                  className="action-button export"
+                  onClick={() => persistence.exportToFile()}
+                  disabled={persistence.isExporting}
+                  title="Export to JSON file"
+                >
+                  Export
+                </button>
+
+                <button
+                  className="action-button import"
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.json';
+                    input.onchange = e => {
+                      const file = (e.target as HTMLInputElement).files?.[0];
+                      if (file) {
+                        persistence.importFromFile(file);
+                      }
+                    };
+                    input.click();
+                  }}
+                  disabled={persistence.isImporting}
+                  title="Import from JSON file"
+                >
+                  Import
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Center Panel: Results & Progress */}
+          <div className="panel results-panel">
+            <div className="panel-header">
+              <h2 className="panel-title">Results & Analysis</h2>
+            </div>
+            <div className="panel-content">
+              <ErrorBoundary
+                level="section"
+                onError={error =>
+                  logger.error('Summary', 'Summary error', error)
+                }
+              >
+                <Summary />
+              </ErrorBoundary>
+
+              {/* Optimization progress */}
+              {(optimizer.isOptimizing || progress.lastResult) && (
+                <div className="progress-section fade-in">
+                  <ErrorBoundary
+                    level="section"
+                    onError={error =>
+                      logger.error(
+                        'OptimizationProgress',
+                        'Progress error',
+                        error
+                      )
+                    }
+                  >
+                    <OptimizationProgress />
+                  </ErrorBoundary>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Panel: Schedule */}
+          <div className="panel schedule-panel">
+            <div className="schedule-controls">
+              <div className="view-toggle">
                 <button
                   className={`view-button ${ui.viewMode === 'table' ? 'active' : ''}`}
                   onClick={() => ui.setViewMode('table')}
                 >
-                  Table View
+                  Table
                 </button>
                 <button
                   className={`view-button ${ui.viewMode === 'calendar' ? 'active' : ''}`}
                   onClick={() => ui.setViewMode('calendar')}
                 >
-                  Calendar View
+                  Calendar
                 </button>
-                <label className="checkbox-label">
+              </div>
+
+              <div className="schedule-actions">
+                <label className="checkbox-label text-small">
                   <input
                     type="checkbox"
                     checked={ui.showWeekends}
                     onChange={() => ui.toggleWeekends()}
                   />
-                  Show Weekends
+                  Weekends
                 </label>
-                <label className="checkbox-label">
+                <label className="checkbox-label text-small">
                   <input
                     type="checkbox"
                     checked={ui.highlightViolations}
                     onChange={() => ui.toggleHighlightViolations()}
                   />
-                  Highlight Violations
+                  Violations
                 </label>
               </div>
             </div>
-            <ErrorBoundary
-              level="section"
-              onError={error =>
-                logger.error('ScheduleTable', 'Schedule table error', error)
-              }
-            >
-              {ui.viewMode === 'table' ? (
-                <ScheduleTable />
-              ) : (
-                <ScheduleCalendar />
-              )}
-            </ErrorBoundary>
-          </section>
 
-          {/* Optimization progress */}
-          {(optimizer.isOptimizing || progress.lastResult) && (
-            <section className="progress-section">
+            <div className="schedule-table-container">
               <ErrorBoundary
                 level="section"
                 onError={error =>
-                  logger.error('OptimizationProgress', 'Progress error', error)
+                  logger.error('ScheduleTable', 'Schedule table error', error)
                 }
               >
-                <OptimizationProgress />
+                {ui.viewMode === 'table' ? (
+                  <ScheduleTable />
+                ) : (
+                  <ScheduleCalendar />
+                )}
               </ErrorBoundary>
-            </section>
-          )}
-
-          {/* Action buttons */}
-          <section className="actions-section">
-            <div className="action-buttons">
-              {/* Save/Load actions */}
-              <button
-                className="action-button save"
-                onClick={() => persistence.save()}
-                disabled={
-                  persistence.isSaving || !persistence.hasUnsavedChanges
-                }
-              >
-                {persistence.isSaving ? 'Saving...' : 'Save'}
-              </button>
-
-              <button
-                className="action-button export"
-                onClick={() => persistence.exportToFile()}
-                disabled={persistence.isExporting}
-              >
-                {persistence.isExporting ? 'Exporting...' : 'Export'}
-              </button>
-
-              <button
-                className="action-button import"
-                onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = '.json';
-                  input.onchange = e => {
-                    const file = (e.target as HTMLInputElement).files?.[0];
-                    if (file) {
-                      persistence.importFromFile(file);
-                    }
-                  };
-                  input.click();
-                }}
-                disabled={persistence.isImporting}
-              >
-                {persistence.isImporting ? 'Importing...' : 'Import'}
-              </button>
-
-              {/* Optimization actions */}
-              {!optimizer.isOptimizing ? (
-                <button
-                  className="action-button optimize primary"
-                  onClick={() => optimizer.startOptimization(config)}
-                  disabled={false}
-                >
-                  Start Optimization
-                </button>
-              ) : (
-                <>
-                  {optimizer.isPaused ? (
-                    <button
-                      className="action-button resume"
-                      onClick={() => optimizer.resumeOptimization()}
-                    >
-                      Resume
-                    </button>
-                  ) : (
-                    <button
-                      className="action-button pause"
-                      onClick={() => optimizer.pauseOptimization()}
-                    >
-                      Pause
-                    </button>
-                  )}
-                  <button
-                    className="action-button cancel"
-                    onClick={() => optimizer.cancelOptimization()}
-                  >
-                    Cancel
-                  </button>
-                </>
-              )}
             </div>
-          </section>
+          </div>
         </div>
       </main>
 

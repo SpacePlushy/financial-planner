@@ -175,3 +175,11 @@ The project is 87% complete (see implementation_plan.md for details):
 - Comprehensive test coverage
 - CI/CD pipeline configured
 - Some UI enhancements and documentation remaining
+
+## Active Development
+
+When working on UI redesigns or major refactoring:
+- **ALWAYS** check REDESIGN_PLAN.md before starting work
+- Update the plan's task checkboxes as you complete each phase
+- Document any deviations or improvements to the original plan
+- Keep the status section current with your progress
