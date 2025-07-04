@@ -1,6 +1,63 @@
 // @ts-check
 
 /**
+ * @typedef {Object} Shift
+ * @property {number} gross - Gross amount for the shift
+ * @property {number} net - Net amount for the shift
+ */
+
+/**
+ * @typedef {Object} ShiftTypes
+ * @property {Shift} large - Large shift configuration
+ * @property {Shift} medium - Medium shift configuration
+ * @property {Shift} small - Small shift configuration
+ */
+
+/**
+ * @typedef {Object} Expense
+ * @property {number} day - Day of the expense (1-30)
+ * @property {string} name - Name of the expense
+ * @property {number} amount - Amount of the expense
+ */
+
+/**
+ * @typedef {Object} Deposit
+ * @property {number} day - Day of the deposit (1-30)
+ * @property {number} amount - Amount of the deposit
+ */
+
+/**
+ * @typedef {Object} ManualConstraint
+ * @property {string|null} [shifts] - Fixed shifts for the day
+ * @property {number} [fixedEarnings] - Fixed earnings for the day
+ * @property {number} [fixedExpenses] - Fixed expenses for the day
+ * @property {number} [fixedBalance] - Fixed balance for the day
+ */
+
+/**
+ * @typedef {Object} OptimizationConfig
+ * @property {number} startingBalance - Starting balance
+ * @property {number} targetEndingBalance - Target ending balance
+ * @property {number} minimumBalance - Minimum allowed balance
+ * @property {number} populationSize - Population size for genetic algorithm
+ * @property {number} generations - Number of generations to run
+ * @property {Object.<number, ManualConstraint>} [manualConstraints] - Manual constraints by day
+ * @property {number} [balanceEditDay] - Day to edit balance
+ * @property {number} [newStartingBalance] - New starting balance after edit
+ */
+
+/**
+ * @typedef {Object} OptimizationResult
+ * @property {Array<string|null>} schedule - Schedule array with shift assignments
+ * @property {number[]} workDays - Array of work day numbers
+ * @property {number} totalEarnings - Total earnings from all shifts
+ * @property {number} finalBalance - Final balance at end of month
+ * @property {number} minBalance - Minimum balance reached during month
+ * @property {number} violations - Number of balance violations
+ * @property {string} [computationTime] - Time taken for computation
+ */
+
+/**
  * Vercel Serverless Function for Schedule Optimization
  * This is a self-contained version that doesn't rely on TypeScript imports
  */
@@ -28,6 +85,13 @@ const headers = {
  * Simple genetic algorithm implementation for serverless
  */
 class SimpleGeneticOptimizer {
+  /**
+   * Creates an instance of SimpleGeneticOptimizer
+   * @param {OptimizationConfig} config - Optimization configuration
+   * @param {Expense[]} expenses - Array of expenses
+   * @param {Deposit[]} deposits - Array of deposits
+   * @param {ShiftTypes} shiftTypes - Shift type configurations
+   */
   constructor(config, expenses, deposits, shiftTypes) {
     this.config = config;
     this.expenses = expenses || [];
@@ -388,6 +452,11 @@ class SimpleGeneticOptimizer {
     };
   }
 
+  /**
+   * Runs the genetic algorithm optimization
+   * @param {Function} [progressCallback] - Optional callback for progress updates
+   * @returns {Promise<OptimizationResult>} The optimization result
+   */
   async optimize(progressCallback) {
     const populationSize = this.config.populationSize || GENETIC_ALGORITHM.POPULATION_SIZE;
     const generations = this.config.generations || GENETIC_ALGORITHM.GENERATIONS;
@@ -683,6 +752,12 @@ class SimpleGeneticOptimizer {
   }
 }
 
+/**
+ * Vercel serverless function handler for optimization endpoint
+ * @param {import('@vercel/node').VercelRequest} req - The request object
+ * @param {import('@vercel/node').VercelResponse} res - The response object
+ * @returns {Promise<void>}
+ */
 module.exports = async (req, res) => {
   // Handle CORS preflight
   if (req.method === API_CONSTANTS.METHODS.OPTIONS) {
