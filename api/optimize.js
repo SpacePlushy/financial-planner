@@ -28,15 +28,15 @@ class SimpleGeneticOptimizer {
     
     // Process expenses
     for (const exp of this.expenses) {
-      if (exp.day >= 1 && exp.day <= 30) {
-        this.expensesByDay[exp.day] += exp.amount;
+      if (exp && exp.day >= 1 && exp.day <= 30 && exp.amount) {
+        this.expensesByDay[exp.day] = (this.expensesByDay[exp.day] || 0) + exp.amount;
       }
     }
     
     // Process deposits
     for (const dep of this.deposits) {
-      if (dep.day >= 1 && dep.day <= 30) {
-        this.depositsByDay[dep.day] += dep.amount;
+      if (dep && dep.day >= 1 && dep.day <= 30 && dep.amount) {
+        this.depositsByDay[dep.day] = (this.depositsByDay[dep.day] || 0) + dep.amount;
       }
     }
     // Handle both formats: {value: X} or {net: X}
@@ -293,6 +293,13 @@ module.exports = async (req, res) => {
   try {
     const { config, expenses, deposits, shiftTypes } = req.body;
 
+    console.log('Received request with:', {
+      hasConfig: !!config,
+      expensesCount: expenses ? expenses.length : 0,
+      depositsCount: deposits ? deposits.length : 0,
+      hasShiftTypes: !!shiftTypes
+    });
+
     if (!config) {
       throw new Error('No configuration provided');
     }
@@ -324,10 +331,12 @@ module.exports = async (req, res) => {
     const endTime = Date.now();
     
     console.error('Optimization error:', error);
+    console.error('Stack trace:', error.stack);
     
     res.status(500).json({
       success: false,
       error: error.message || 'Unknown error occurred',
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       performanceMetrics: {
         startTime,
         endTime,
