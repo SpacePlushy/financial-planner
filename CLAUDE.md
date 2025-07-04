@@ -51,6 +51,10 @@ npm test -- ConfigurationPanel.test  # Run specific test file
 npm run lint              # Check for issues
 npm run lint:fix         # Auto-fix issues
 
+# Code Formatting
+npx prettier --write .    # Format all files
+npx prettier --check .    # Check formatting without changes
+
 # Build
 npm run build            # Production build
 

@@ -153,11 +153,6 @@ export const OptimizationProgress: React.FC = () => {
     );
   }
 
-  // Don't show anything if not optimizing and no result to show
-  if (!isOptimizing && !isCompleted) {
-    return null;
-  }
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -276,9 +271,13 @@ export const OptimizationProgress: React.FC = () => {
               <span
                 className={`${styles.metricValue} ${isFitnessChanging ? styles.changing : ''}`}
               >
-                {currentProgress
-                  ? formatFitness(currentProgress.bestFitness)
-                  : '—'}
+                {isCompleted && lastResult
+                  ? formatFitness(
+                      lastResult.violations === 0 ? 0 : lastResult.totalEarnings
+                    )
+                  : currentProgress
+                    ? formatFitness(currentProgress.bestFitness)
+                    : '—'}
               </span>
             </div>
           </div>
@@ -304,7 +303,9 @@ export const OptimizationProgress: React.FC = () => {
               <span
                 className={`${styles.metricValue} ${isWorkDaysChanging ? styles.changing : ''}`}
               >
-                {currentProgress?.workDays || '—'}
+                {isCompleted && lastResult
+                  ? lastResult.workDays.length
+                  : currentProgress?.workDays || '—'}
               </span>
             </div>
           </div>
@@ -327,9 +328,13 @@ export const OptimizationProgress: React.FC = () => {
             <div className={styles.metricContent}>
               <span className={styles.metricLabel}>Balance</span>
               <span
-                className={`${styles.metricValue} ${currentProgress?.balance && currentProgress.balance < 0 ? styles.negative : ''}`}
+                className={`${styles.metricValue} ${(isCompleted && lastResult && lastResult.finalBalance < 0) || (currentProgress?.balance && currentProgress.balance < 0) ? styles.negative : ''}`}
               >
-                ${currentProgress?.balance?.toFixed(2) || '—'}
+                {isCompleted && lastResult
+                  ? `$${lastResult.finalBalance.toFixed(2)}`
+                  : currentProgress?.balance
+                    ? `$${currentProgress.balance.toFixed(2)}`
+                    : '$—'}
               </span>
             </div>
           </div>
@@ -352,9 +357,11 @@ export const OptimizationProgress: React.FC = () => {
             <div className={styles.metricContent}>
               <span className={styles.metricLabel}>Violations</span>
               <span
-                className={`${styles.metricValue} ${isViolationsChanging ? styles.changing : ''} ${currentProgress?.violations && currentProgress.violations > 0 ? styles.hasViolations : ''}`}
+                className={`${styles.metricValue} ${isViolationsChanging ? styles.changing : ''} ${(isCompleted && lastResult && lastResult.violations > 0) || (currentProgress?.violations && currentProgress.violations > 0) ? styles.hasViolations : ''}`}
               >
-                {currentProgress?.violations ?? '—'}
+                {isCompleted && lastResult
+                  ? lastResult.violations
+                  : (currentProgress?.violations ?? '—')}
               </span>
             </div>
           </div>
