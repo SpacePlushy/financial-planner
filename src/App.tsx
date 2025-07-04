@@ -339,7 +339,7 @@ function App() {
         // In production, you might want to send this to an error tracking service
       }}
     >
-      <UIProvider initialTheme="light" initialDebugMode={false}>
+      <UIProvider initialDebugMode={false}>
         <ScheduleProvider>
           <ConfigurationProvider>
             <ProgressProvider>

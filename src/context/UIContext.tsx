@@ -169,9 +169,25 @@ interface UIProviderProps {
  */
 export function UIProvider({
   children,
-  initialTheme = 'light',
+  initialTheme,
   initialDebugMode = false,
 }: UIProviderProps) {
+  // Detect system theme preference
+  const getSystemTheme = (): 'light' | 'dark' => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
+    }
+    return 'light';
+  };
+
+  // Use system theme if no initial theme is provided
+  const effectiveInitialTheme = initialTheme || getSystemTheme();
+
+  // Track if user has manually overridden the theme
+  const hasUserOverride = React.useRef(false);
+
   // Create wrapped reducer with logging middleware
   const wrappedReducer = React.useMemo(
     () =>
@@ -188,7 +204,7 @@ export function UIProvider({
 
   const [state, dispatch] = useReducer(wrappedReducer, {
     ...initialState,
-    theme: initialTheme,
+    theme: effectiveInitialTheme,
     debugMode: initialDebugMode,
   });
 
@@ -197,6 +213,8 @@ export function UIProvider({
     if (process.env.NODE_ENV !== 'test') {
       logger.info('UIContext', 'UIProvider mounted', {
         initialTheme,
+        effectiveInitialTheme,
+        systemTheme: getSystemTheme(),
         initialDebugMode,
       });
     }
@@ -213,6 +231,31 @@ export function UIProvider({
   React.useEffect(() => {
     document.documentElement.setAttribute('data-theme', state.theme);
   }, [state.theme]);
+
+  // Listen for system theme changes
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const handleThemeChange = (e: MediaQueryListEvent) => {
+      if (!hasUserOverride.current) {
+        dispatch({ type: 'SET_THEME', payload: e.matches ? 'dark' : 'light' });
+      }
+    };
+
+    // Modern browsers
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleThemeChange);
+      return () => mediaQuery.removeEventListener('change', handleThemeChange);
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(handleThemeChange);
+      return () => mediaQuery.removeListener(handleThemeChange);
+    }
+  }, []);
 
   // View mode actions
   const setViewMode = useCallback((mode: 'table' | 'calendar') => {
@@ -295,10 +338,12 @@ export function UIProvider({
 
   // Theme actions
   const setTheme = useCallback((theme: 'light' | 'dark') => {
+    hasUserOverride.current = true;
     dispatch({ type: 'SET_THEME', payload: theme });
   }, []);
 
   const toggleTheme = useCallback(() => {
+    hasUserOverride.current = true;
     dispatch({
       type: 'SET_THEME',
       payload: state.theme === 'light' ? 'dark' : 'light',
