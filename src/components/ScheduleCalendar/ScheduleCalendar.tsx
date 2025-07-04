@@ -52,8 +52,8 @@ export const ScheduleCalendar: React.FC = () => {
   }, []);
 
   // Get balance indicator class
-  const getBalanceClass = useCallback((balance: number) => {
-    if (balance < 0) return styles.balanceNegative;
+  const getBalanceClass = useCallback((balance: number | null | undefined) => {
+    if (!balance || balance < 0) return styles.balanceNegative;
     if (balance < 100) return styles.balanceLow;
     if (balance > 1000) return styles.balanceHigh;
     return styles.balanceNormal;
@@ -295,9 +295,12 @@ export const ScheduleCalendar: React.FC = () => {
               className={`${styles.statValue} ${getBalanceClass(currentSchedule[currentSchedule.length - 1]?.endBalance || 0)}`}
             >
               $
-              {currentSchedule[currentSchedule.length - 1]?.endBalance.toFixed(
-                2
-              ) || '0.00'}
+              {currentSchedule.length > 0 &&
+              currentSchedule[currentSchedule.length - 1]?.endBalance
+                ? currentSchedule[
+                    currentSchedule.length - 1
+                  ].endBalance.toFixed(2)
+                : '0.00'}
             </span>
           </div>
           <div className={styles.stat}>

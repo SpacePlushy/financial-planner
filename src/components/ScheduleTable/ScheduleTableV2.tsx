@@ -251,12 +251,12 @@ export const ScheduleTable: React.FC = () => {
                   ${getCellValue(day.day, 'deposit', day.deposit)}
                 </td>
                 <td className={`${styles.td} ${styles.numeric}`}>
-                  ${day.startBalance.toFixed(2)}
+                  ${day.startBalance ? day.startBalance.toFixed(2) : '0.00'}
                 </td>
                 <td
-                  className={`${styles.td} ${styles.numeric} ${day.endBalance < 0 ? styles.negative : ''}`}
+                  className={`${styles.td} ${styles.numeric} ${day.endBalance && day.endBalance < 0 ? styles.negative : ''}`}
                 >
-                  ${day.endBalance.toFixed(2)}
+                  ${day.endBalance ? day.endBalance.toFixed(2) : '0.00'}
                 </td>
               </tr>
             );

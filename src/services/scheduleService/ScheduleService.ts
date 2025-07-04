@@ -219,9 +219,7 @@ export class ScheduleService {
       // Check minimum balance
       if (day.endBalance < config.minimumBalance) {
         violations.push(
-          `Day ${day.day}: Balance ($${day.endBalance.toFixed(
-            2
-          )}) below minimum ($${config.minimumBalance.toFixed(2)})`
+          `Day ${day.day}: Balance ($${day.endBalance ? day.endBalance.toFixed(2) : '0.00'}) below minimum ($${config.minimumBalance.toFixed(2)})`
         );
       }
 
