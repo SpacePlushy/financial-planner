@@ -41,7 +41,6 @@ export const usePanelResize = () => {
   const handleMouseDown = useCallback(
     (divider: 'left' | 'right', e: React.MouseEvent) => {
       e.preventDefault();
-      console.log('Mouse down on divider:', divider);
       setIsResizing(divider);
       startXRef.current = e.clientX;
       startSizesRef.current = { ...sizes };
