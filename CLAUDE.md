@@ -3,6 +3,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Note**: This is a focused subset of documentation for Claude Code. For complete documentation framework and all guidelines, see [CONDUCTOR.md](CONDUCTOR.md).
+
 ## Critical Context (Read First)
 - **Tech Stack**: React 19.1.0, TypeScript 4.9.5, Create React App 5.0.1
 - **Main File**: src/index.tsx → src/App.tsx (entry point)
