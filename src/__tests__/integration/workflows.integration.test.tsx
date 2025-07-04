@@ -3,6 +3,18 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../App';
 
+// Type for our mock worker
+interface MockWorker {
+  postMessage: jest.Mock;
+  terminate: jest.Mock;
+  addEventListener: jest.Mock;
+  removeEventListener: jest.Mock;
+  dispatchEvent: jest.Mock;
+  onmessage: ((event: MessageEvent) => void) | null;
+  onmessageerror: ((event: MessageEvent) => void) | null;
+  onerror: ((event: ErrorEvent) => void) | null;
+}
+
 // Mock setup
 beforeEach(() => {
   // Mock localStorage
@@ -14,7 +26,7 @@ beforeEach(() => {
     length: 0,
     key: jest.fn(),
   };
-  global.localStorage = localStorageMock as any;
+  global.localStorage = localStorageMock as unknown as Storage;
 
   // Mock Worker
   const mockWorker = {
@@ -28,10 +40,13 @@ beforeEach(() => {
     onerror: null,
   };
 
-  global.Worker = jest.fn().mockImplementation(() => mockWorker) as any;
+  global.Worker = jest
+    .fn()
+    .mockImplementation(() => mockWorker) as unknown as typeof Worker;
 
   // Return the mock for test access
-  (global as any).mockWorker = mockWorker;
+  (global as unknown as { mockWorker: typeof mockWorker }).mockWorker =
+    mockWorker;
 
   // Mock console methods
   jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -41,14 +56,15 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.restoreAllMocks();
-  delete (global as any).mockWorker;
+  delete (global as unknown as { mockWorker: typeof mockWorker }).mockWorker;
 });
 
 describe('User Workflow Integration Tests', () => {
   describe('Complete Optimization Workflow', () => {
     it('should complete a full optimization cycle with schedule generation', async () => {
       const user = userEvent.setup();
-      const mockWorker = (global as any).mockWorker;
+      const mockWorker = (global as unknown as { mockWorker: MockWorker })
+        .mockWorker;
 
       render(<App />);
 
@@ -80,17 +96,17 @@ describe('User Workflow Integration Tests', () => {
       // Verify optimization started
       await waitFor(() => {
         expect(screen.getByText('Optimization Progress')).toBeInTheDocument();
-        expect(mockWorker.postMessage).toHaveBeenCalledWith(
-          expect.objectContaining({
-            type: 'start',
-            config: expect.objectContaining({
-              startingBalance: 2000,
-              targetBalance: 10000,
-              populationSize: 100,
-            }),
-          })
-        );
       });
+      expect(mockWorker.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'start',
+          config: expect.objectContaining({
+            startingBalance: 2000,
+            targetBalance: 10000,
+            populationSize: 100,
+          }),
+        })
+      );
 
       // Step 3: Simulate optimization progress
       mockWorker.onmessage({
@@ -144,8 +160,8 @@ describe('User Workflow Integration Tests', () => {
         expect(
           screen.queryByText('Optimization Progress')
         ).not.toBeInTheDocument();
-        expect(screen.getByText('Start Optimization')).toBeInTheDocument();
       });
+      expect(screen.getByText('Start Optimization')).toBeInTheDocument();
 
       // Step 5: Verify schedule is displayed
       const scheduleTable = screen.getByRole('table');
@@ -161,7 +177,8 @@ describe('User Workflow Integration Tests', () => {
   describe('Edit and Save Workflow', () => {
     it('should allow editing schedule values and saving changes', async () => {
       const user = userEvent.setup();
-      const mockWorker = (global as any).mockWorker;
+      const mockWorker = (global as unknown as { mockWorker: MockWorker })
+        .mockWorker;
 
       render(<App />);
 
@@ -212,41 +229,42 @@ describe('User Workflow Integration Tests', () => {
         cell.textContent?.includes('$300')
       );
 
-      if (earningsCell) {
-        // Double-click to edit
-        await user.dblClick(earningsCell);
+      // Ensure we have the expected cell
+      expect(earningsCell).toBeTruthy();
 
-        // Wait for modal
-        await waitFor(() => {
-          expect(screen.getByRole('dialog')).toBeInTheDocument();
-        });
+      // Double-click to edit
+      await user.dblClick(earningsCell!);
 
-        // Edit the value
-        const input = screen.getByRole('spinbutton');
-        await user.clear(input);
-        await user.type(input, '500');
+      // Wait for modal
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
 
-        // Save the edit
-        const saveButton = within(screen.getByRole('dialog')).getByText('Save');
-        await user.click(saveButton);
+      // Edit the value
+      const input = screen.getByRole('spinbutton');
+      await user.clear(input);
+      await user.type(input, '500');
 
-        // Modal should close
-        await waitFor(() => {
-          expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-        });
+      // Save the edit
+      const saveButton = within(screen.getByRole('dialog')).getByText('Save');
+      await user.click(saveButton);
 
-        // Save button should be enabled now
-        const mainSaveButton = screen.getByText('Save');
-        expect(mainSaveButton).not.toBeDisabled();
+      // Modal should close
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
 
-        // Save changes
-        await user.click(mainSaveButton);
+      // Save button should be enabled now
+      const mainSaveButton = screen.getByText('Save');
+      expect(mainSaveButton).not.toBeDisabled();
 
-        // Verify localStorage was called
-        await waitFor(() => {
-          expect(localStorage.setItem).toHaveBeenCalled();
-        });
-      }
+      // Save changes
+      await user.click(mainSaveButton);
+
+      // Verify localStorage was called
+      await waitFor(() => {
+        expect(localStorage.setItem).toHaveBeenCalled();
+      });
     });
   });
 
@@ -320,15 +338,16 @@ describe('User Workflow Integration Tests', () => {
       // Values should restore
       await waitFor(() => {
         expect(startingBalanceInput).toHaveValue(3000);
-        expect(mutationRateInput).toHaveValue(0.05);
       });
+      expect(mutationRateInput).toHaveValue(0.05);
     });
   });
 
   describe('Import/Export Workflow', () => {
     it('should export and import configuration and schedule data', async () => {
       const user = userEvent.setup();
-      const mockWorker = (global as any).mockWorker;
+      const mockWorker = (global as unknown as { mockWorker: MockWorker })
+        .mockWorker;
 
       render(<App />);
 
@@ -402,8 +421,8 @@ describe('User Workflow Integration Tests', () => {
       // Verify export was triggered
       await waitFor(() => {
         expect(createElementSpy).toHaveBeenCalledWith('a');
-        expect(URL.createObjectURL).toHaveBeenCalled();
       });
+      expect(URL.createObjectURL).toHaveBeenCalled();
 
       // Step 2: Import data
       const importButton = screen.getByText('Import');
@@ -467,7 +486,8 @@ describe('User Workflow Integration Tests', () => {
   describe('Filter and Sort Workflow', () => {
     it('should filter and sort schedule data', async () => {
       const user = userEvent.setup();
-      const mockWorker = (global as any).mockWorker;
+      const mockWorker = (global as unknown as { mockWorker: MockWorker })
+        .mockWorker;
 
       render(<App />);
 
@@ -606,7 +626,7 @@ describe('User Workflow Integration Tests', () => {
         });
 
         return worker;
-      }) as any;
+      }) as unknown as typeof Worker;
 
       render(<App />);
 
@@ -623,10 +643,10 @@ describe('User Workflow Integration Tests', () => {
       // Should show error (error handling will reset state)
       await waitFor(() => {
         expect(screen.getByText('Start Optimization')).toBeInTheDocument();
-        expect(
-          screen.queryByText('Optimization Progress')
-        ).not.toBeInTheDocument();
       });
+      expect(
+        screen.queryByText('Optimization Progress')
+      ).not.toBeInTheDocument();
 
       // Second attempt - will succeed
       await user.click(optimizeButton);

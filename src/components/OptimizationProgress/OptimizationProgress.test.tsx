@@ -22,14 +22,16 @@ describe('OptimizationProgress', () => {
 
   describe('Rendering', () => {
     it('renders nothing when no progress and not optimizing', () => {
-      const { container } = render(
+      render(
         <OptimizationProgress
           progress={null}
           isOptimizing={false}
           onCancel={mockOnCancel}
         />
       );
-      expect(container.firstChild).toBeNull();
+      expect(
+        screen.queryByText('Optimization Progress')
+      ).not.toBeInTheDocument();
     });
 
     it('renders with progress data', () => {
@@ -96,7 +98,7 @@ describe('OptimizationProgress', () => {
     });
 
     it('applies custom className', () => {
-      const { container } = render(
+      render(
         <OptimizationProgress
           progress={mockProgress}
           isOptimizing={true}
@@ -105,7 +107,8 @@ describe('OptimizationProgress', () => {
         />
       );
 
-      expect(container.firstChild).toHaveClass('custom-class');
+      const progressContainer = screen.getByTestId('optimization-progress');
+      expect(progressContainer).toHaveClass('custom-class');
     });
   });
 
@@ -234,10 +237,9 @@ describe('OptimizationProgress', () => {
       expect(
         screen.getByText('Initializing optimization...')
       ).toBeInTheDocument();
-      // Check for loading spinner by checking its parent container
-      expect(
-        screen.getByText('Initializing optimization...').parentElement
-      ).toHaveClass('loadingContainer');
+      // Check for loading state
+      const loadingContainer = screen.getByTestId('loading-container');
+      expect(loadingContainer).toHaveClass('loadingContainer');
     });
   });
 
@@ -353,7 +355,7 @@ describe('OptimizationProgress', () => {
         />
       );
 
-      const { container } = render(
+      render(
         <OptimizationProgress
           progress={null}
           isOptimizing={false}
@@ -361,7 +363,9 @@ describe('OptimizationProgress', () => {
         />
       );
 
-      expect(container.firstChild).toBeNull();
+      expect(
+        screen.queryByText('Optimization Progress')
+      ).not.toBeInTheDocument();
     });
 
     it('handles rapid progress updates', async () => {

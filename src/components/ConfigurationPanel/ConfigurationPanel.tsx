@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useConfig } from '../../hooks/useConfig';
 import { OptimizationConfig } from '../../types';
-import { ConfigurationPreset } from '../../context/types';
 import styles from './ConfigurationPanel.module.css';
 
 interface ConfigurationPanelProps {
@@ -28,7 +27,6 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
     clearPreset,
     createPreset,
     validateConfig,
-    safeUpdateConfig,
     isPresetNameTaken,
   } = useConfig();
 

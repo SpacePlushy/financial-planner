@@ -47,6 +47,11 @@ const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY = 1000;
 const OPTIMIZATION_TIMEOUT = 5 * 60 * 1000; // 5 minutes timeout
 
+// Extended Worker type with timeout tracking
+interface ExtendedWorker extends Worker {
+  _timeoutId?: NodeJS.Timeout;
+}
+
 export function useOptimizer(): UseOptimizerReturn {
   const {
     setOptimizationResult,
@@ -75,7 +80,7 @@ export function useOptimizer(): UseOptimizerReturn {
     currentOptimization: null,
   });
 
-  const workerRef = useRef<Worker | null>(null);
+  const workerRef = useRef<ExtendedWorker | null>(null);
   const retryCountRef = useRef(0);
   const optimizationStartTimeRef = useRef<number>(0);
 
@@ -101,6 +106,8 @@ export function useOptimizer(): UseOptimizerReturn {
       worker = createOptimizerWorker();
     }
 
+    const extWorker = worker as ExtendedWorker;
+
     worker.onmessage = event => {
       const { type, data, error } = event.data;
 
@@ -120,8 +127,8 @@ export function useOptimizer(): UseOptimizerReturn {
           const result = data as OptimizationResult;
 
           // Clear timeout if exists
-          if ((worker as any)._timeoutId) {
-            clearTimeout((worker as any)._timeoutId);
+          if (extWorker._timeoutId) {
+            clearTimeout(extWorker._timeoutId);
           }
 
           // Update schedule context
@@ -170,8 +177,8 @@ export function useOptimizer(): UseOptimizerReturn {
 
         case 'error':
           // Clear timeout if exists
-          if ((worker as any)._timeoutId) {
-            clearTimeout((worker as any)._timeoutId);
+          if (extWorker._timeoutId) {
+            clearTimeout(extWorker._timeoutId);
           }
 
           setProgressError(new Error(error || 'Unknown error occurred'));
@@ -249,7 +256,7 @@ export function useOptimizer(): UseOptimizerReturn {
       setProgressError(new Error('Worker error: ' + error.message));
     };
 
-    return worker;
+    return extWorker;
   }, [
     setOptimizationResult,
     setCurrentSchedule,
@@ -323,7 +330,7 @@ export function useOptimizer(): UseOptimizerReturn {
         }, OPTIMIZATION_TIMEOUT);
 
         // Store timeout ID on worker so we can clear it
-        (workerRef.current as any)._timeoutId = timeoutId;
+        (workerRef.current as ExtendedWorker)._timeoutId = timeoutId;
 
         // Start optimization
         workerRef.current.postMessage({
@@ -375,6 +382,7 @@ export function useOptimizer(): UseOptimizerReturn {
       shiftTypes,
       startProgressOptimization,
       setProgressError,
+      state.isOptimizing,
     ]
   );
 
@@ -383,8 +391,8 @@ export function useOptimizer(): UseOptimizerReturn {
       logger.info('useOptimizer', 'Cancelling optimization');
 
       // Clear timeout if exists
-      if ((workerRef.current as any)._timeoutId) {
-        clearTimeout((workerRef.current as any)._timeoutId);
+      if ((workerRef.current as ExtendedWorker)._timeoutId) {
+        clearTimeout((workerRef.current as ExtendedWorker)._timeoutId);
       }
 
       workerRef.current.postMessage({ type: 'cancel' });

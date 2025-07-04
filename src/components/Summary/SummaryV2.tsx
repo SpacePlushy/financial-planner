@@ -148,6 +148,9 @@ export const Summary: React.FC<SummaryProps> = ({ className }) => {
 
   // Format currency
   const formatCurrency = (amount: number): string => {
+    if (isNaN(amount) || amount === null || amount === undefined) {
+      return '$0.00';
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -225,7 +228,7 @@ export const Summary: React.FC<SummaryProps> = ({ className }) => {
               {formatCurrency(metrics.totalEarnings)}
             </div>
             <div className={styles.metricSubValue}>
-              {metrics.totalWorkDays > 0
+              {metrics.totalWorkDays > 0 && !isNaN(metrics.totalEarnings)
                 ? `${formatCurrency(metrics.totalEarnings / metrics.totalWorkDays)}/day`
                 : 'No earnings'}
             </div>

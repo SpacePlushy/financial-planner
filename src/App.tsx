@@ -5,7 +5,7 @@ import { ConfigurationProvider } from './context/ConfigurationContext';
 import { PersistenceProvider } from './context/PersistenceContext';
 import { UIProvider } from './context/UIContext';
 import { ProgressProvider, useProgress } from './context/ProgressContext';
-import { ConfigurationPanel } from './components/ConfigurationPanel/ConfigurationPanelV2';
+import { ConfigurationPanel } from './components/ConfigurationPanel/ConfigurationPanelV3';
 import { ScheduleTable } from './components/ScheduleTable/ScheduleTableV2';
 import { ScheduleCalendar } from './components/ScheduleCalendar';
 import { Summary } from './components/Summary/SummaryV2';
@@ -13,11 +13,14 @@ import { OptimizationProgress } from './components/OptimizationProgress/Optimiza
 import { EditModal } from './components/EditModal/EditModalV2';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { ActionBar } from './components/ActionBar/ActionBar';
+import { ResizablePanel, ResizableDivider } from './components/ResizablePanel';
 import { useUI } from './context/UIContext';
 import { usePersistence } from './hooks/usePersistence';
-import { useOptimizer } from './hooks/useOptimizer';
+import { useDualOptimizer } from './hooks/useDualOptimizer';
+import { usePanelResize } from './hooks/usePanelResize';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { logger } from './utils/logger';
+import { UI_CONSTANTS } from './config/user-config';
 import './App.css';
 
 /**
@@ -26,8 +29,9 @@ import './App.css';
 function AppContent() {
   const ui = useUI();
   const persistence = usePersistence();
-  const optimizer = useOptimizer();
+  const optimizer = useDualOptimizer();
   const progress = useProgress();
+  const panelResize = usePanelResize();
   // const { config } = useConfiguration(); // Available if needed
 
   // Enable keyboard shortcuts
@@ -38,7 +42,7 @@ function AppContent() {
 
   React.useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 1024);
+      setIsMobile(window.innerWidth <= UI_CONSTANTS.BREAKPOINTS.TABLET);
     };
 
     checkMobile();
@@ -92,9 +96,16 @@ function AppContent() {
 
       {/* Main Dashboard Grid */}
       <main className="app-main" role="main">
-        <div className="dashboard-grid">
+        <div
+          className={`dashboard-grid resizable-container ${panelResize.isResizing ? 'resizing-active' : ''}`}
+          ref={panelResize.containerRef}
+        >
           {/* Left Panel: Configuration */}
-          <div className="panel config-panel">
+          <ResizablePanel
+            position="left"
+            width={panelResize.sizes.left}
+            className="panel config-panel"
+          >
             <div className="panel-header">
               <h2 className="panel-title">Configuration</h2>
             </div>
@@ -113,6 +124,19 @@ function AppContent() {
                 <ConfigurationPanel
                   startOptimization={optimizer.startOptimization}
                   isOptimizing={optimizer.isOptimizing}
+                  processingMode={optimizer.processingMode}
+                  setProcessingMode={optimizer.setProcessingMode}
+                  metrics={optimizer.metrics}
+                  clientProgress={
+                    optimizer.clientProgress
+                      ? optimizer.clientProgress.progress
+                      : null
+                  }
+                  serverProgress={
+                    optimizer.serverProgress
+                      ? optimizer.serverProgress.progress
+                      : null
+                  }
                 />
               </ErrorBoundary>
             </div>
@@ -129,10 +153,22 @@ function AppContent() {
                 }
               />
             )}
-          </div>
+          </ResizablePanel>
+
+          {/* Resize Divider between Left and Center */}
+          <ResizableDivider
+            position="left"
+            onMouseDown={panelResize.handleMouseDown}
+            onTouchStart={panelResize.handleTouchStart}
+            isResizing={panelResize.isResizing === 'left'}
+          />
 
           {/* Center Panel: Results & Progress */}
-          <div className="panel results-panel">
+          <ResizablePanel
+            position="center"
+            width={panelResize.sizes.center}
+            className="panel results-panel"
+          >
             <div className="panel-header">
               <h2 className="panel-title">Results & Analysis</h2>
             </div>
@@ -162,10 +198,22 @@ function AppContent() {
                 </ErrorBoundary>
               )}
             </div>
-          </div>
+          </ResizablePanel>
+
+          {/* Resize Divider between Center and Right */}
+          <ResizableDivider
+            position="right"
+            onMouseDown={panelResize.handleMouseDown}
+            onTouchStart={panelResize.handleTouchStart}
+            isResizing={panelResize.isResizing === 'right'}
+          />
 
           {/* Right Panel: Schedule */}
-          <div className="panel schedule-panel">
+          <ResizablePanel
+            position="right"
+            width={panelResize.sizes.right}
+            className="panel schedule-panel"
+          >
             <div className="schedule-controls">
               <div className="view-toggle">
                 <button
@@ -216,7 +264,7 @@ function AppContent() {
                 )}
               </ErrorBoundary>
             </div>
-          </div>
+          </ResizablePanel>
         </div>
       </main>
 

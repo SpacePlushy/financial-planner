@@ -288,14 +288,11 @@ describe('EditModal', () => {
     it('should trap focus within modal', () => {
       render(<EditModal {...defaultProps} />);
 
-      const closeButton = screen.getByLabelText('Close modal');
-      const input = screen.getByRole('spinbutton');
-      const cancelButton = screen.getByText('Cancel');
       const saveButton = screen.getByText('Save');
 
       // Focus last element
       saveButton.focus();
-      expect(document.activeElement).toBe(saveButton);
+      expect(saveButton).toHaveFocus();
 
       // Tab should wrap to first element
       fireEvent.keyDown(document, { key: 'Tab' });
@@ -309,7 +306,7 @@ describe('EditModal', () => {
     it('should close modal when clicking backdrop', () => {
       render(<EditModal {...defaultProps} />);
 
-      const backdrop = screen.getByRole('dialog').parentElement!;
+      const backdrop = screen.getByTestId('modal-backdrop');
       fireEvent.click(backdrop);
 
       expect(defaultProps.onCancel).toHaveBeenCalledTimes(1);
@@ -336,7 +333,7 @@ describe('EditModal', () => {
       await waitFor(
         () => {
           const input = screen.getByRole('spinbutton');
-          expect(document.activeElement).toBe(input);
+          expect(input).toHaveFocus();
         },
         { timeout: 200 }
       );
@@ -349,10 +346,11 @@ describe('EditModal', () => {
         () => {
           const input = screen.getByRole('spinbutton') as HTMLInputElement;
           expect(input.selectionStart).toBe(0);
-          expect(input.selectionEnd).toBe(input.value.length);
         },
         { timeout: 200 }
       );
+      const input = screen.getByRole('spinbutton') as HTMLInputElement;
+      expect(input.selectionEnd).toBe(input.value.length);
     });
   });
 
@@ -421,8 +419,8 @@ describe('EditModal', () => {
         expect(
           screen.getByText('Failed to save. Please try again.')
         ).toBeInTheDocument();
-        expect(screen.queryByText('Saving...')).not.toBeInTheDocument();
       });
+      expect(screen.queryByText('Saving...')).not.toBeInTheDocument();
     });
 
     it('should handle decimal values correctly', async () => {
