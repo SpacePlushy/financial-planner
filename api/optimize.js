@@ -384,8 +384,9 @@ class SimpleGeneticOptimizer {
       
       // Generate rest through crossover and mutation
       while (newPopulation.length < populationSize) {
-        const parent1 = population[Math.floor(Math.random() * eliteSize)];
-        const parent2 = population[Math.floor(Math.random() * eliteSize)];
+        // Tournament selection for better diversity
+        const parent1 = this.tournamentSelect(population);
+        const parent2 = this.tournamentSelect(population);
         
         const child = this.crossover(parent1.schedule, parent2.schedule);
         const mutatedChild = this.mutate(child);
@@ -489,6 +490,20 @@ class SimpleGeneticOptimizer {
       }
     }
     return totalEarnings;
+  }
+  
+  tournamentSelect(population) {
+    const tournament = [];
+    const tournamentSize = 5;
+    
+    for (let i = 0; i < tournamentSize; i++) {
+      const idx = Math.floor(Math.random() * population.length);
+      tournament.push(population[idx]);
+    }
+    
+    // Sort by fitness (lower is better)
+    tournament.sort((a, b) => a.fitness - b.fitness);
+    return tournament[0];
   }
 
   formatSchedule(schedule) {
