@@ -231,18 +231,12 @@ export class GeneticOptimizer {
       (this.shifts.large.net + this.shifts.medium.net + this.shifts.small.net) /
       3;
     const estimatedWorkDays = Math.ceil(this.requiredFlexNet / avgEarnings);
-    let baseWorkProbability = Math.min(
-      0.9,
-      (estimatedWorkDays / availableDays) * 1.2
-    );
 
-    if (inCrisisMode) {
-      baseWorkProbability = 0.99;
-    }
-
-    // Cover critical days
+    // Cover critical days with randomized coverage
     for (const criticalDay of this.criticalDays) {
-      const workDay = Math.max(this.startDay, criticalDay - 3);
+      // Randomize work day placement 2-5 days before critical day
+      const daysBeforeCritical = Math.floor(Math.random() * 4) + 2;
+      const workDay = Math.max(this.startDay, criticalDay - daysBeforeCritical);
       if (workDay <= 30 && !chromosome[workDay]) {
         if (inCrisisMode) {
           const rand = Math.random();
@@ -266,7 +260,7 @@ export class GeneticOptimizer {
       }
     }
 
-    // Fill remaining days
+    // Count already scheduled work days
     let scheduledWorkDays = 0;
     for (let d = this.startDay; d <= 30; d++) {
       if (chromosome[d]) scheduledWorkDays++;
@@ -286,55 +280,135 @@ export class GeneticOptimizer {
       );
     }
 
+    // Create array of available days and shuffle for random distribution
+    const availableDaysArray: number[] = [];
     for (let day = this.startDay; day <= 30; day++) {
-      if (chromosome[day] !== undefined) continue;
+      if (chromosome[day] === undefined) {
+        availableDaysArray.push(day);
+      }
+    }
 
-      const remainingDays = 30 - day + 1;
-      const remainingWorkDaysNeeded = minWorkDaysNeeded - scheduledWorkDays;
-      const mustWork = remainingWorkDaysNeeded >= remainingDays;
+    // Shuffle available days for random selection
+    for (let i = availableDaysArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [availableDaysArray[i], availableDaysArray[j]] = [
+        availableDaysArray[j],
+        availableDaysArray[i],
+      ];
+    }
 
-      let workProbability: number;
-      if (mustWork) {
-        workProbability = 1.0;
-      } else if (inCrisisMode) {
-        workProbability = 0.95;
-      } else {
-        const variance = (Math.random() - 0.5) * 0.3;
-        workProbability = Math.max(
-          0.1,
-          Math.min(0.95, baseWorkProbability + variance)
-        );
+    // Calculate how many more work days we need
+    const remainingWorkDaysNeeded = Math.max(
+      0,
+      minWorkDaysNeeded - scheduledWorkDays
+    );
+
+    // Distribute remaining work days with spacing preference
+    if (remainingWorkDaysNeeded > 0 && availableDaysArray.length > 0) {
+      // Sort available days to enable spacing
+      availableDaysArray.sort((a, b) => a - b);
+
+      // Try to distribute evenly
+      const step = Math.max(
+        1,
+        Math.floor(availableDaysArray.length / remainingWorkDaysNeeded)
+      );
+      let daysAdded = 0;
+
+      // First pass: add work days with ideal spacing
+      for (
+        let i = 0;
+        i < availableDaysArray.length && daysAdded < remainingWorkDaysNeeded;
+        i += step
+      ) {
+        const day = availableDaysArray[i];
+
+        // Check minimum spacing from existing work days
+        let tooClose = false;
+        for (
+          let d = Math.max(this.startDay, day - 1);
+          d <= Math.min(30, day + 1);
+          d++
+        ) {
+          if (d !== day && chromosome[d]) {
+            tooClose = true;
+            break;
+          }
+        }
+
+        if (!tooClose) {
+          if (inCrisisMode) {
+            const rand = Math.random();
+            if (rand < 0.3) {
+              chromosome[day] = 'large+large';
+            } else if (rand < 0.7) {
+              chromosome[day] =
+                Math.random() < 0.5 ? 'medium+large' : 'large+medium';
+            } else {
+              chromosome[day] = 'medium+medium';
+            }
+          } else {
+            const rand = Math.random();
+            if (rand < 0.2) {
+              chromosome[day] = 'small';
+            } else if (rand < 0.7) {
+              chromosome[day] = 'medium';
+            } else {
+              chromosome[day] = 'large';
+            }
+
+            const doubleShiftProbability = 0.3;
+            if (
+              Math.random() < doubleShiftProbability &&
+              chromosome[day] !== 'large'
+            ) {
+              const secondShift = Math.random() < 0.5 ? 'small' : 'medium';
+              chromosome[day] = chromosome[day] + '+' + secondShift;
+            }
+          }
+          daysAdded++;
+          scheduledWorkDays++;
+        }
       }
 
-      if (Math.random() < workProbability) {
-        scheduledWorkDays++;
-        if (inCrisisMode) {
-          const rand = Math.random();
-          if (rand < 0.3) {
-            chromosome[day] = 'large+large';
-          } else if (rand < 0.7) {
-            chromosome[day] =
-              Math.random() < 0.5 ? 'medium+large' : 'large+medium';
-          } else {
-            chromosome[day] = 'medium+medium';
-          }
-        } else {
-          const rand = Math.random();
-          if (rand < 0.2) {
-            chromosome[day] = 'small';
-          } else if (rand < 0.7) {
-            chromosome[day] = 'medium';
-          } else {
-            chromosome[day] = 'large';
-          }
-
-          const doubleShiftProbability = 0.3;
+      // Second pass: fill remaining needed days if first pass didn't meet requirements
+      if (daysAdded < remainingWorkDaysNeeded) {
+        for (const day of availableDaysArray) {
           if (
-            Math.random() < doubleShiftProbability &&
-            chromosome[day] !== 'large'
+            chromosome[day] === undefined &&
+            daysAdded < remainingWorkDaysNeeded
           ) {
-            const secondShift = Math.random() < 0.5 ? 'small' : 'medium';
-            chromosome[day] = chromosome[day] + '+' + secondShift;
+            if (inCrisisMode) {
+              const rand = Math.random();
+              if (rand < 0.3) {
+                chromosome[day] = 'large+large';
+              } else if (rand < 0.7) {
+                chromosome[day] =
+                  Math.random() < 0.5 ? 'medium+large' : 'large+medium';
+              } else {
+                chromosome[day] = 'medium+medium';
+              }
+            } else {
+              const rand = Math.random();
+              if (rand < 0.2) {
+                chromosome[day] = 'small';
+              } else if (rand < 0.7) {
+                chromosome[day] = 'medium';
+              } else {
+                chromosome[day] = 'large';
+              }
+
+              const doubleShiftProbability = 0.3;
+              if (
+                Math.random() < doubleShiftProbability &&
+                chromosome[day] !== 'large'
+              ) {
+                const secondShift = Math.random() < 0.5 ? 'small' : 'medium';
+                chromosome[day] = chromosome[day] + '+' + secondShift;
+              }
+            }
+            daysAdded++;
+            scheduledWorkDays++;
           }
         }
       }
@@ -511,6 +585,11 @@ export class GeneticOptimizer {
         const largeShiftEarnings = this.shifts.large.net;
         const isExtremeDeficit = deficitPerDay > largeShiftEarnings;
 
+        // Check spacing before mutation
+        let hasAdjacentWorkDay = false;
+        if (day > 1 && mutated[day - 1]) hasAdjacentWorkDay = true;
+        if (day < 30 && mutated[day + 1]) hasAdjacentWorkDay = true;
+
         if (isExtremeDeficit) {
           const rand = Math.random();
           if (rand < 0.4) {
@@ -523,6 +602,24 @@ export class GeneticOptimizer {
           }
         } else {
           const rand = Math.random();
+
+          // Bias against removing work days if they help with spacing
+          if (mutated[day] && !hasAdjacentWorkDay) {
+            // 80% chance to keep a well-spaced work day
+            if (rand < 0.8) {
+              continue;
+            }
+          }
+
+          // Bias against adding work days next to existing ones
+          if (!mutated[day] && hasAdjacentWorkDay) {
+            // Only 20% chance to add work day next to existing one
+            if (rand > 0.2) {
+              mutated[day] = null;
+              continue;
+            }
+          }
+
           if (rand < 0.2) {
             mutated[day] = null;
           } else if (rand < 0.5) {

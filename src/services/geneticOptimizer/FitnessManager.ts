@@ -22,21 +22,50 @@ class NormalFitnessStrategy implements FitnessStrategy {
     const finalBalanceDiff = Math.abs(balance - targetEndingBalance);
     const workDayPenalty = workDays * 30;
 
-    // Calculate consecutive work penalty
+    // Calculate consecutive work penalty with progressive scaling
     const gaps: number[] = [];
     for (let i = 1; i < workDaysList.length; i++) {
       gaps.push(workDaysList[i] - workDaysList[i - 1]);
     }
-    const consecutiveDays = gaps.filter(g => g === 1).length;
-    const consecutivePenalty = consecutiveDays * 75;
+    // Increased penalty for consecutive days and progressive penalty for multiple consecutive
+    let consecutivePenalty = 0;
+    let currentStreak = 0;
+    for (const gap of gaps) {
+      if (gap === 1) {
+        currentStreak++;
+        // Progressive penalty: 200 for first consecutive, 400 for second, 600 for third, etc.
+        consecutivePenalty += 200 * currentStreak;
+      } else {
+        currentStreak = 0;
+      }
+    }
 
-    // Calculate work distribution variance
+    // Calculate work distribution variance with stronger penalties
     let gapVariance = 0;
+    let tooSmallGapsPenalty = 0;
     if (gaps.length > 0) {
       const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
       gapVariance =
         gaps.reduce((sum, gap) => sum + Math.pow(gap - avgGap, 2), 0) /
         gaps.length;
+
+      // Additional penalty for gaps that are too small (less than 2 days)
+      tooSmallGapsPenalty = gaps.filter(g => g < 2).length * 150;
+    }
+
+    // Calculate clustering penalty (too many work days in a 5-day window)
+    let clusteringPenalty = 0;
+    for (let day = 1; day <= 26; day++) {
+      let workDaysInWindow = 0;
+      for (const workDay of workDaysList) {
+        if (workDay >= day && workDay < day + 5) {
+          workDaysInWindow++;
+        }
+      }
+      // Penalize if more than 3 work days in any 5-day window
+      if (workDaysInWindow > 3) {
+        clusteringPenalty += (workDaysInWindow - 3) * 300;
+      }
     }
 
     // Apply progressive penalty for overshooting
@@ -53,7 +82,9 @@ class NormalFitnessStrategy implements FitnessStrategy {
       balancePenalty +
       workDayPenalty +
       consecutivePenalty +
-      Math.sqrt(gapVariance) * 50 +
+      Math.sqrt(gapVariance) * 150 +
+      tooSmallGapsPenalty +
+      clusteringPenalty +
       (minBalance < minimumBalance
         ? Math.abs(minBalance - minimumBalance) * 100
         : 0)
