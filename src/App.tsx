@@ -158,6 +158,7 @@ function AppContent() {
           <ResizableDivider
             position="left"
             onMouseDown={panelResize.handleMouseDown}
+            onTouchStart={panelResize.handleTouchStart}
             isResizing={panelResize.isResizing === 'left'}
           />
 
@@ -202,6 +203,7 @@ function AppContent() {
           <ResizableDivider
             position="right"
             onMouseDown={panelResize.handleMouseDown}
+            onTouchStart={panelResize.handleTouchStart}
             isResizing={panelResize.isResizing === 'right'}
           />
 

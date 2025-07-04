@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+// Helper function to extract clientX from mouse or touch event
+const getClientX = (e: MouseEvent | TouchEvent): number => {
+  if ('clientX' in e) {
+    return e.clientX;
+  }
+  return e.touches[0]?.clientX || e.changedTouches[0]?.clientX || 0;
+};
+
 interface PanelSizes {
   left: number;
   center: number;
@@ -48,11 +56,21 @@ export const usePanelResize = () => {
     [sizes]
   );
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
+  const handleTouchStart = useCallback(
+    (divider: 'left' | 'right', e: React.TouchEvent) => {
+      e.preventDefault();
+      setIsResizing(divider);
+      startXRef.current = e.touches[0]?.clientX || 0;
+      startSizesRef.current = { ...sizes };
+    },
+    [sizes]
+  );
+
+  const handleMove = useCallback(
+    (e: MouseEvent | TouchEvent) => {
       if (!isResizing || !containerRef.current) return;
 
-      const deltaX = e.clientX - startXRef.current;
+      const deltaX = getClientX(e) - startXRef.current;
       const containerWidth = containerRef.current.offsetWidth;
       // Account for gaps between panels (2 gaps of 16px each)
       const totalGaps = 32;
@@ -101,25 +119,29 @@ export const usePanelResize = () => {
     [isResizing]
   );
 
-  const handleMouseUp = useCallback(() => {
+  const handleEnd = useCallback(() => {
     setIsResizing(null);
   }, []);
 
   useEffect(() => {
     if (isResizing) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('mouseup', handleEnd);
+      document.addEventListener('touchmove', handleMove, { passive: false });
+      document.addEventListener('touchend', handleEnd);
       document.body.style.cursor = 'col-resize';
       document.body.style.userSelect = 'none';
 
       return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('mousemove', handleMove);
+        document.removeEventListener('mouseup', handleEnd);
+        document.removeEventListener('touchmove', handleMove);
+        document.removeEventListener('touchend', handleEnd);
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
       };
     }
-  }, [isResizing, handleMouseMove, handleMouseUp]);
+  }, [isResizing, handleMove, handleEnd]);
 
   // Handle window resize
   useEffect(() => {
@@ -155,6 +177,7 @@ export const usePanelResize = () => {
     isResizing,
     containerRef,
     handleMouseDown,
+    handleTouchStart,
     resetSizes,
   };
 };
