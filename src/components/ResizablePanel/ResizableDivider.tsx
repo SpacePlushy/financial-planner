@@ -19,6 +19,7 @@ export const ResizableDivider: React.FC<ResizableDividerProps> = ({
       className={`resize-divider ${position} ${isResizing ? 'resizing' : ''}`}
       onMouseDown={e => onMouseDown(position, e)}
       onTouchStart={e => onTouchStart(position, e)}
+      style={{ touchAction: 'none' }}
     >
       <div className="resize-handle" />
     </div>

@@ -59,6 +59,7 @@ export const usePanelResize = () => {
   const handleTouchStart = useCallback(
     (divider: 'left' | 'right', e: React.TouchEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       setIsResizing(divider);
       startXRef.current = e.touches[0]?.clientX || 0;
       startSizesRef.current = { ...sizes };
@@ -70,6 +71,7 @@ export const usePanelResize = () => {
     (e: MouseEvent | TouchEvent) => {
       if (!isResizing || !containerRef.current) return;
 
+      e.preventDefault();
       const deltaX = getClientX(e) - startXRef.current;
       const containerWidth = containerRef.current.offsetWidth;
       // Account for gaps between panels (2 gaps of 16px each)
@@ -129,6 +131,7 @@ export const usePanelResize = () => {
       document.addEventListener('mouseup', handleEnd);
       document.addEventListener('touchmove', handleMove, { passive: false });
       document.addEventListener('touchend', handleEnd);
+      document.addEventListener('touchcancel', handleEnd);
       document.body.style.cursor = 'col-resize';
       document.body.style.userSelect = 'none';
 
@@ -137,6 +140,7 @@ export const usePanelResize = () => {
         document.removeEventListener('mouseup', handleEnd);
         document.removeEventListener('touchmove', handleMove);
         document.removeEventListener('touchend', handleEnd);
+        document.removeEventListener('touchcancel', handleEnd);
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
       };
