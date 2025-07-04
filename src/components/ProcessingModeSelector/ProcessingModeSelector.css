@@ -4,10 +4,14 @@
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
 }
 
 .mode-selector-header {
   margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
 }
 
 .mode-selector-header h3 {
@@ -21,6 +25,7 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  margin-bottom: 0;
 }
 
 .mode-button {
@@ -62,9 +67,12 @@
 }
 
 .performance-metrics {
-  margin-top: 20px;
+  margin-top: 24px;
   padding-top: 20px;
   border-top: 1px solid var(--border-color);
+  position: relative;
+  z-index: 1;
+  background: var(--surface-color);
 }
 
 .performance-metrics h4 {
