@@ -150,7 +150,6 @@ body {
   gap: 16px;
   position: relative;
   align-items: stretch;
-  padding: 0 var(--gap-md);
 }
 
 .dashboard-grid.resizable-container {

@@ -41,6 +41,7 @@ export const usePanelResize = () => {
   const handleMouseDown = useCallback(
     (divider: 'left' | 'right', e: React.MouseEvent) => {
       e.preventDefault();
+      console.log('Mouse down on divider:', divider);
       setIsResizing(divider);
       startXRef.current = e.clientX;
       startSizesRef.current = { ...sizes };
@@ -54,48 +55,51 @@ export const usePanelResize = () => {
 
       const deltaX = e.clientX - startXRef.current;
       const containerWidth = containerRef.current.offsetWidth;
+      // Account for gaps between panels (2 gaps of 16px each)
+      const totalGaps = 32;
+      const availableWidth = containerWidth - totalGaps;
 
       if (isResizing === 'left') {
         // Resizing between left and center panels
         const newLeftWidth = Math.max(
           MIN_PANEL_WIDTH,
           Math.min(
-            containerWidth - sizes.right - MIN_PANEL_WIDTH * 2,
+            availableWidth - startSizesRef.current.right - MIN_PANEL_WIDTH,
             startSizesRef.current.left + deltaX
           )
         );
         const newCenterWidth = Math.max(
           MIN_PANEL_WIDTH,
-          containerWidth - newLeftWidth - sizes.right
+          availableWidth - newLeftWidth - startSizesRef.current.right
         );
 
-        setSizes(prev => ({
-          ...prev,
+        setSizes({
           left: newLeftWidth,
           center: newCenterWidth,
-        }));
+          right: startSizesRef.current.right,
+        });
       } else if (isResizing === 'right') {
         // Resizing between center and right panels
         const newCenterWidth = Math.max(
           MIN_PANEL_WIDTH,
           Math.min(
-            containerWidth - sizes.left - MIN_PANEL_WIDTH,
+            availableWidth - startSizesRef.current.left - MIN_PANEL_WIDTH,
             startSizesRef.current.center + deltaX
           )
         );
         const newRightWidth = Math.max(
           MIN_PANEL_WIDTH,
-          containerWidth - sizes.left - newCenterWidth
+          availableWidth - startSizesRef.current.left - newCenterWidth
         );
 
-        setSizes(prev => ({
-          ...prev,
+        setSizes({
+          left: startSizesRef.current.left,
           center: newCenterWidth,
           right: newRightWidth,
-        }));
+        });
       }
     },
-    [isResizing, sizes.left, sizes.right]
+    [isResizing]
   );
 
   const handleMouseUp = useCallback(() => {
@@ -124,11 +128,13 @@ export const usePanelResize = () => {
       if (!containerRef.current) return;
 
       const containerWidth = containerRef.current.offsetWidth;
+      const totalGaps = 32; // 2 gaps of 16px each
+      const availableWidth = containerWidth - totalGaps;
       const totalCurrentWidth = sizes.left + sizes.center + sizes.right;
 
-      if (Math.abs(containerWidth - totalCurrentWidth) > 10) {
+      if (Math.abs(availableWidth - totalCurrentWidth) > 10) {
         // Redistribute widths proportionally
-        const scale = containerWidth / totalCurrentWidth;
+        const scale = availableWidth / totalCurrentWidth;
         setSizes({
           left: Math.max(MIN_PANEL_WIDTH, Math.floor(sizes.left * scale)),
           center: Math.max(MIN_PANEL_WIDTH, Math.floor(sizes.center * scale)),
