@@ -12,6 +12,9 @@ body {
   padding: 0;
   height: 100%;
   overflow: hidden; /* Prevent body scroll */
+  /* Handle Safari's safe areas */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 body {
@@ -473,6 +476,8 @@ body {
   .config-panel {
     order: 3;
     max-height: none;
+    /* Extra padding at bottom for mobile browser UI */
+    padding-bottom: calc(var(--gap-lg) + env(safe-area-inset-bottom, 20px));
   }
 
   .results-panel {
@@ -486,12 +491,23 @@ body {
 
   .app-main {
     padding: var(--gap-sm);
+    padding-bottom: calc(var(--gap-sm) + env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
-    height: calc(100vh - var(--header-height));
+    height: calc(
+      100vh - var(--header-height) - env(safe-area-inset-top, 0px) -
+        env(safe-area-inset-bottom, 0px)
+    );
+    /* Add momentum scrolling for iOS */
+    -webkit-overflow-scrolling: touch;
   }
 
   .panel {
     margin-bottom: var(--gap-md);
+  }
+
+  /* Last panel needs extra bottom padding */
+  .panel:last-child {
+    margin-bottom: calc(var(--gap-lg) * 2 + env(safe-area-inset-bottom, 20px));
   }
 }
 
@@ -537,6 +553,11 @@ body {
 
   .app-footer {
     display: none; /* Hide footer on mobile to save space */
+  }
+
+  /* Ensure the last visible element has padding for Safari bottom bar */
+  .dashboard-grid > .panel:last-child .panel-content {
+    padding-bottom: calc(var(--gap-lg) * 3);
   }
 
   .metric-card {

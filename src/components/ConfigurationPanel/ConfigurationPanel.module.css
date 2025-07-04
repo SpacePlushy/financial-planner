@@ -220,6 +220,19 @@
   }
 }
 
+/* Mobile-specific fixes for Safari bottom bar */
+@media (max-width: 1024px) {
+  .section:last-of-type {
+    /* Extra padding for Safari bottom bar */
+    padding-bottom: calc(var(--gap-lg) * 2);
+  }
+
+  .optimizeButton {
+    /* Ensure button is not hidden by Safari bottom bar */
+    margin-bottom: env(safe-area-inset-bottom, 20px);
+  }
+}
+
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .input,
