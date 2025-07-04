@@ -61,6 +61,16 @@ const createMockUseConfig = (overrides = {}) => ({
   saveAsPreset: jest.fn(),
   deletePreset: jest.fn(),
   setBalanceEdit: jest.fn(),
+  clearPreset: jest.fn(),
+  compareConfigs: jest.fn().mockReturnValue(true),
+  findMatchingPresets: jest.fn().mockReturnValue([]),
+  getPresetById: jest.fn().mockReturnValue(null),
+  exportConfig: jest.fn().mockReturnValue('{}'),
+  importConfig: jest.fn().mockReturnValue(true),
+  hasUnsavedChanges: false,
+  isUsingPreset: false,
+  currentPreset: undefined,
+  loadPreset: jest.fn(),
   ...overrides,
 });
 

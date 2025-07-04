@@ -80,10 +80,16 @@ export const USER_CONFIG: DeepPartial<typeof DEFAULT_CONSTANTS> = {
 function deepMerge<T extends object>(target: T, source: DeepPartial<T>): T {
   const result = { ...target };
 
-  for (const key in source) {
-    if (source[key] !== undefined) {
-      const sourceValue = source[key];
-      const targetValue = target[key];
+  // Type assertion to handle the iteration
+  const sourceKeys = Object.keys(source) as Array<keyof DeepPartial<T>>;
+
+  sourceKeys.forEach(key => {
+    const sourceValue = source[key];
+    if (sourceValue !== undefined) {
+      // We need to access target with proper typing
+      const targetKey = key as keyof T;
+      const targetValue = target[targetKey];
+
       if (
         typeof sourceValue === 'object' &&
         sourceValue !== null &&
@@ -92,19 +98,22 @@ function deepMerge<T extends object>(target: T, source: DeepPartial<T>): T {
         targetValue !== null &&
         !Array.isArray(targetValue)
       ) {
-        // TypeScript now knows both values are objects
-        (result as T)[key] = deepMerge(
-          targetValue as T[keyof T] & object,
-          sourceValue as DeepPartial<T[keyof T] & object>
-        ) as T[keyof T];
+        // Both are objects, recursively merge
+        // We need to use type assertion here because TypeScript cannot infer
+        // the exact relationship between DeepPartial<T[K]> and T[K]
+        (result as Record<keyof T, unknown>)[targetKey] = deepMerge(
+          targetValue as Record<string, unknown>,
+          sourceValue as DeepPartial<Record<string, unknown>>
+        );
       } else {
-        // Direct assignment for non-object values
-        (result as T)[key] = sourceValue as T[keyof T];
+        // Direct assignment for non-object values or arrays
+        (result as Record<keyof T, unknown>)[targetKey] =
+          sourceValue as T[keyof T];
       }
     }
-  }
+  });
 
-  return result;
+  return result as T;
 }
 
 /**
