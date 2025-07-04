@@ -32,6 +32,19 @@ function AppContent() {
   // Enable keyboard shortcuts
   useKeyboardShortcuts();
 
+  // Detect mobile viewport
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 1024);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Show loading state while restoring data
   if (persistence.isRestoring) {
     return (
@@ -103,16 +116,18 @@ function AppContent() {
               </ErrorBoundary>
             </div>
 
-            {/* Action Bar at bottom of config panel */}
-            <ActionBar
-              persistence={persistence}
-              onHelp={() =>
-                window.open(
-                  'https://github.com/anthropics/financial-schedule-optimizer',
-                  '_blank'
-                )
-              }
-            />
+            {/* Action Bar at bottom of config panel - Desktop only */}
+            {!isMobile && (
+              <ActionBar
+                persistence={persistence}
+                onHelp={() =>
+                  window.open(
+                    'https://github.com/anthropics/financial-schedule-optimizer',
+                    '_blank'
+                  )
+                }
+              />
+            )}
           </div>
 
           {/* Center Panel: Results & Progress */}
@@ -232,18 +247,20 @@ function AppContent() {
       {ui.debugMode && <div className="debug-indicator">Debug Mode</div>}
 
       {/* Mobile ActionBar - Fixed at bottom */}
-      <div className="mobile-action-bar">
-        <ActionBar
-          persistence={persistence}
-          onHelp={() =>
-            window.open(
-              'https://github.com/anthropics/financial-schedule-optimizer',
-              '_blank'
-            )
-          }
-          compact={true}
-        />
-      </div>
+      {isMobile && (
+        <div className="mobile-action-bar">
+          <ActionBar
+            persistence={persistence}
+            onHelp={() =>
+              window.open(
+                'https://github.com/anthropics/financial-schedule-optimizer',
+                '_blank'
+              )
+            }
+            compact={true}
+          />
+        </div>
+      )}
 
       {/* Global Footer Action Bar */}
       <footer className="app-footer">

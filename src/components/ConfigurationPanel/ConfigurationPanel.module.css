@@ -220,21 +220,15 @@
   }
 }
 
-/* Mobile-specific fixes for Safari bottom bar */
+/* Mobile-specific adjustments */
 @media (max-width: 1024px) {
+  /* Normal mobile styling without extra padding */
   .section:last-of-type {
-    /* Extra padding for Safari bottom bar and fixed ActionBar */
-    padding-bottom: calc(var(--gap-lg) * 4);
+    padding-bottom: var(--gap-lg);
   }
 
   .optimizeButton {
-    /* Ensure button is not hidden by fixed ActionBar */
-    margin-bottom: calc(70px + env(safe-area-inset-bottom, 20px));
-  }
-
-  /* Add extra bottom padding to the panel container */
-  .panel {
-    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    margin-bottom: var(--gap-md);
   }
 }
 
