@@ -295,46 +295,48 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Algorithm Parameters</h3>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="populationSize">
-            Population Size
-          </label>
-          <input
-            id="populationSize"
-            type="number"
-            className={`${styles.input} ${validationErrors.populationSize ? styles.error : ''}`}
-            value={config.populationSize}
-            onChange={e =>
-              handleConfigChange({ populationSize: Number(e.target.value) })
-            }
-            step="1"
-          />
-          {validationErrors.populationSize && (
-            <span className={styles.errorText}>
-              {validationErrors.populationSize}
-            </span>
-          )}
-        </div>
+        <div className={styles.twoColumn}>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="populationSize">
+              Population Size
+            </label>
+            <input
+              id="populationSize"
+              type="number"
+              className={`${styles.input} ${validationErrors.populationSize ? styles.error : ''}`}
+              value={config.populationSize}
+              onChange={e =>
+                handleConfigChange({ populationSize: Number(e.target.value) })
+              }
+              step="1"
+            />
+            {validationErrors.populationSize && (
+              <span className={styles.errorText}>
+                {validationErrors.populationSize}
+              </span>
+            )}
+          </div>
 
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="generations">
-            Generations
-          </label>
-          <input
-            id="generations"
-            type="number"
-            className={`${styles.input} ${validationErrors.generations ? styles.error : ''}`}
-            value={config.generations}
-            onChange={e =>
-              handleConfigChange({ generations: Number(e.target.value) })
-            }
-            step="1"
-          />
-          {validationErrors.generations && (
-            <span className={styles.errorText}>
-              {validationErrors.generations}
-            </span>
-          )}
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="generations">
+              Generations
+            </label>
+            <input
+              id="generations"
+              type="number"
+              className={`${styles.input} ${validationErrors.generations ? styles.error : ''}`}
+              value={config.generations}
+              onChange={e =>
+                handleConfigChange({ generations: Number(e.target.value) })
+              }
+              step="1"
+            />
+            {validationErrors.generations && (
+              <span className={styles.errorText}>
+                {validationErrors.generations}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

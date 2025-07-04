@@ -624,11 +624,15 @@ export class GeneticOptimizer {
       // Early termination
       const best = population[0].fitness;
       const balanceTolerance = 5;
+      const targetLow = this.config.targetEndingBalance - balanceTolerance;
+      const targetHigh = this.config.targetEndingBalance + balanceTolerance;
+
       if (
         gen > 300 &&
         generationsWithoutImprovement > maxGenerationsWithoutImprovement &&
         best.violations === 0 &&
-        best.balance >= this.config.targetEndingBalance - balanceTolerance
+        best.balance >= targetLow &&
+        best.balance <= targetHigh
       ) {
         logger.info(
           'GeneticOptimizer',

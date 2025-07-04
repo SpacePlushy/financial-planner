@@ -1,9 +1,6 @@
 import React from 'react';
 import { ScheduleProvider } from './context/ScheduleContext';
-import {
-  ConfigurationProvider,
-  useConfiguration,
-} from './context/ConfigurationContext';
+import { ConfigurationProvider } from './context/ConfigurationContext';
 import { PersistenceProvider } from './context/PersistenceContext';
 import { UIProvider } from './context/UIContext';
 import { ProgressProvider, useProgress } from './context/ProgressContext';
@@ -14,9 +11,11 @@ import { Summary } from './components/Summary/SummaryV2';
 import { OptimizationProgress } from './components/OptimizationProgress/OptimizationProgressV2';
 import { EditModal } from './components/EditModal/EditModalV2';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
+import { ActionBar } from './components/ActionBar/ActionBar';
 import { useUI } from './context/UIContext';
 import { usePersistence } from './hooks/usePersistence';
 import { useOptimizer } from './hooks/useOptimizer';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { logger } from './utils/logger';
 import './App.css';
 
@@ -29,6 +28,9 @@ function AppContent() {
   const optimizer = useOptimizer();
   const progress = useProgress();
   // const { config } = useConfiguration(); // Available if needed
+
+  // Enable keyboard shortcuts
+  useKeyboardShortcuts();
 
   // Show loading state while restoring data
   if (persistence.isRestoring) {
@@ -43,7 +45,7 @@ function AppContent() {
   return (
     <div className={`app ${ui.theme}`} data-theme={ui.theme} data-testid="app">
       {/* Header */}
-      <header className="app-header">
+      <header className="app-header" role="banner">
         <div className="header-content">
           <h1>Financial Schedule Optimizer</h1>
           <div className="header-actions">
@@ -75,7 +77,7 @@ function AppContent() {
       </header>
 
       {/* Main Dashboard Grid */}
-      <main className="app-main">
+      <main className="app-main" role="main">
         <div className="dashboard-grid">
           {/* Left Panel: Configuration */}
           <div className="panel config-panel">
@@ -99,50 +101,18 @@ function AppContent() {
                   isOptimizing={optimizer.isOptimizing}
                 />
               </ErrorBoundary>
-
-              {/* Action buttons at bottom of config panel */}
-              <div className="action-bar">
-                <button
-                  className="action-button save"
-                  onClick={() => persistence.save()}
-                  disabled={
-                    persistence.isSaving || !persistence.hasUnsavedChanges
-                  }
-                  title="Save current configuration"
-                >
-                  {persistence.isSaving ? '...' : 'Save'}
-                </button>
-
-                <button
-                  className="action-button export"
-                  onClick={() => persistence.exportToFile()}
-                  disabled={persistence.isExporting}
-                  title="Export to JSON file"
-                >
-                  Export
-                </button>
-
-                <button
-                  className="action-button import"
-                  onClick={() => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = '.json';
-                    input.onchange = e => {
-                      const file = (e.target as HTMLInputElement).files?.[0];
-                      if (file) {
-                        persistence.importFromFile(file);
-                      }
-                    };
-                    input.click();
-                  }}
-                  disabled={persistence.isImporting}
-                  title="Import from JSON file"
-                >
-                  Import
-                </button>
-              </div>
             </div>
+
+            {/* Action Bar at bottom of config panel */}
+            <ActionBar
+              persistence={persistence}
+              onHelp={() =>
+                window.open(
+                  'https://github.com/anthropics/financial-schedule-optimizer',
+                  '_blank'
+                )
+              }
+            />
           </div>
 
           {/* Center Panel: Results & Progress */}
@@ -260,6 +230,70 @@ function AppContent() {
 
       {/* Debug mode indicator */}
       {ui.debugMode && <div className="debug-indicator">Debug Mode</div>}
+
+      {/* Global Footer Action Bar */}
+      <footer className="app-footer">
+        <div className="footer-info">
+          <span className="footer-text">
+            Financial Schedule Optimizer v
+            {process.env.REACT_APP_VERSION || '1.0.0'}
+          </span>
+          {persistence.lastSaveTime && (
+            <span className="footer-text">
+              Last saved: {persistence.lastSaveTime.toLocaleTimeString()}
+            </span>
+          )}
+        </div>
+        <div className="footer-actions">
+          <button
+            className="footer-button"
+            onClick={() => window.print()}
+            title="Print current view"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+              />
+            </svg>
+            Print
+          </button>
+          <button
+            className="footer-button"
+            onClick={() =>
+              window.open(
+                'https://github.com/anthropics/financial-schedule-optimizer/issues',
+                '_blank'
+              )
+            }
+            title="Report an issue"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Feedback
+          </button>
+        </div>
+      </footer>
     </div>
   );
 }

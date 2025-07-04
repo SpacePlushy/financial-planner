@@ -1,56 +1,57 @@
-/* ConfigurationPanel.module.css */
+/* ConfigurationPanel.module.css - Compact Dashboard Version */
 
 .panel {
-  background: var(--bg-secondary);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px var(--shadow-color);
-  padding: 24px;
-  max-width: 600px;
-  margin: 0 auto;
+  /* Remove unnecessary styling - handled by parent */
+  padding: 0;
+  max-width: none;
+  margin: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .title {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 24px 0;
+  /* Hidden - title is in panel header */
+  display: none;
 }
 
 .section {
-  margin-bottom: 24px;
-  padding-bottom: 24px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--border-color);
 }
 
 .section:last-of-type {
   border-bottom: none;
+  padding-bottom: 0;
 }
 
 .sectionTitle {
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   color: var(--text-secondary);
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
 }
 
 .field {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .label {
   display: block;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .input,
 .select,
 .textarea {
   width: 100%;
-  padding: 10px 12px;
-  font-size: 16px;
+  padding: 6px 10px;
+  font-size: 14px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
   background-color: var(--bg-primary);
@@ -85,19 +86,19 @@
 
 .errorMessage {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--error-color);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .checkbox {
-  margin-right: 8px;
+  margin-right: 6px;
 }
 
 .checkboxLabel {
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
 }
@@ -108,8 +109,8 @@
 
 .button,
 .buttonSecondary {
-  padding: 12px 24px;
-  font-size: 16px;
+  padding: 8px 16px;
+  font-size: 13px;
   font-weight: 500;
   border: none;
   border-radius: 4px;
@@ -118,7 +119,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .button {
@@ -162,92 +163,60 @@
 
 .optimizeButton {
   width: 100%;
-  margin-top: 24px;
-  font-size: 18px;
-  padding: 14px 24px;
+  margin-top: 16px;
+  font-size: 14px;
+  padding: 10px 16px;
+  font-weight: 600;
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.optimizeButton:hover:not(:disabled) {
+  background-color: var(--primary-hover);
 }
 
 .buttonGroup {
   display: flex;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .savePresetForm {
   background-color: var(--bg-tertiary);
   border-radius: 4px;
-  padding: 20px;
-  margin: 24px 0;
+  padding: 12px;
+  margin: 12px 0;
 }
 
-/* Spinner removed - using OptimizationLoadingOverlay for loading states */
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .panel {
-    padding: 16px;
-    margin: 16px;
-  }
-
-  .title {
-    font-size: 20px;
-    margin-bottom: 20px;
-  }
-
-  .sectionTitle {
-    font-size: 16px;
-  }
-
-  .input,
-  .select,
-  .textarea {
-    font-size: 16px;
-    padding: 12px;
-  }
-
-  .button,
-  .buttonSecondary {
-    padding: 12px 20px;
-    font-size: 14px;
-  }
-
-  .optimizeButton {
-    font-size: 16px;
-  }
-
-  .buttonGroup {
-    flex-direction: column;
-  }
-
-  .buttonGroup button {
-    width: 100%;
-  }
+/* Compact preset description */
+.description {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.4;
 }
 
-@media (max-width: 480px) {
-  .panel {
-    box-shadow: none;
-    border-radius: 0;
-    padding: 12px;
-    margin: 0;
-  }
+/* Two-column layout for algorithm parameters */
+.twoColumn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
 
-  .section {
-    margin-bottom: 20px;
-    padding-bottom: 20px;
+/* Responsive design - only for very small screens */
+@media (max-width: 320px) {
+  .twoColumn {
+    grid-template-columns: 1fr;
   }
 
   .field {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
-  .label {
+  .input,
+  .select {
     font-size: 13px;
-    margin-bottom: 6px;
-  }
-
-  .errorMessage {
-    font-size: 11px;
+    padding: 5px 8px;
   }
 }
 
@@ -277,6 +246,4 @@
   .textarea {
     transition: none;
   }
-
-  /* Spinner styles removed */
 }

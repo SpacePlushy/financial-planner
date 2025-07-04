@@ -1,3 +1,6 @@
+/* Import animations */
+@import './styles/animations.css';
+
 /* Reset and base styles */
 * {
   box-sizing: border-box;
@@ -72,7 +75,7 @@ body {
 .app {
   height: 100vh;
   display: grid;
-  grid-template-rows: var(--header-height) 1fr;
+  grid-template-rows: var(--header-height) 1fr auto;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -132,9 +135,10 @@ body {
 
 /* Main Dashboard Grid */
 .app-main {
-  height: calc(100vh - var(--header-height));
+  flex: 1;
   padding: var(--gap-md);
   overflow: hidden;
+  min-height: 0;
 }
 
 .dashboard-grid {
@@ -153,6 +157,11 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.panel:hover {
+  box-shadow: 0 4px 8px var(--shadow-hover);
 }
 
 .panel-header {
@@ -179,6 +188,8 @@ body {
 .config-panel {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  animation: fadeInLeft 0.4s ease-out;
 }
 
 .config-section {
@@ -226,6 +237,13 @@ body {
 .config-select:focus {
   outline: none;
   border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.config-input:focus-visible,
+.config-select:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 
 .optimize-button {
@@ -255,6 +273,8 @@ body {
 .results-panel {
   display: flex;
   flex-direction: column;
+  position: relative;
+  animation: fadeInUp 0.5s ease-out;
 }
 
 .metrics-grid {
@@ -322,6 +342,7 @@ body {
 .schedule-panel {
   display: flex;
   flex-direction: column;
+  animation: fadeInRight 0.6s ease-out;
 }
 
 .schedule-controls {
@@ -347,6 +368,28 @@ body {
   font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.view-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition:
+    width 0.6s,
+    height 0.6s;
+}
+
+.view-button:active::before {
+  width: 300px;
+  height: 300px;
 }
 
 .view-button.active {
@@ -365,40 +408,23 @@ body {
   overflow-y: auto;
 }
 
-/* Action Buttons Bar */
-.action-bar {
-  position: absolute;
-  bottom: var(--gap-md);
-  left: var(--gap-md);
+/* Schedule Actions */
+.schedule-actions {
   display: flex;
   gap: var(--gap-sm);
 }
 
-.action-button {
-  padding: 6px 14px;
-  border: none;
-  border-radius: 4px;
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.75rem;
-  font-weight: 500;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
-.action-button.save {
-  background-color: var(--success-color);
-  color: white;
-}
-
-.action-button.export {
-  background-color: var(--info-color);
-  color: white;
-}
-
-.action-button.import {
-  background-color: var(--warning-color);
-  color: black;
+.checkbox-label input[type='checkbox'] {
+  cursor: pointer;
 }
 
 /* Loading and Error States */
@@ -435,6 +461,87 @@ body {
   }
 }
 
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    gap: var(--gap-sm);
+  }
+
+  .config-panel {
+    order: 2;
+    max-height: 300px;
+  }
+
+  .results-panel {
+    order: 1;
+  }
+
+  .schedule-panel {
+    order: 3;
+    display: none; /* Hide on tablet */
+  }
+
+  .app-main {
+    padding: var(--gap-sm);
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --gap-sm: 4px;
+    --gap-md: 8px;
+    --gap-lg: 12px;
+  }
+
+  .header-content h1 {
+    font-size: 1rem;
+  }
+
+  .panel-title {
+    font-size: 0.875rem;
+  }
+
+  .footer-info {
+    display: none;
+  }
+
+  .metric-card {
+    padding: var(--gap-sm);
+  }
+
+  .metric-value {
+    font-size: 1rem;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-tertiary) var(--bg-tertiary);
+}
+
 /* Utility classes */
 .text-muted {
   color: var(--text-secondary);
@@ -464,4 +571,117 @@ body {
 
 .fade-in {
   animation: fadeIn 0.3s ease;
+}
+
+/* Footer Action Bar */
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px var(--gap-lg);
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  font-size: 0.75rem;
+}
+
+.footer-info {
+  display: flex;
+  gap: var(--gap-md);
+  color: var(--text-secondary);
+}
+
+.footer-text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.footer-actions {
+  display: flex;
+  gap: var(--gap-sm);
+}
+
+.footer-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.footer-button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.footer-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Error Toast */
+.error-toast {
+  position: fixed;
+  bottom: var(--gap-lg);
+  right: var(--gap-lg);
+  background-color: var(--error-color);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px var(--shadow-hover);
+  animation: slideInRight 0.3s ease;
+  z-index: 1000;
+}
+
+.error-toast button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.error-toast button:hover {
+  opacity: 1;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Debug Indicator */
+.debug-indicator {
+  position: fixed;
+  top: var(--gap-md);
+  right: var(--gap-md);
+  background-color: var(--warning-color);
+  color: black;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  z-index: 1000;
 }

@@ -1,9 +1,14 @@
+/* ScheduleTable.module.css - Compact Dashboard Version */
+
 .tableContainer {
   position: relative;
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px var(--shadow-color);
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .loadingOverlay {
@@ -22,34 +27,36 @@
   backdrop-filter: blur(2px);
 }
 
-/* Spinner removed - using OptimizationLoadingOverlay for loading states */
-
 .tableWrapper {
-  overflow-x: auto;
+  overflow: auto;
+  flex: 1;
   -webkit-overflow-scrolling: touch;
 }
 
 .scheduleTable {
   width: 100%;
-  min-width: 800px;
+  min-width: 600px;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .scheduleTable thead {
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
   position: sticky;
   top: 0;
   z-index: 5;
 }
 
 .scheduleTable th {
-  padding: 16px 12px;
+  padding: 8px 6px;
   text-align: left;
   font-weight: 600;
   color: var(--text-primary);
   border-bottom: 2px solid var(--border-color);
   white-space: nowrap;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .editableHeader {
@@ -57,14 +64,14 @@
 }
 
 .editableHeader::after {
-  content: '*';
-  color: var(--primary-color);
+  content: '✏️';
   margin-left: 4px;
-  font-size: 12px;
+  font-size: 10px;
+  opacity: 0.6;
 }
 
 .scheduleTable td {
-  padding: 12px;
+  padding: 6px;
   border-bottom: 1px solid var(--border-color);
   transition: background-color 0.2s ease;
   color: var(--text-primary);
@@ -75,223 +82,220 @@
 }
 
 .scheduleTable tbody tr.hasEdits {
-  background-color: rgba(255, 152, 0, 0.1);
+  background-color: rgba(255, 152, 0, 0.05);
 }
 
 .scheduleTable tbody tr.hasEdits:hover {
-  background-color: rgba(255, 152, 0, 0.2);
+  background-color: rgba(255, 152, 0, 0.1);
 }
 
 .workDay {
   position: relative;
+  padding-left: 8px;
 }
 
 .workDay::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background-color: var(--success-color, #4caf50);
+  top: 2px;
+  bottom: 2px;
+  width: 3px;
+  background-color: var(--success-color);
+  border-radius: 2px;
 }
 
 .dayCell {
   font-weight: 600;
-  color: var(--text-primary, #333);
   text-align: center;
+  min-width: 40px;
 }
 
-.dateCell {
-  color: var(--text-secondary, #666);
-  font-size: 13px;
+.dayCell.weekend {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.dayCell.hidden {
+  display: none;
 }
 
 .shiftsCell {
   font-weight: 500;
-  color: var(--text-primary, #333);
+  white-space: nowrap;
+}
+
+.noShifts {
+  color: var(--text-tertiary);
+  font-style: italic;
+  font-size: 11px;
 }
 
 .editableCell {
   cursor: pointer;
   position: relative;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s;
 }
 
 .editableCell:hover {
-  background-color: var(--editable-hover, #e3f2fd);
-  color: var(--primary-color, #1976d2);
+  background-color: rgba(33, 150, 243, 0.05);
+}
+
+.editableCell::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 4px;
+  right: 4px;
+  height: 1px;
+  background: var(--primary-color);
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
 .editableCell:hover::after {
-  content: '✏️';
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 12px;
-  opacity: 0.7;
+  opacity: 0.3;
 }
 
-.edited {
-  background-color: var(--edited-bg, #e8f5e9) !important;
-  font-weight: 600;
+.editedCell {
+  background-color: rgba(255, 152, 0, 0.1);
+  font-style: italic;
 }
 
-.edited::before {
-  content: '';
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 8px;
-  height: 8px;
-  background-color: var(--edit-indicator, #ff9800);
+.editIndicator {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: var(--warning-color);
   border-radius: 50%;
+  margin-left: 4px;
+  vertical-align: middle;
 }
 
-.depositCell {
-  color: var(--text-secondary, #666);
+.amountCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.positive {
+  color: var(--success-color);
+  font-weight: 500;
+}
+
+.negative {
+  color: var(--error-color);
+  font-weight: 500;
 }
 
 .balanceCell {
   font-weight: 600;
-  color: var(--text-primary, #333);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
-.lowBalance {
-  color: var(--error-color, #f44336) !important;
-  font-weight: 700;
+.violation {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: var(--error-color);
 }
 
-.emptyState {
-  padding: 48px 24px;
-  text-align: center;
-  color: var(--text-secondary, #666);
-}
-
-.emptyState p {
-  margin: 8px 0;
-}
-
-.emptyState p:first-child {
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--text-primary, #333);
-}
-
-.editIndicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  background-color: var(--edit-indicator-bg, #fff3cd);
-  border-top: 1px solid var(--border-color, #e0e0e0);
-  font-size: 14px;
-  color: var(--text-primary, #333);
-}
-
-.editDot {
-  width: 8px;
-  height: 8px;
-  background-color: var(--edit-indicator, #ff9800);
-  border-radius: 50%;
-  margin-right: 8px;
+.highlighted.violation {
+  background-color: rgba(244, 67, 54, 0.2);
   animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
   0%,
   100% {
-    opacity: 1;
+    background-color: rgba(244, 67, 54, 0.2);
   }
   50% {
-    opacity: 0.5;
+    background-color: rgba(244, 67, 54, 0.3);
   }
 }
 
-/* Responsive Design */
+.legend {
+  display: flex;
+  gap: 16px;
+  padding: 8px 12px;
+  background-color: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legendDot.workDay {
+  background-color: var(--success-color);
+}
+
+.legendDot.violation {
+  background-color: var(--error-color);
+}
+
+.legendDot.edited {
+  background-color: var(--warning-color);
+}
+
+/* Hide elements on small schedule panel */
+.scheduleTable th:nth-child(n + 5),
+.scheduleTable td:nth-child(n + 5) {
+  display: none;
+}
+
+/* Show only essential columns */
+@media (min-width: 1600px) {
+  .scheduleTable th:nth-child(n + 5),
+  .scheduleTable td:nth-child(n + 5) {
+    display: table-cell;
+  }
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .tableContainer {
-    border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .scheduleTable {
-    font-size: 12px;
-  }
-
-  .scheduleTable th,
-  .scheduleTable td {
-    padding: 8px 6px;
-  }
-
-  .editableCell:hover::after {
-    display: none;
-  }
-
-  .tableWrapper {
-    position: relative;
-  }
-
-  .tableWrapper::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 20px;
-    background: linear-gradient(
-      to right,
-      transparent,
-      rgba(255, 255, 255, 0.8)
-    );
-    pointer-events: none;
-  }
-}
-
-@media (max-width: 480px) {
   .scheduleTable {
     font-size: 11px;
-    min-width: 600px;
   }
 
   .scheduleTable th,
   .scheduleTable td {
-    padding: 6px 4px;
-  }
-
-  .dayCell {
-    font-size: 12px;
-  }
-
-  .dateCell {
-    font-size: 10px;
-  }
-
-  .emptyState {
-    padding: 32px 16px;
-  }
-
-  .emptyState p:first-child {
-    font-size: 16px;
+    padding: 4px;
   }
 }
 
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation: none;
-    border-top-color: transparent;
-    border-right-color: var(--primary-color, #1976d2);
+/* Print styles */
+@media print {
+  .tableContainer {
+    box-shadow: none;
+    page-break-inside: avoid;
   }
 
-  .editDot {
-    animation: none;
+  .scheduleTable th {
+    background-color: #f5f5f5;
+    color: black;
   }
 
-  * {
-    transition: none !important;
+  .scheduleTable {
+    font-size: 10pt;
+  }
+
+  .violation {
+    background-color: #ffebee !important;
+    color: #c62828 !important;
+  }
+
+  .workDay::before {
+    background-color: #2e7d32 !important;
   }
 }
-
-/* Dark mode media query removed - now using CSS variables from App.css */

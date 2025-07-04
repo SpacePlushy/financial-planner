@@ -156,11 +156,11 @@ export const Summary: React.FC<SummaryProps> = ({ className }) => {
     }).format(amount);
   };
 
-  // Format percentage
-  const formatPercentage = (value: number, total: number): string => {
-    if (total === 0) return '0%';
-    return `${((value / total) * 100).toFixed(1)}%`;
-  };
+  // Format percentage (available if needed)
+  // const formatPercentage = (value: number, total: number): string => {
+  //   if (total === 0) return '0%';
+  //   return `${((value / total) * 100).toFixed(1)}%`;
+  // };
 
   if (!currentSchedule.length) {
     return (
@@ -202,123 +202,60 @@ export const Summary: React.FC<SummaryProps> = ({ className }) => {
       <div className={styles.metricsGrid}>
         {/* Work Days Card */}
         <div className={styles.metricCard}>
-          <h3 className={styles.metricTitle}>Work Days</h3>
-          <div className={styles.metricValue}>{metrics.totalWorkDays}</div>
-          <div className={styles.metricDetails}>
-            <span className={styles.metricLabel}>Days worked:</span>
-            <span className={styles.metricSubValue}>
-              {workDays.length > 0 ? workDays.join(', ') : 'None'}
-            </span>
+          <div className={styles.metricIcon}>📅</div>
+          <div className={styles.metricContent}>
+            <h3 className={styles.metricTitle}>Work Days</h3>
+            <div className={styles.metricValue}>{metrics.totalWorkDays}</div>
+            <div className={styles.metricSubValue}>
+              {workDays.length > 0
+                ? `Days: ${workDays.slice(0, 5).join(', ')}${workDays.length > 5 ? '...' : ''}`
+                : 'No work days'}
+            </div>
           </div>
         </div>
 
         {/* Earnings Card */}
-        <div className={styles.metricCard}>
-          <h3 className={styles.metricTitle}>Total Earnings</h3>
-          <div className={styles.metricValue}>
-            {formatCurrency(metrics.totalEarnings)}
-          </div>
-          <div className={styles.metricDetails}>
-            <span className={styles.metricLabel}>Average per work day:</span>
-            <span className={styles.metricSubValue}>
+        <div
+          className={`${styles.metricCard} ${metrics.totalEarnings > 0 ? styles.success : ''}`}
+        >
+          <div className={styles.metricIcon}>💰</div>
+          <div className={styles.metricContent}>
+            <h3 className={styles.metricTitle}>Total Earnings</h3>
+            <div className={styles.metricValue}>
+              {formatCurrency(metrics.totalEarnings)}
+            </div>
+            <div className={styles.metricSubValue}>
               {metrics.totalWorkDays > 0
-                ? formatCurrency(metrics.totalEarnings / metrics.totalWorkDays)
-                : formatCurrency(0)}
-            </span>
+                ? `${formatCurrency(metrics.totalEarnings / metrics.totalWorkDays)}/day`
+                : 'No earnings'}
+            </div>
           </div>
         </div>
 
-        {/* Deposits Card */}
-        <div className={styles.metricCard}>
-          <h3 className={styles.metricTitle}>Total Deposits</h3>
-          <div className={styles.metricValue}>
-            {formatCurrency(metrics.totalDeposits)}
-          </div>
-          <div className={styles.metricDetails}>
-            <span className={styles.metricLabel}>Monthly income:</span>
-            <span className={styles.metricSubValue}>
-              Mom's biweekly deposits
-            </span>
-          </div>
-          <div className={styles.metricDetails}>
-            <span className={styles.metricLabel}>Total income:</span>
-            <span className={styles.metricSubValue}>
-              {formatCurrency(metrics.totalEarnings + metrics.totalDeposits)}
-            </span>
-          </div>
-        </div>
-
-        {/* Expenses Card */}
-        <div className={styles.metricCard}>
-          <h3 className={styles.metricTitle}>Total Expenses</h3>
-          <div className={styles.metricValue}>
-            {formatCurrency(metrics.totalExpenses)}
-          </div>
-          <div className={styles.metricDetails}>
-            <span className={styles.metricLabel}>Net after deposits:</span>
-            <span className={styles.metricSubValue}>
-              {formatCurrency(
-                metrics.totalEarnings +
-                  metrics.totalDeposits -
-                  metrics.totalExpenses
-              )}
-            </span>
-          </div>
-        </div>
-
-        {/* Balance Card */}
+        {/* Final Balance Card */}
         <div
           className={`${styles.metricCard} ${
-            metrics.success
+            metrics.finalBalance >= config.targetEndingBalance
               ? styles.success
-              : metrics.hasViolations
+              : metrics.finalBalance >= config.targetEndingBalance * 0.9
                 ? styles.warning
-                : ''
+                : styles.error
           }`}
         >
-          <h3 className={styles.metricTitle}>Final Balance</h3>
-          <div className={styles.metricValue}>
-            {formatCurrency(metrics.finalBalance)}
-          </div>
-          <div className={styles.metricDetails}>
-            <span className={styles.metricLabel}>Target balance:</span>
-            <span className={styles.metricSubValue}>
-              {formatCurrency(config.targetEndingBalance)}
-            </span>
-          </div>
-          <div className={styles.metricDetails}>
-            <span className={styles.metricLabel}>Difference:</span>
-            <span
+          <div className={styles.metricIcon}>💵</div>
+          <div className={styles.metricContent}>
+            <h3 className={styles.metricTitle}>Final Balance</h3>
+            <div className={styles.metricValue}>
+              {formatCurrency(metrics.finalBalance)}
+            </div>
+            <div
               className={`${styles.metricSubValue} ${
                 metrics.balanceVsTarget >= 0 ? styles.positive : styles.negative
               }`}
             >
               {metrics.balanceVsTarget >= 0 ? '+' : ''}
-              {formatCurrency(metrics.balanceVsTarget)} (
-              {formatPercentage(
-                Math.abs(metrics.balanceVsTarget),
-                config.targetEndingBalance
-              )}
-              )
-            </span>
-          </div>
-        </div>
-
-        {/* Minimum Balance Card */}
-        <div
-          className={`${styles.metricCard} ${
-            metrics.minBalance < config.minimumBalance ? styles.warning : ''
-          }`}
-        >
-          <h3 className={styles.metricTitle}>Minimum Balance</h3>
-          <div className={styles.metricValue}>
-            {formatCurrency(metrics.minBalance)}
-          </div>
-          <div className={styles.metricDetails}>
-            <span className={styles.metricLabel}>Required minimum:</span>
-            <span className={styles.metricSubValue}>
-              {formatCurrency(config.minimumBalance)}
-            </span>
+              {formatCurrency(metrics.balanceVsTarget)}
+            </div>
           </div>
         </div>
 
@@ -326,23 +263,18 @@ export const Summary: React.FC<SummaryProps> = ({ className }) => {
         <div
           className={`${styles.metricCard} ${metrics.hasViolations ? styles.error : styles.success}`}
         >
-          <h3 className={styles.metricTitle}>Constraint Violations</h3>
-          <div className={styles.metricValue}>{metrics.violations}</div>
-          {metrics.hasViolations && (
-            <div className={styles.metricDetails}>
-              <span className={styles.metricLabel}>Violation days:</span>
-              <span className={styles.metricSubValue}>
-                {metrics.violationDays.join(', ')}
-              </span>
+          <div className={styles.metricIcon}>
+            {metrics.hasViolations ? '⚠️' : '✅'}
+          </div>
+          <div className={styles.metricContent}>
+            <h3 className={styles.metricTitle}>Violations</h3>
+            <div className={styles.metricValue}>{metrics.violations}</div>
+            <div className={styles.metricSubValue}>
+              {metrics.hasViolations
+                ? `Days: ${metrics.violationDays.slice(0, 5).join(', ')}${metrics.violationDays.length > 5 ? '...' : ''}`
+                : 'All constraints met'}
             </div>
-          )}
-          {!metrics.hasViolations && (
-            <div className={styles.metricDetails}>
-              <span className={styles.successText}>
-                All constraints satisfied
-              </span>
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Optimization Info Card */}

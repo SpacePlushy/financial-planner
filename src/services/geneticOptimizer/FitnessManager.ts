@@ -39,9 +39,18 @@ class NormalFitnessStrategy implements FitnessStrategy {
         gaps.length;
     }
 
+    // Apply progressive penalty for overshooting
+    let balancePenalty = finalBalanceDiff * 100;
+    if (balance > targetEndingBalance) {
+      // Extra penalty for overshooting
+      const overshootRatio =
+        (balance - targetEndingBalance) / targetEndingBalance;
+      balancePenalty *= 1 + overshootRatio * 2;
+    }
+
     return (
       violations * 5000 +
-      finalBalanceDiff * 20 +
+      balancePenalty +
       workDayPenalty +
       consecutivePenalty +
       Math.sqrt(gapVariance) * 50 +
@@ -73,7 +82,7 @@ class CrisisFitnessStrategy implements FitnessStrategy {
         ? (targetEndingBalance - balance) * 1000
         : 0;
     const aboveTargetPenalty =
-      balance > targetEndingBalance ? (balance - targetEndingBalance) * 0.1 : 0;
+      balance > targetEndingBalance ? (balance - targetEndingBalance) * 500 : 0;
 
     const earningsShortfall = Math.max(0, requiredFlexNet - totalEarnings);
 
