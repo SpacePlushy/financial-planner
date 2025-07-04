@@ -165,6 +165,21 @@ interface UIProviderProps {
 }
 
 /**
+ * Custom hook for system theme detection
+ */
+function useSystemTheme() {
+  const getSystemTheme = useCallback((): 'light' | 'dark' => {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      return 'light';
+    }
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    return darkModeQuery.matches ? 'dark' : 'light';
+  }, []);
+
+  return { getSystemTheme };
+}
+
+/**
  * UI context provider component
  */
 export function UIProvider({
@@ -172,21 +187,17 @@ export function UIProvider({
   initialTheme,
   initialDebugMode = false,
 }: UIProviderProps) {
-  // Detect system theme preference
-  const getSystemTheme = (): 'light' | 'dark' => {
-    if (typeof window !== 'undefined' && window.matchMedia) {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-    }
-    return 'light';
-  };
-
-  // Use system theme if no initial theme is provided
-  const effectiveInitialTheme = initialTheme || getSystemTheme();
+  // Use system theme detection hook
+  const { getSystemTheme } = useSystemTheme();
 
   // Track if user has manually overridden the theme
-  const hasUserOverride = React.useRef(false);
+  const hasUserOverride = React.useRef<boolean>(false);
+
+  // Use system theme if no initial theme is provided
+  const effectiveInitialTheme = React.useMemo(
+    () => initialTheme ?? getSystemTheme(),
+    [initialTheme, getSystemTheme]
+  );
 
   // Create wrapped reducer with logging middleware
   const wrappedReducer = React.useMemo(
@@ -234,26 +245,37 @@ export function UIProvider({
 
   // Listen for system theme changes
   React.useEffect(() => {
+    // Skip if running in SSR or browser doesn't support matchMedia
     if (typeof window === 'undefined' || !window.matchMedia) {
       return;
     }
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-    const handleThemeChange = (e: MediaQueryListEvent) => {
+    const handleThemeChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      // Only update theme if user hasn't manually overridden it
       if (!hasUserOverride.current) {
-        dispatch({ type: 'SET_THEME', payload: e.matches ? 'dark' : 'light' });
+        const newTheme: 'light' | 'dark' = e.matches ? 'dark' : 'light';
+        dispatch({ type: 'SET_THEME', payload: newTheme });
+
+        if (process.env.NODE_ENV !== 'test') {
+          logger.info('UIContext', 'System theme changed', { newTheme });
+        }
       }
     };
 
-    // Modern browsers
-    if (mediaQuery.addEventListener) {
+    // Use addEventListener for modern browsers, addListener for legacy
+    if ('addEventListener' in mediaQuery) {
       mediaQuery.addEventListener('change', handleThemeChange);
-      return () => mediaQuery.removeEventListener('change', handleThemeChange);
+      return () => {
+        mediaQuery.removeEventListener('change', handleThemeChange);
+      };
     } else {
-      // Fallback for older browsers
+      // Legacy browser support
       mediaQuery.addListener(handleThemeChange);
-      return () => mediaQuery.removeListener(handleThemeChange);
+      return () => {
+        mediaQuery.removeListener(handleThemeChange);
+      };
     }
   }, []);
 
@@ -338,16 +360,30 @@ export function UIProvider({
 
   // Theme actions
   const setTheme = useCallback((theme: 'light' | 'dark') => {
+    // Mark that user has manually set theme to stop following system changes
     hasUserOverride.current = true;
     dispatch({ type: 'SET_THEME', payload: theme });
+
+    if (process.env.NODE_ENV !== 'test') {
+      logger.info('UIContext', 'Theme manually set', { theme });
+    }
   }, []);
 
   const toggleTheme = useCallback(() => {
+    // Mark that user has manually toggled theme to stop following system changes
     hasUserOverride.current = true;
+    const newTheme = state.theme === 'light' ? 'dark' : 'light';
     dispatch({
       type: 'SET_THEME',
-      payload: state.theme === 'light' ? 'dark' : 'light',
+      payload: newTheme,
     });
+
+    if (process.env.NODE_ENV !== 'test') {
+      logger.info('UIContext', 'Theme toggled', {
+        from: state.theme,
+        to: newTheme,
+      });
+    }
   }, [state.theme]);
 
   // Debug actions
