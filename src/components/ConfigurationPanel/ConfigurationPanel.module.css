@@ -223,13 +223,18 @@
 /* Mobile-specific fixes for Safari bottom bar */
 @media (max-width: 1024px) {
   .section:last-of-type {
-    /* Extra padding for Safari bottom bar */
-    padding-bottom: calc(var(--gap-lg) * 2);
+    /* Extra padding for Safari bottom bar and fixed ActionBar */
+    padding-bottom: calc(var(--gap-lg) * 4);
   }
 
   .optimizeButton {
-    /* Ensure button is not hidden by Safari bottom bar */
-    margin-bottom: env(safe-area-inset-bottom, 20px);
+    /* Ensure button is not hidden by fixed ActionBar */
+    margin-bottom: calc(70px + env(safe-area-inset-bottom, 20px));
+  }
+
+  /* Add extra bottom padding to the panel container */
+  .panel {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
   }
 }
 

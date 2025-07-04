@@ -511,6 +511,13 @@ body {
       80px + var(--gap-lg) + env(safe-area-inset-bottom, 20px)
     );
   }
+
+  /* Ensure config panel content has bottom padding for ActionBar */
+  .config-panel .panel-content {
+    padding-bottom: calc(
+      80px + var(--gap-lg) + env(safe-area-inset-bottom, 20px)
+    );
+  }
 }
 
 @media (max-width: 640px) {
@@ -792,6 +799,6 @@ body {
 
   /* Add padding to main content to account for fixed ActionBar */
   .app-main {
-    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
   }
 }
