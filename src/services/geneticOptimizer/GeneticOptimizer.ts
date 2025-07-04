@@ -543,7 +543,8 @@ export class GeneticOptimizer {
         const balanceDiff = Math.abs(balance - targetBalance);
         if (balanceDiff > 0.01) {
           balanceConstraintViolations +=
-            balanceDiff * FITNESS_WEIGHTS.BALANCE.VIOLATION_PENALTY;
+            balanceDiff *
+            FITNESS_WEIGHTS.BALANCE.FIXED_BALANCE_VIOLATION_PENALTY;
         }
       }
 

@@ -2,6 +2,7 @@ import React, { useMemo, useCallback, useState } from 'react';
 import { useSchedule } from '../../hooks/useSchedule';
 import { useUI } from '../../context/UIContext';
 import { DaySchedule } from '../../types';
+import { SHIFT_VALUES } from '../../config/user-config';
 import styles from './ScheduleCalendar.module.css';
 
 export const ScheduleCalendar: React.FC = () => {
@@ -103,7 +104,8 @@ export const ScheduleCalendar: React.FC = () => {
             for (let day = 1; day <= 30; day++) {
               const isWeekend = day % 7 === 0 || day % 7 === 6;
               const shifts = isWeekend ? [] : ['medium'];
-              const earnings = shifts && shifts.length > 0 ? 67.5 : 0;
+              const earnings =
+                shifts && shifts.length > 0 ? SHIFT_VALUES.medium.net : 0;
 
               // Calculate expenses for this day
               const dayExpenses = expenses

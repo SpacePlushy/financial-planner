@@ -97,6 +97,8 @@ export const FITNESS_WEIGHTS = {
     FINAL_BALANCE_PENALTY: 100,
     /** Penalty for each day below minimum balance */
     VIOLATION_PENALTY: 5000,
+    /** Penalty for fixed balance constraint violations */
+    FIXED_BALANCE_VIOLATION_PENALTY: 1000,
     /** Buffer amount above minimum balance for critical days */
     CRITICAL_DAY_BUFFER: 200,
     /** Multiplier for overshoot penalty */
