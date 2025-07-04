@@ -467,8 +467,8 @@ body {
 
 @media (max-width: 1024px) {
   :root {
-    /* ActionBar height: padding (24px) + button (44px) + gaps + border = ~80px, add buffer */
-    --mobile-actionbar-height: 90px;
+    /* ActionBar height: padding (24px) + button (44px) + gaps + border = ~80px, add extra buffer for safety */
+    --mobile-actionbar-height: 110px;
   }
 
   .app {
@@ -531,6 +531,11 @@ body {
     --gap-md: 8px;
     --gap-lg: 12px;
     --header-height: 48px;
+  }
+
+  /* Ensure last panel has extra bottom spacing on mobile */
+  .panel:last-child {
+    margin-bottom: calc(var(--gap-lg) * 4); /* 48px instead of 24px */
   }
 
   .app {
