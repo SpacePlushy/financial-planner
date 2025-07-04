@@ -466,18 +466,26 @@ body {
 }
 
 @media (max-width: 1024px) {
+  :root {
+    /* ActionBar height: padding (24px) + button (44px) + gaps + border = ~80px, add buffer */
+    --mobile-actionbar-height: 90px;
+  }
+
   .app {
     position: relative;
     height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Prevent body scroll, only app-main should scroll */
   }
 
   .app-main {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: auto !important; /* Override desktop overflow: hidden */
     /* Account for fixed ActionBar at bottom */
-    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0));
+    padding-bottom: calc(
+      var(--mobile-actionbar-height) + env(safe-area-inset-bottom, 0)
+    );
     -webkit-overflow-scrolling: touch;
   }
 
@@ -507,9 +515,9 @@ body {
     margin-bottom: var(--gap-md);
   }
 
-  /* Remove all bandaid padding fixes */
+  /* Ensure last panel has enough space above ActionBar */
   .panel:last-child {
-    margin-bottom: var(--gap-md);
+    margin-bottom: calc(var(--gap-lg) * 2);
   }
 
   .config-panel .panel-content {
@@ -780,6 +788,6 @@ body {
   z-index: 100;
   /* Account for Safari bottom bar */
   padding-bottom: env(safe-area-inset-bottom, 0);
-  background-color: var(--bg-secondary);
-  box-shadow: 0 -2px 8px var(--shadow-color);
+  /* Remove any default margins */
+  margin: 0;
 }
