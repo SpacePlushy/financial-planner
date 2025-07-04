@@ -57,6 +57,18 @@ class SimpleGeneticOptimizer {
       };
     }
     
+    // Calculate required earnings (like client-side)
+    this.requiredFlexNet = this.calculateRequiredEarnings();
+    
+    // Identify critical days
+    this.criticalDays = this.identifyCriticalDays();
+    
+    // Set start day (for balance edit support)
+    this.startDay = this.config.balanceEditDay ? this.config.balanceEditDay + 1 : 1;
+    this.effectiveStartingBalance = this.config.balanceEditDay 
+      ? this.config.newStartingBalance 
+      : this.config.startingBalance;
+    
     // Calculate total days based on expenses/deposits
     this.totalDays = this.calculateTotalDays();
   }
@@ -65,62 +77,270 @@ class SimpleGeneticOptimizer {
     // Always use 30 days to match client-side optimizer
     return 30;
   }
-
-  generateRandomSchedule() {
-    const schedule = [];
-    const shiftOptions = ['large', 'medium', 'small', null];
+  
+  calculateRequiredEarnings() {
+    const totalExpenses = this.expensesByDay.reduce((sum, exp) => sum + exp, 0);
+    const totalDepositIncome = this.deposits.reduce((sum, dep) => sum + dep.amount, 0);
+    return Math.max(0, 
+      totalExpenses + 
+      this.config.targetEndingBalance - 
+      this.config.startingBalance - 
+      totalDepositIncome
+    );
+  }
+  
+  identifyCriticalDays() {
+    const criticalDays = [];
+    let runningBalance = this.effectiveStartingBalance;
+    const startDay = this.startDay;
     
-    for (let i = 0; i < this.totalDays; i++) {
-      schedule.push(shiftOptions[Math.floor(Math.random() * shiftOptions.length)]);
+    for (let day = startDay; day <= 30; day++) {
+      runningBalance += this.depositsByDay[day] || 0;
+      runningBalance -= this.expensesByDay[day] || 0;
+      
+      if (runningBalance < this.config.minimumBalance + 200) {
+        criticalDays.push(day);
+      }
     }
     
-    return schedule;
+    return criticalDays;
   }
 
-  calculateFitness(schedule) {
-    let balance = this.config.startingBalance || 1000;
-    let workDays = 0;
+  generateRandomSchedule() {
+    const chromosome = new Array(31).fill(null);
+    
+    // Apply manual constraints if any
+    if (this.config.manualConstraints) {
+      for (const [day, constraint] of Object.entries(this.config.manualConstraints)) {
+        const dayNum = parseInt(day);
+        if (constraint.shifts !== undefined) {
+          chromosome[dayNum] = constraint.shifts;
+        }
+      }
+    }
+    
+    const availableDays = 30 - (this.config.balanceEditDay || 0);
+    const maxPossibleSingleShifts = availableDays * this.shiftTypes.large.net;
+    const inCrisisMode = this.requiredFlexNet > maxPossibleSingleShifts;
+    
+    const avgEarnings = (this.shiftTypes.large.net + this.shiftTypes.medium.net + this.shiftTypes.small.net) / 3;
+    const estimatedWorkDays = Math.ceil(this.requiredFlexNet / avgEarnings);
+    
+    // Cover critical days first
+    for (const criticalDay of this.criticalDays) {
+      const daysBeforeCritical = Math.floor(Math.random() * 4) + 2;
+      const workDay = Math.max(this.startDay, criticalDay - daysBeforeCritical);
+      
+      if (workDay <= 30 && !chromosome[workDay]) {
+        if (inCrisisMode) {
+          // Crisis mode - use double shifts
+          const rand = Math.random();
+          if (rand < 0.4) {
+            chromosome[workDay] = 'large+large';
+          } else if (rand < 0.8) {
+            chromosome[workDay] = Math.random() < 0.5 ? 'medium+large' : 'large+medium';
+          } else {
+            chromosome[workDay] = 'medium+medium';
+          }
+        } else {
+          // Normal mode - prefer single shifts with proper distribution
+          const shiftType = Math.random() < 0.6 ? 'large' : (Math.random() < 0.8 ? 'medium' : 'small');
+          chromosome[workDay] = shiftType;
+        }
+      }
+    }
+    
+    // Count scheduled work days
+    let scheduledWorkDays = 0;
+    for (let d = this.startDay; d <= 30; d++) {
+      if (chromosome[d]) scheduledWorkDays++;
+    }
+    
+    // Calculate minimum work days needed
+    let minWorkDaysNeeded = Math.ceil(this.requiredFlexNet / this.shiftTypes.large.net);
+    if (inCrisisMode) {
+      const avgDoubleShiftEarnings = 150; // Approximate
+      minWorkDaysNeeded = Math.max(
+        Math.floor(availableDays * 0.9),
+        Math.ceil(this.requiredFlexNet / avgDoubleShiftEarnings)
+      );
+    }
+    
+    // Get available days for work
+    const availableDaysArray = [];
+    for (let day = this.startDay; day <= 30; day++) {
+      if (!chromosome[day]) {
+        availableDaysArray.push(day);
+      }
+    }
+    
+    // Shuffle available days
+    for (let i = availableDaysArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = availableDaysArray[i];
+      availableDaysArray[i] = availableDaysArray[j];
+      availableDaysArray[j] = temp;
+    }
+    
+    // Add remaining work days with spacing
+    const remainingWorkDaysNeeded = Math.max(0, minWorkDaysNeeded - scheduledWorkDays);
+    if (remainingWorkDaysNeeded > 0 && availableDaysArray.length > 0) {
+      availableDaysArray.sort((a, b) => a - b);
+      const step = Math.max(1, Math.floor(availableDaysArray.length / remainingWorkDaysNeeded));
+      let daysAdded = 0;
+      
+      for (let i = 0; i < availableDaysArray.length && daysAdded < remainingWorkDaysNeeded; i += step) {
+        const day = availableDaysArray[i];
+        
+        // Check spacing from other work days
+        let tooClose = false;
+        for (let d = Math.max(1, day - 1); d <= Math.min(30, day + 1); d++) {
+          if (d !== day && chromosome[d]) {
+            tooClose = true;
+            break;
+          }
+        }
+        
+        if (!tooClose) {
+          if (inCrisisMode) {
+            const rand = Math.random();
+            if (rand < 0.3) {
+              chromosome[day] = 'large+large';
+            } else if (rand < 0.7) {
+              chromosome[day] = Math.random() < 0.5 ? 'medium+large' : 'large+medium';
+            } else {
+              chromosome[day] = 'medium+medium';
+            }
+          } else {
+            // Use proper shift distribution
+            const rand = Math.random();
+            if (rand < 0.5) {
+              chromosome[day] = 'large';
+            } else if (rand < 0.8) {
+              chromosome[day] = 'medium';
+            } else {
+              chromosome[day] = 'small';
+            }
+          }
+          daysAdded++;
+        }
+      }
+      
+      // Second pass if needed - fill remaining days
+      if (daysAdded < remainingWorkDaysNeeded) {
+        for (const day of availableDaysArray) {
+          if (!chromosome[day] && daysAdded < remainingWorkDaysNeeded) {
+            const rand = Math.random();
+            if (rand < 0.5) {
+              chromosome[day] = 'large';
+            } else if (rand < 0.8) {
+              chromosome[day] = 'medium';
+            } else {
+              chromosome[day] = 'small';
+            }
+            daysAdded++;
+          }
+        }
+      }
+    }
+    
+    // Return only days 1-30 (skip index 0)
+    return chromosome.slice(1, 31);
+  }
+
+  calculateFitness(chromosome) {
+    let balance = this.effectiveStartingBalance;
+    let totalEarnings = 0;
     let violations = 0;
-    
-    // Track consecutive days
+    let workDays = 0;
+    let workDaysList = [];
+    let minBalance = balance;
     let consecutiveDays = 0;
+    let maxConsecutiveDays = 0;
     
-    for (let day = 0; day < schedule.length; day++) {
-      const shift = schedule[day];
+    // Process each day
+    for (let day = 1; day <= 30; day++) {
+      const shift = chromosome[day - 1]; // Adjust for 0-based array
+      
+      // Add deposits
+      balance += this.depositsByDay[day] || 0;
       
       // Apply shift earnings
       if (shift) {
-        balance += this.shiftTypes[shift].value;
-        workDays++;
-        consecutiveDays++;
+        let dayEarnings = 0;
         
-        // Check consecutive days constraint
-        if (consecutiveDays > 5) {
-          violations++;
+        // Handle double shifts
+        if (shift.includes('+')) {
+          const shifts = shift.split('+');
+          for (const s of shifts) {
+            dayEarnings += this.shiftTypes[s] ? this.shiftTypes[s].net : 0;
+          }
+        } else {
+          dayEarnings = this.shiftTypes[shift] ? this.shiftTypes[shift].net : 0;
         }
+        
+        balance += dayEarnings;
+        totalEarnings += dayEarnings;
+        workDays++;
+        workDaysList.push(day);
+        consecutiveDays++;
+        maxConsecutiveDays = Math.max(maxConsecutiveDays, consecutiveDays);
       } else {
         consecutiveDays = 0;
       }
       
-      // Apply actual expenses for this day
-      const dayNumber = day + 1; // Convert 0-based index to 1-based day
-      balance -= this.expensesByDay[dayNumber] || 0;
-      balance += this.depositsByDay[dayNumber] || 0;
+      // Subtract expenses
+      balance -= this.expensesByDay[day] || 0;
       
-      // Check minimum balance
-      if (balance < (this.config.minimumBalance || 100)) {
+      // Track minimum balance
+      if (balance < minBalance) {
+        minBalance = balance;
+      }
+      
+      // Count balance violations
+      if (balance < this.config.minimumBalance) {
         violations++;
       }
     }
     
-    // Calculate fitness score (higher is better)
-    const fitness = balance - (violations * 100);
+    // Calculate fitness based on multiple factors
+    let fitness = 0;
+    
+    // Primary goal: Meet target ending balance
+    const balanceDiff = Math.abs(balance - this.config.targetEndingBalance);
+    fitness -= balanceDiff * 10;
+    
+    // Heavily penalize violations
+    fitness -= violations * 1000;
+    
+    // Penalize too many consecutive days
+    if (maxConsecutiveDays > 5) {
+      fitness -= (maxConsecutiveDays - 5) * 200;
+    }
+    
+    // Prefer reasonable number of work days
+    const idealWorkDays = Math.ceil(this.requiredFlexNet / this.shiftTypes.large.net);
+    const workDayDiff = Math.abs(workDays - idealWorkDays);
+    fitness -= workDayDiff * 50;
+    
+    // Bonus for meeting target exactly
+    if (balanceDiff < 50) {
+      fitness += 500;
+    }
+    
+    // Bonus for no violations
+    if (violations === 0) {
+      fitness += 1000;
+    }
     
     return {
       fitness,
       balance,
       workDays,
-      violations
+      violations,
+      totalEarnings,
+      minBalance,
+      workDaysList
     };
   }
 
@@ -138,7 +358,7 @@ class SimpleGeneticOptimizer {
     
     // Evolution loop
     for (let gen = 0; gen < generations; gen++) {
-      // Sort by fitness
+      // Sort by fitness (higher is better)
       population.sort((a, b) => b.fitness - a.fitness);
       
       // Report progress
@@ -168,10 +388,10 @@ class SimpleGeneticOptimizer {
         const parent2 = population[Math.floor(Math.random() * eliteSize)];
         
         const child = this.crossover(parent1.schedule, parent2.schedule);
-        this.mutate(child);
+        const mutatedChild = this.mutate(child);
         
-        const fitness = this.calculateFitness(child);
-        newPopulation.push({ schedule: child, ...fitness });
+        const fitness = this.calculateFitness(mutatedChild);
+        newPopulation.push({ schedule: mutatedChild, ...fitness });
       }
       
       population = newPopulation;
@@ -194,21 +414,63 @@ class SimpleGeneticOptimizer {
 
   crossover(parent1, parent2) {
     const child = [];
+    
+    // Two-point crossover
+    const point1 = Math.floor(Math.random() * 30);
+    const point2 = Math.floor(Math.random() * 30);
+    const start = Math.min(point1, point2);
+    const end = Math.max(point1, point2);
+    
     for (let i = 0; i < parent1.length; i++) {
-      child.push(Math.random() < 0.5 ? parent1[i] : parent2[i]);
+      if (i >= start && i <= end) {
+        child.push(parent2[i]);
+      } else {
+        child.push(parent1[i]);
+      }
     }
     return child;
   }
 
-  mutate(schedule) {
+  mutate(chromosome) {
     const mutationRate = 0.1;
-    const shiftOptions = ['large', 'medium', 'small', null];
+    const mutated = [...chromosome];
     
-    for (let i = 0; i < schedule.length; i++) {
+    for (let i = 0; i < mutated.length; i++) {
+      // Skip if manual constraint
+      const day = i + 1;
+      if (this.config.manualConstraints && this.config.manualConstraints[day]) {
+        continue;
+      }
+      
       if (Math.random() < mutationRate) {
-        schedule[i] = shiftOptions[Math.floor(Math.random() * shiftOptions.length)];
+        // Check if we need more earnings
+        const currentFitness = this.calculateFitness(mutated);
+        const needsMoreEarnings = currentFitness.balance < this.config.targetEndingBalance;
+        
+        if (needsMoreEarnings) {
+          // Bias towards work days
+          const rand = Math.random();
+          if (rand < 0.7) {
+            // Add a shift
+            if (rand < 0.35) {
+              mutated[i] = 'large';
+            } else if (rand < 0.55) {
+              mutated[i] = 'medium';
+            } else {
+              mutated[i] = 'small';
+            }
+          } else {
+            mutated[i] = null; // Rest day
+          }
+        } else {
+          // Random mutation
+          const options = ['large', 'medium', 'small', null];
+          mutated[i] = options[Math.floor(Math.random() * options.length)];
+        }
       }
     }
+    
+    return mutated;
   }
 
   getWorkDaysList(schedule) {
@@ -236,8 +498,18 @@ class SimpleGeneticOptimizer {
       const dayNumber = index + 1;
       // Get the actual shift value from shiftTypes
       let earnings = 0;
-      if (shift && this.shiftTypes[shift]) {
-        earnings = this.shiftTypes[shift].value || 0;
+      if (shift) {
+        // Handle double shifts
+        if (shift.includes('+')) {
+          const shifts = shift.split('+');
+          for (const s of shifts) {
+            if (this.shiftTypes[s]) {
+              earnings += this.shiftTypes[s].value || 0;
+            }
+          }
+        } else if (this.shiftTypes[shift]) {
+          earnings = this.shiftTypes[shift].value || 0;
+        }
       }
       const expenses = this.expensesByDay[dayNumber] || 0;
       const deposit = this.depositsByDay[dayNumber] || 0
@@ -248,7 +520,7 @@ class SimpleGeneticOptimizer {
       
       return {
         day: dayNumber,
-        shifts: shift ? [shift] : [], // IMPORTANT: This must be an array
+        shifts: shift ? (shift.includes('+') ? shift.split('+') : [shift]) : [], // Handle double shifts
         earnings: Number(earnings) || 0,
         expenses: Number(expenses) || 0,
         deposit: Number(deposit) || 0,
@@ -293,12 +565,6 @@ module.exports = async (req, res) => {
   try {
     const { config, expenses, deposits, shiftTypes } = req.body;
 
-    console.log('Received request with:', {
-      hasConfig: !!config,
-      expensesCount: expenses ? expenses.length : 0,
-      depositsCount: deposits ? deposits.length : 0,
-      hasShiftTypes: !!shiftTypes
-    });
 
     if (!config) {
       throw new Error('No configuration provided');
