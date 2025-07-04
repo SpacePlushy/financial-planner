@@ -435,38 +435,77 @@ class SimpleGeneticOptimizer {
   mutate(chromosome) {
     const mutationRate = 0.1;
     const mutated = [...chromosome];
+    const startDay = this.config.balanceEditDay ? this.config.balanceEditDay + 1 : 1;
     
     for (let i = 0; i < mutated.length; i++) {
-      // Skip if manual constraint
       const day = i + 1;
-      if (this.config.manualConstraints && this.config.manualConstraints[day]) {
+      
+      // Skip days before balance edit or with manual constraints
+      if (day < startDay || (this.config.manualConstraints && this.config.manualConstraints[day])) {
         continue;
       }
       
       if (Math.random() < mutationRate) {
-        // Check if we need more earnings
-        const currentFitness = this.calculateFitness(mutated);
-        const needsMoreEarnings = currentFitness.balance < this.config.targetEndingBalance;
+        // Calculate if we need double shifts (extreme deficit)
+        const availableDays = 30 - (this.config.balanceEditDay || 0);
+        const deficitPerDay = this.requiredFlexNet / availableDays;
+        const largeShiftEarnings = this.shiftTypes.large.net;
+        const isExtremeDeficit = deficitPerDay > largeShiftEarnings;
         
-        if (needsMoreEarnings) {
-          // Bias towards work days
+        // Check spacing from adjacent days
+        let hasAdjacentWorkDay = false;
+        if (i > 0 && mutated[i - 1]) hasAdjacentWorkDay = true;
+        if (i < mutated.length - 1 && mutated[i + 1]) hasAdjacentWorkDay = true;
+        
+        if (isExtremeDeficit) {
+          // Extreme deficit - heavily bias towards double shifts
           const rand = Math.random();
-          if (rand < 0.7) {
-            // Add a shift
-            if (rand < 0.35) {
-              mutated[i] = 'large';
-            } else if (rand < 0.55) {
-              mutated[i] = 'medium';
-            } else {
-              mutated[i] = 'small';
-            }
+          if (rand < 0.4) {
+            mutated[i] = 'large+large';
+          } else if (rand < 0.8) {
+            mutated[i] = Math.random() < 0.5 ? 'medium+large' : 'large+medium';
           } else {
-            mutated[i] = null; // Rest day
+            mutated[i] = 'medium+medium';
           }
         } else {
-          // Random mutation
-          const options = ['large', 'medium', 'small', null];
-          mutated[i] = options[Math.floor(Math.random() * options.length)];
+          const rand = Math.random();
+          
+          // Bias against removing well-spaced work days
+          if (mutated[i] && !hasAdjacentWorkDay && rand < 0.8) {
+            continue; // Keep well-spaced work day
+          }
+          
+          // Bias against adding work days next to existing ones
+          if (!mutated[i] && hasAdjacentWorkDay && rand > 0.2) {
+            mutated[i] = null;
+            continue;
+          }
+          
+          // Normal mutation with all possible options
+          if (rand < 0.2) {
+            mutated[i] = null;
+          } else if (rand < 0.5) {
+            mutated[i] = 'medium';
+          } else if (rand < 0.7) {
+            mutated[i] = 'medium+medium';
+          } else if (rand < 0.85) {
+            mutated[i] = 'large';
+          } else {
+            // Random from all options including double shifts
+            const allOptions = [
+              null,
+              'small',
+              'medium',
+              'large',
+              'small+small',
+              'small+medium',
+              'small+large',
+              'medium+medium',
+              'medium+large',
+              'large+large'
+            ];
+            mutated[i] = allOptions[Math.floor(Math.random() * allOptions.length)];
+          }
         }
       }
     }
@@ -485,8 +524,19 @@ class SimpleGeneticOptimizer {
   calculateTotalEarnings(schedule) {
     let totalEarnings = 0;
     for (const shift of schedule) {
-      if (shift && this.shiftTypes[shift]) {
-        totalEarnings += this.shiftTypes[shift].value || 0;
+      if (shift) {
+        // Handle double shifts
+        if (shift.includes && shift.includes('+')) {
+          const shifts = shift.split('+');
+          for (const s of shifts) {
+            const shiftType = s.trim();
+            if (this.shiftTypes[shiftType]) {
+              totalEarnings += this.shiftTypes[shiftType].net || this.shiftTypes[shiftType].value || 0;
+            }
+          }
+        } else if (this.shiftTypes[shift]) {
+          totalEarnings += this.shiftTypes[shift].net || this.shiftTypes[shift].value || 0;
+        }
       }
     }
     return totalEarnings;
