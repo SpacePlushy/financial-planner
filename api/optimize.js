@@ -387,13 +387,43 @@ class SimpleGeneticOptimizer {
       population.push({ schedule, ...fitness });
     }
     
+    // Early termination tracking (EXACT match client)
+    let bestEverFitness = Infinity;
+    let generationsWithoutImprovement = 0;
+    const maxGenerationsWithoutImprovement = 150;
+    
     // Evolution loop
     for (let gen = 0; gen < generations; gen++) {
-      // Sort by fitness (higher is better)
-      population.sort((a, b) => b.fitness - a.fitness);
+      // Sort by fitness (lower is better, matching client-side)
+      population.sort((a, b) => a.fitness - b.fitness);
+      
+      // Check for improvement (EXACT match client)
+      if (population[0].fitness < bestEverFitness * 0.99) {
+        bestEverFitness = population[0].fitness;
+        generationsWithoutImprovement = 0;
+      } else {
+        generationsWithoutImprovement++;
+      }
+      
+      // Early termination (EXACT match client)
+      const best = population[0];
+      const balanceTolerance = 5;
+      const targetLow = this.config.targetEndingBalance - balanceTolerance;
+      const targetHigh = this.config.targetEndingBalance + balanceTolerance;
+      
+      if (
+        gen > 300 &&
+        generationsWithoutImprovement > maxGenerationsWithoutImprovement &&
+        best.violations === 0 &&
+        best.balance >= targetLow &&
+        best.balance <= targetHigh
+      ) {
+        // Early termination - optimal solution found
+        break;
+      }
       
       // Report progress
-      if (progressCallback) {
+      if (progressCallback && gen % 50 === 0) {
         await progressCallback({
           generation: gen,
           progress: Math.round((gen / generations) * 100),
@@ -430,7 +460,7 @@ class SimpleGeneticOptimizer {
     }
     
     // Return best solution
-    population.sort((a, b) => b.fitness - a.fitness);
+    population.sort((a, b) => a.fitness - b.fitness);
     const best = population[0];
     
     return {
@@ -438,7 +468,7 @@ class SimpleGeneticOptimizer {
       workDays: this.getWorkDaysList(best.schedule),
       totalEarnings: this.calculateTotalEarnings(best.schedule),
       finalBalance: best.balance,
-      minBalance: best.balance - 500, // Approximate
+      minBalance: best.minBalance,
       violations: best.violations,
       formattedSchedule: this.formatSchedule(best.schedule)
     };
