@@ -6,6 +6,7 @@
   margin-bottom: 20px;
   position: relative;
   overflow: hidden;
+  container-type: inline-size;
 }
 
 .mode-selector-header {
@@ -76,8 +77,8 @@
 }
 
 .performance-metrics h4 {
-  margin: 0 0 16px 0;
-  font-size: 14px;
+  margin: 0 0 12px 0;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -86,16 +87,35 @@
 
 .metrics-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: 12px;
   margin-bottom: 16px;
+}
+
+/* Keep single column layout for configuration panel */
+/* Only use 2 columns if container is wide enough */
+@container (min-width: 500px) {
+  .metrics-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+/* Fallback for browsers without container query support */
+@supports not (container-type: inline-size) {
+  @media (min-width: 768px) {
+    .metrics-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+  }
 }
 
 .metric-card {
   background: var(--background-color);
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  padding: 16px;
+  padding: 12px;
 }
 
 .metric-card.client {
@@ -109,9 +129,9 @@
 .metric-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  font-size: 14px;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-primary);
 }
@@ -127,11 +147,11 @@
 }
 
 .metric-time {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
-  min-height: 36px;
+  min-height: 30px;
   display: flex;
   align-items: center;
 }
