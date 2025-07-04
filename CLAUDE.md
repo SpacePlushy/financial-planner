@@ -58,6 +58,13 @@ npx prettier --check .    # Check formatting without changes
 # Build
 npm run build            # Production build
 
+# IMPORTANT: Pre-Push Checklist
+# Before pushing to remote repositories, always run:
+# 1. `npm run build` - Ensures the build succeeds and catches TypeScript/ESLint errors
+# 2. `npm run lint` - Checks for any linting issues
+# 3. `npm test -- --watchAll=false` - Runs all tests once
+# The CI/CD pipeline will fail if any of these fail, so test locally first!
+
 # Deployment
 vercel                   # Deploy to Vercel (production)
 vercel --prod           # Deploy to production domain
