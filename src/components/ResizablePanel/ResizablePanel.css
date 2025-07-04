@@ -7,9 +7,7 @@
 
 /* Resize Divider */
 .resize-divider {
-  position: absolute;
-  top: 0;
-  bottom: 0;
+  position: relative;
   width: 16px;
   cursor: col-resize;
   z-index: 10;
@@ -17,27 +15,21 @@
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
+  flex-shrink: 0;
+  margin: 0 -16px;
 }
 
 .resize-divider:hover {
   background-color: rgba(13, 110, 253, 0.05);
 }
 
-.resize-divider.left {
-  right: -8px;
-}
-
-.resize-divider.right {
-  left: -8px;
-}
-
 /* Resize Handle Visual */
 .resize-handle {
   width: 4px;
-  height: 40px;
-  background: var(--border-color);
+  height: 60px;
+  background: #d0d0d0;
   border-radius: 2px;
-  opacity: 0;
+  opacity: 0.3;
   transition:
     opacity 0.2s,
     background-color 0.2s;

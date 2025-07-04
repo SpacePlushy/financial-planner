@@ -147,8 +147,10 @@ body {
 .dashboard-grid {
   height: 100%;
   display: flex;
-  gap: 0;
+  gap: 16px;
   position: relative;
+  align-items: stretch;
+  padding: 0 var(--gap-md);
 }
 
 .dashboard-grid.resizable-container {
@@ -166,15 +168,6 @@ body {
   overflow: hidden;
   transition: box-shadow 0.3s ease;
   height: 100%;
-  margin: 0 8px;
-}
-
-.resizable-panel:first-child .panel {
-  margin-left: 0;
-}
-
-.resizable-panel:last-child .panel {
-  margin-right: 0;
 }
 
 .panel:hover {
