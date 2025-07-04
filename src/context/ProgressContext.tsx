@@ -97,6 +97,7 @@ function progressReducer(
           violations: 0,
           message: 'Initializing optimization...',
         },
+        lastResult: null, // Clear previous result when starting new optimization
         startTime: Date.now(),
         endTime: null,
         isPaused: false,

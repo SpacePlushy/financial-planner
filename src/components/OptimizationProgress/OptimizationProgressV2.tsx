@@ -118,16 +118,29 @@ export const OptimizationProgress: React.FC = () => {
   };
 
   const progressPercentage = getProgressPercentage();
-  const timeElapsed = getElapsedTime();
   const estimatedTimeRemaining = getEstimatedTimeRemaining();
+
+  // Determine if we're showing completed state
+  const isCompleted = !isOptimizing && lastResult !== null;
+
+  // Calculate elapsed time - use cached value for completed optimizations
+  const timeElapsed = React.useMemo(() => {
+    if (isCompleted && lastResult && lastResult.computationTime) {
+      // Parse computation time string (e.g., "4s", "1m 30s")
+      const match = lastResult.computationTime.match(/(?:(\d+)m\s*)?(\d+)s/);
+      if (match) {
+        const minutes = parseInt(match[1] || '0', 10);
+        const seconds = parseInt(match[2] || '0', 10);
+        return (minutes * 60 + seconds) * 1000;
+      }
+    }
+    return getElapsedTime();
+  }, [isCompleted, lastResult, getElapsedTime]);
 
   // Don't show if user dismissed the completed view
   if (isDismissed) {
     return null;
   }
-
-  // Determine if we're showing completed state
-  const isCompleted = !isOptimizing && lastResult !== null;
 
   // Show initialization state when optimization just started
   if (
@@ -234,15 +247,17 @@ export const OptimizationProgress: React.FC = () => {
           <div className={styles.timeInfo}>
             <span className={styles.timeLabel}>Time elapsed:</span>
             <span className={styles.timeValue}>{formatTime(timeElapsed)}</span>
-            {estimatedTimeRemaining !== null && estimatedTimeRemaining > 0 && (
-              <>
-                <span className={styles.timeSeparator}>•</span>
-                <span className={styles.timeLabel}>Remaining:</span>
-                <span className={styles.timeValue}>
-                  ~{formatTime(estimatedTimeRemaining)}
-                </span>
-              </>
-            )}
+            {!isCompleted &&
+              estimatedTimeRemaining !== null &&
+              estimatedTimeRemaining > 0 && (
+                <>
+                  <span className={styles.timeSeparator}>•</span>
+                  <span className={styles.timeLabel}>Remaining:</span>
+                  <span className={styles.timeValue}>
+                    ~{formatTime(estimatedTimeRemaining)}
+                  </span>
+                </>
+              )}
           </div>
         )}
 
