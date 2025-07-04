@@ -376,8 +376,8 @@ class SimpleGeneticOptimizer {
   }
 
   async optimize(progressCallback) {
-    const populationSize = this.config.populationSize || 100;
-    const generations = this.config.generations || 100;
+    const populationSize = this.config.populationSize || 200;
+    const generations = this.config.generations || 500;
     
     // Initialize population
     let population = [];
@@ -391,9 +391,11 @@ class SimpleGeneticOptimizer {
     let bestEverFitness = Infinity;
     let generationsWithoutImprovement = 0;
     const maxGenerationsWithoutImprovement = 150;
+    let actualGenerations = 0;
     
     // Evolution loop
     for (let gen = 0; gen < generations; gen++) {
+      actualGenerations = gen;
       // Sort by fitness (lower is better, matching client-side)
       population.sort((a, b) => a.fitness - b.fitness);
       
@@ -411,14 +413,23 @@ class SimpleGeneticOptimizer {
       const targetLow = this.config.targetEndingBalance - balanceTolerance;
       const targetHigh = this.config.targetEndingBalance + balanceTolerance;
       
-      if (
-        gen > 300 &&
-        generationsWithoutImprovement > maxGenerationsWithoutImprovement &&
-        best.violations === 0 &&
-        best.balance >= targetLow &&
-        best.balance <= targetHigh
-      ) {
-        // Early termination - optimal solution found
+      // Early termination - check if we have a perfect or near-perfect solution
+      // Allow earlier termination if solution is really good
+      const isPerfectSolution = best.violations === 0 && 
+                               best.balance >= targetLow && 
+                               best.balance <= targetHigh;
+      
+      const canTerminateEarly = (
+        // Original condition from client
+        (gen > 300 && generationsWithoutImprovement > maxGenerationsWithoutImprovement && isPerfectSolution) ||
+        // Allow earlier termination for perfect solutions with no improvement
+        (gen > 100 && generationsWithoutImprovement > 50 && isPerfectSolution && best.fitness < 1000) ||
+        // Very early termination for extremely good solutions
+        (gen > 50 && isPerfectSolution && best.fitness < 100)
+      );
+      
+      if (canTerminateEarly) {
+        console.log(`Early termination at generation ${gen}! Fitness: ${best.fitness}, Balance: ${best.balance}`);
         break;
       }
       
@@ -462,6 +473,8 @@ class SimpleGeneticOptimizer {
     // Return best solution
     population.sort((a, b) => a.fitness - b.fitness);
     const best = population[0];
+    
+    console.log(`Optimization complete. Total generations: ${generations}, Terminated at: ${actualGenerations + 1}`);
     
     return {
       schedule: best.schedule,
@@ -704,8 +717,13 @@ module.exports = async (req, res) => {
       shiftTypes
     );
 
-    // Run optimization
-    const result = await optimizer.optimize();
+    // Run optimization with progress callback
+    const result = await optimizer.optimize(async (progress) => {
+      // Progress logging for debugging
+      if (progress.generation % 100 === 0) {
+        console.log(`Server optimization progress: Gen ${progress.generation}, Fitness: ${progress.bestFitness}`);
+      }
+    });
 
     const endTime = Date.now();
 
