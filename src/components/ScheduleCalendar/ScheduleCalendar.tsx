@@ -36,7 +36,7 @@ export const ScheduleCalendar: React.FC = () => {
 
   // Get color class for shift type
   const getShiftColorClass = useCallback((shifts: string[]) => {
-    if (shifts.length === 0) return '';
+    if (!shifts || shifts.length === 0) return '';
 
     const shiftType = shifts[0]; // Use first shift for primary color
     switch (shiftType) {
@@ -103,7 +103,7 @@ export const ScheduleCalendar: React.FC = () => {
             for (let day = 1; day <= 30; day++) {
               const isWeekend = day % 7 === 0 || day % 7 === 6;
               const shifts = isWeekend ? [] : ['medium'];
-              const earnings = shifts.length > 0 ? 67.5 : 0;
+              const earnings = shifts && shifts.length > 0 ? 67.5 : 0;
 
               // Calculate expenses for this day
               const dayExpenses = expenses
@@ -201,7 +201,7 @@ export const ScheduleCalendar: React.FC = () => {
                 <div className={styles.dayContent}>
                   {/* Shift information */}
                   <div className={styles.shifts}>
-                    {dayData.shifts.length > 0 ? (
+                    {dayData.shifts && dayData.shifts.length > 0 ? (
                       dayData.shifts.map((shift, idx) => (
                         <span key={idx} className={styles.shiftTag}>
                           {shift}
@@ -273,7 +273,11 @@ export const ScheduleCalendar: React.FC = () => {
           <div className={styles.stat}>
             <span className={styles.statLabel}>Total Work Days:</span>
             <span className={styles.statValue}>
-              {currentSchedule.filter(day => day.shifts.length > 0).length}
+              {
+                currentSchedule.filter(
+                  day => day.shifts && day.shifts.length > 0
+                ).length
+              }
             </span>
           </div>
           <div className={styles.stat}>

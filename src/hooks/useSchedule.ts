@@ -121,7 +121,8 @@ export function useSchedule() {
    * Count total work days
    */
   const workDayCount = useMemo(
-    () => currentSchedule.filter(day => day.shifts.length > 0).length,
+    () =>
+      currentSchedule.filter(day => day.shifts && day.shifts.length > 0).length,
     [currentSchedule]
   );
 
@@ -130,7 +131,9 @@ export function useSchedule() {
    */
   const workDays = useMemo(
     () =>
-      currentSchedule.filter(day => day.shifts.length > 0).map(day => day.day),
+      currentSchedule
+        .filter(day => day.shifts && day.shifts.length > 0)
+        .map(day => day.day),
     [currentSchedule]
   );
 

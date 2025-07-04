@@ -18,7 +18,10 @@ export const ScheduleTable: React.FC = () => {
       if (!ui.showWeekends && ui.isWeekend(day.day)) {
         return false;
       }
-      if (ui.filters.showWorkDaysOnly && day.shifts.length === 0) {
+      if (
+        ui.filters.showWorkDaysOnly &&
+        (!day.shifts || day.shifts.length === 0)
+      ) {
         return false;
       }
       if (ui.filters.showEditsOnly && !hasEditsForDay(day.day)) {
@@ -45,8 +48,8 @@ export const ScheduleTable: React.FC = () => {
 
       // Handle special cases
       if (field === 'shifts') {
-        aValue = a.shifts.length;
-        bValue = b.shifts.length;
+        aValue = a.shifts ? a.shifts.length : 0;
+        bValue = b.shifts ? b.shifts.length : 0;
       }
 
       if (aValue < bValue) return direction === 'asc' ? -1 : 1;
