@@ -191,16 +191,28 @@ class SimpleGeneticOptimizer {
   }
 
   formatSchedule(schedule) {
-    return schedule.map((shift, index) => ({
-      day: index + 1,
-      date: new Date(Date.now() + index * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      shift: shift,
-      isWorkDay: !!shift,
-      earnings: shift ? this.shiftTypes[shift].value : 0,
-      balance: 0, // Would need to recalculate
-      constraints: {},
-      violations: []
-    }));
+    let balance = this.config.startingBalance || 1000;
+    
+    return schedule.map((shift, index) => {
+      const dayNumber = index + 1;
+      const earnings = shift ? this.shiftTypes[shift].value : 0;
+      const expenses = 10; // Default daily expense
+      const deposit = 0; // No deposits for now
+      
+      const startBalance = balance;
+      balance = balance + earnings - expenses + deposit;
+      const endBalance = balance;
+      
+      return {
+        day: dayNumber,
+        shifts: shift ? [shift] : [], // IMPORTANT: This must be an array
+        earnings: earnings,
+        expenses: expenses,
+        deposit: deposit,
+        startBalance: startBalance,
+        endBalance: endBalance
+      };
+    });
   }
 }
 
