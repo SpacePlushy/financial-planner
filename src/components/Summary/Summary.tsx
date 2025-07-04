@@ -34,6 +34,7 @@ export const Summary: React.FC<SummaryProps> = ({ className }) => {
   // Calculate metrics
   const metrics = useMemo(() => {
     if (!currentSchedule.length) {
+      console.log('Summary: No schedule data');
       return {
         totalWorkDays: 0,
         totalEarnings: 0,
@@ -56,6 +57,15 @@ export const Summary: React.FC<SummaryProps> = ({ className }) => {
     const success =
       !hasViolations &&
       Math.abs(balanceVsTarget) <= config.targetEndingBalance * 0.1;
+
+    console.log('Summary: Schedule data exists', {
+      workDayCount,
+      totalEarnings,
+      totalExpenses,
+      totalDeposits,
+      finalBalance,
+      violations,
+    });
 
     return {
       totalWorkDays: workDayCount,

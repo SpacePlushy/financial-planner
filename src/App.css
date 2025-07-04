@@ -275,6 +275,7 @@ body {
   flex-direction: column;
   position: relative;
   animation: fadeInUp 0.5s ease-out;
+  min-height: 0; /* Allow panel to shrink if needed */
 }
 
 .metrics-grid {
