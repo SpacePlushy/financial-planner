@@ -465,13 +465,14 @@ body {
 @media (max-width: 1024px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto;
     gap: var(--gap-sm);
+    height: auto;
   }
 
   .config-panel {
-    order: 2;
-    max-height: 300px;
+    order: 3;
+    max-height: none;
   }
 
   .results-panel {
@@ -479,12 +480,18 @@ body {
   }
 
   .schedule-panel {
-    order: 3;
-    display: none; /* Hide on tablet */
+    order: 2;
+    min-height: 400px;
   }
 
   .app-main {
     padding: var(--gap-sm);
+    overflow-y: auto;
+    height: calc(100vh - var(--header-height));
+  }
+
+  .panel {
+    margin-bottom: var(--gap-md);
   }
 }
 
@@ -493,18 +500,43 @@ body {
     --gap-sm: 4px;
     --gap-md: 8px;
     --gap-lg: 12px;
+    --header-height: 48px;
+  }
+
+  .app {
+    grid-template-rows: var(--header-height) 1fr;
+  }
+
+  .app-header {
+    padding: 0 var(--gap-md);
   }
 
   .header-content h1 {
     font-size: 1rem;
   }
 
+  .header-actions {
+    gap: var(--gap-sm);
+  }
+
+  .persistence-status {
+    display: none;
+  }
+
   .panel-title {
     font-size: 0.875rem;
   }
 
-  .footer-info {
-    display: none;
+  .panel-header {
+    padding: var(--gap-sm) var(--gap-md);
+  }
+
+  .panel-content {
+    padding: var(--gap-md);
+  }
+
+  .app-footer {
+    display: none; /* Hide footer on mobile to save space */
   }
 
   .metric-card {
@@ -513,6 +545,31 @@ body {
 
   .metric-value {
     font-size: 1rem;
+  }
+
+  /* Ensure schedule table is scrollable on mobile */
+  .schedule-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Make buttons more touch-friendly */
+  .view-button,
+  .optimize-button {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  /* Stack view toggle buttons vertically on very small screens */
+  @media (max-width: 400px) {
+    .view-toggle {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .view-button {
+      width: 100%;
+    }
   }
 }
 

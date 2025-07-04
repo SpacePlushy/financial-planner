@@ -264,13 +264,55 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .tableContainer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .scheduleTable {
     font-size: 11px;
+    min-width: 600px; /* Ensure table has minimum width for scrolling */
   }
 
   .scheduleTable th,
   .scheduleTable td {
-    padding: 4px;
+    padding: 6px 4px;
+  }
+
+  /* Show only essential columns on mobile */
+  .scheduleTable th:nth-child(n + 6),
+  .scheduleTable td:nth-child(n + 6) {
+    display: none;
+  }
+
+  /* Make day column sticky for better scrolling */
+  .scheduleTable td:first-child {
+    position: sticky;
+    left: 0;
+    background-color: var(--bg-primary);
+    z-index: 1;
+  }
+
+  .legend {
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .scheduleTable {
+    font-size: 10px;
+  }
+
+  .scheduleTable th,
+  .scheduleTable td {
+    padding: 4px 2px;
+  }
+
+  /* Currency values in smaller font */
+  .currency {
+    font-size: 10px;
   }
 }
 

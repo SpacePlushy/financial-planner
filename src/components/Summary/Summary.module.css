@@ -288,14 +288,76 @@
   }
 }
 
-/* Responsive - only for very small screens */
-@media (max-width: 320px) {
+/* Responsive - tablet and mobile */
+@media (max-width: 768px) {
   .metricsGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 8px;
+  }
+
+  .metricCard {
+    padding: 10px;
+  }
+
+  .metricTitle {
+    font-size: 10px;
   }
 
   .metricValue {
     font-size: 18px;
+  }
+
+  .metricDetails {
+    font-size: 10px;
+  }
+
+  .metricLabel {
+    display: block;
+    margin-bottom: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+
+  .actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 4px;
+  }
+
+  .exportButton,
+  .printButton {
+    width: 100%;
+    padding: 8px;
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .summaryStatus {
+    padding: 10px;
+    margin-top: 8px;
+  }
+
+  .statusMessage {
+    font-size: 12px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 320px) {
+  .metricsGrid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .metricValue {
+    font-size: 16px;
   }
 }
