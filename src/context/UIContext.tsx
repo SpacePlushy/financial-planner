@@ -34,7 +34,7 @@ type UIActionType =
  * Initial state for the UI context
  */
 const initialState: UIState = {
-  viewMode: 'table',
+  viewMode: 'calendar',
   showWeekends: true,
   highlightViolations: true,
   activeModal: null,
