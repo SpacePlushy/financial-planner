@@ -5,6 +5,17 @@
  * This is a self-contained version that doesn't rely on TypeScript imports
  */
 
+// Import configuration constants
+const { 
+  SCHEDULE_CONSTANTS,
+  SHIFT_VALUES,
+  GENETIC_ALGORITHM,
+  FITNESS_WEIGHTS,
+  PROBABILITIES,
+  CRITICAL_DAY_PARAMS,
+  API_CONSTANTS
+} = require('./constants');
+
 // Enable CORS
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -23,19 +34,19 @@ class SimpleGeneticOptimizer {
     this.deposits = deposits || [];
     
     // Calculate daily expenses and deposits
-    this.expensesByDay = new Array(31).fill(0);
-    this.depositsByDay = new Array(31).fill(0);
+    this.expensesByDay = new Array(SCHEDULE_CONSTANTS.DAY_ARRAY_SIZE).fill(0);
+    this.depositsByDay = new Array(SCHEDULE_CONSTANTS.DAY_ARRAY_SIZE).fill(0);
     
     // Process expenses
     for (const exp of this.expenses) {
-      if (exp && exp.day >= 1 && exp.day <= 30 && exp.amount) {
+      if (exp && exp.day >= SCHEDULE_CONSTANTS.MIN_DAY && exp.day <= SCHEDULE_CONSTANTS.MAX_DAY && exp.amount) {
         this.expensesByDay[exp.day] = (this.expensesByDay[exp.day] || 0) + exp.amount;
       }
     }
     
     // Process deposits
     for (const dep of this.deposits) {
-      if (dep && dep.day >= 1 && dep.day <= 30 && dep.amount) {
+      if (dep && dep.day >= SCHEDULE_CONSTANTS.MIN_DAY && dep.day <= SCHEDULE_CONSTANTS.MAX_DAY && dep.amount) {
         this.depositsByDay[dep.day] = (this.depositsByDay[dep.day] || 0) + dep.amount;
       }
     }
@@ -51,9 +62,9 @@ class SimpleGeneticOptimizer {
       }
     } else {
       this.shiftTypes = {
-        large: { value: 86.5, net: 86.5, gross: 94.5 },
-        medium: { value: 67.5, net: 67.5, gross: 75.5 },
-        small: { value: 56.0, net: 56.0, gross: 64.0 }
+        large: { value: SHIFT_VALUES.large.value, net: SHIFT_VALUES.large.net, gross: SHIFT_VALUES.large.gross },
+        medium: { value: SHIFT_VALUES.medium.value, net: SHIFT_VALUES.medium.net, gross: SHIFT_VALUES.medium.gross },
+        small: { value: SHIFT_VALUES.small.value, net: SHIFT_VALUES.small.net, gross: SHIFT_VALUES.small.gross }
       };
     }
     
@@ -64,7 +75,7 @@ class SimpleGeneticOptimizer {
     this.criticalDays = this.identifyCriticalDays();
     
     // Set start day (for balance edit support)
-    this.startDay = this.config.balanceEditDay ? this.config.balanceEditDay + 1 : 1;
+    this.startDay = this.config.balanceEditDay ? this.config.balanceEditDay + 1 : SCHEDULE_CONSTANTS.MIN_DAY;
     this.effectiveStartingBalance = this.config.balanceEditDay 
       ? this.config.newStartingBalance 
       : this.config.startingBalance;
@@ -75,7 +86,7 @@ class SimpleGeneticOptimizer {
 
   calculateTotalDays() {
     // Always use 30 days to match client-side optimizer
-    return 30;
+    return SCHEDULE_CONSTANTS.MAX_DAY;
   }
   
   calculateRequiredEarnings() {
@@ -94,11 +105,11 @@ class SimpleGeneticOptimizer {
     let runningBalance = this.effectiveStartingBalance;
     const startDay = this.startDay;
     
-    for (let day = startDay; day <= 30; day++) {
+    for (let day = startDay; day <= SCHEDULE_CONSTANTS.MAX_DAY; day++) {
       runningBalance += this.depositsByDay[day] || 0;
       runningBalance -= this.expensesByDay[day] || 0;
       
-      if (runningBalance < this.config.minimumBalance + 200) {
+      if (runningBalance < this.config.minimumBalance + FITNESS_WEIGHTS.BALANCE.CRITICAL_DAY_BUFFER) {
         criticalDays.push(day);
       }
     }
@@ -107,7 +118,7 @@ class SimpleGeneticOptimizer {
   }
 
   generateRandomSchedule() {
-    const chromosome = new Array(31).fill(null);
+    const chromosome = new Array(SCHEDULE_CONSTANTS.DAY_ARRAY_SIZE).fill(null);
     
     // Apply manual constraints if any
     if (this.config.manualConstraints) {
@@ -119,32 +130,34 @@ class SimpleGeneticOptimizer {
       }
     }
     
-    const availableDays = 30 - (this.config.balanceEditDay || 0);
+    const availableDays = SCHEDULE_CONSTANTS.MAX_DAY - (this.config.balanceEditDay || 0);
     const maxPossibleSingleShifts = availableDays * this.shiftTypes.large.net;
     const inCrisisMode = this.requiredFlexNet > maxPossibleSingleShifts;
     
-    const avgEarnings = (this.shiftTypes.large.net + this.shiftTypes.medium.net + this.shiftTypes.small.net) / 3;
+    const avgEarnings = (this.shiftTypes.large.net + this.shiftTypes.medium.net + this.shiftTypes.small.net) / Object.keys(this.shiftTypes).length;
     const estimatedWorkDays = Math.ceil(this.requiredFlexNet / avgEarnings);
     
     // Cover critical days first
     for (const criticalDay of this.criticalDays) {
-      const daysBeforeCritical = Math.floor(Math.random() * 4) + 2;
+      const daysBeforeCritical = Math.floor(Math.random() * CRITICAL_DAY_PARAMS.RANDOM_RANGE) + CRITICAL_DAY_PARAMS.MIN_DAYS_BEFORE;
       const workDay = Math.max(this.startDay, criticalDay - daysBeforeCritical);
       
-      if (workDay <= 30 && !chromosome[workDay]) {
+      if (workDay <= SCHEDULE_CONSTANTS.MAX_DAY && !chromosome[workDay]) {
         if (inCrisisMode) {
           // Crisis mode - use double shifts
           const rand = Math.random();
-          if (rand < 0.4) {
+          if (rand < PROBABILITIES.CRISIS_MODE.DOUBLE_LARGE) {
             chromosome[workDay] = 'large+large';
-          } else if (rand < 0.8) {
+          } else if (rand < (PROBABILITIES.CRISIS_MODE.DOUBLE_LARGE + PROBABILITIES.CRISIS_MODE.MIXED_LARGE)) {
             chromosome[workDay] = Math.random() < 0.5 ? 'medium+large' : 'large+medium';
           } else {
             chromosome[workDay] = 'medium+medium';
           }
         } else {
           // Normal mode - prefer single shifts with proper distribution
-          const shiftType = Math.random() < 0.6 ? 'large' : (Math.random() < 0.8 ? 'medium' : 'small');
+          const rand = Math.random();
+          const shiftType = rand < PROBABILITIES.NORMAL_MODE.LARGE_SHIFT ? 'large' : 
+                           (rand < (PROBABILITIES.NORMAL_MODE.LARGE_SHIFT + PROBABILITIES.NORMAL_MODE.MEDIUM_SHIFT) ? 'medium' : 'small');
           chromosome[workDay] = shiftType;
         }
       }
@@ -152,23 +165,23 @@ class SimpleGeneticOptimizer {
     
     // Count scheduled work days
     let scheduledWorkDays = 0;
-    for (let d = this.startDay; d <= 30; d++) {
+    for (let d = this.startDay; d <= SCHEDULE_CONSTANTS.MAX_DAY; d++) {
       if (chromosome[d]) scheduledWorkDays++;
     }
     
     // Calculate minimum work days needed
     let minWorkDaysNeeded = Math.ceil(this.requiredFlexNet / this.shiftTypes.large.net);
     if (inCrisisMode) {
-      const avgDoubleShiftEarnings = 150; // Approximate
+      const avgDoubleShiftEarnings = SERVER_OPTIMIZATION.AVG_DOUBLE_SHIFT_EARNINGS;
       minWorkDaysNeeded = Math.max(
-        Math.floor(availableDays * 0.9),
+        Math.floor(availableDays * CRITICAL_DAY_PARAMS.CRISIS_MODE_USAGE),
         Math.ceil(this.requiredFlexNet / avgDoubleShiftEarnings)
       );
     }
     
     // Get available days for work
     const availableDaysArray = [];
-    for (let day = this.startDay; day <= 30; day++) {
+    for (let day = this.startDay; day <= SCHEDULE_CONSTANTS.MAX_DAY; day++) {
       if (!chromosome[day]) {
         availableDaysArray.push(day);
       }
@@ -194,7 +207,7 @@ class SimpleGeneticOptimizer {
         
         // Check spacing from other work days
         let tooClose = false;
-        for (let d = Math.max(1, day - 1); d <= Math.min(30, day + 1); d++) {
+        for (let d = Math.max(SCHEDULE_CONSTANTS.MIN_DAY, day - 1); d <= Math.min(SCHEDULE_CONSTANTS.MAX_DAY, day + 1); d++) {
           if (d !== day && chromosome[d]) {
             tooClose = true;
             break;
@@ -204,9 +217,9 @@ class SimpleGeneticOptimizer {
         if (!tooClose) {
           if (inCrisisMode) {
             const rand = Math.random();
-            if (rand < 0.3) {
+            if (rand < PROBABILITIES.CRISIS_MODE.SECOND_PASS.DOUBLE_LARGE) {
               chromosome[day] = 'large+large';
-            } else if (rand < 0.7) {
+            } else if (rand < (PROBABILITIES.CRISIS_MODE.SECOND_PASS.DOUBLE_LARGE + PROBABILITIES.CRISIS_MODE.SECOND_PASS.MIXED_LARGE)) {
               chromosome[day] = Math.random() < 0.5 ? 'medium+large' : 'large+medium';
             } else {
               chromosome[day] = 'medium+medium';
@@ -214,9 +227,9 @@ class SimpleGeneticOptimizer {
           } else {
             // Use proper shift distribution
             const rand = Math.random();
-            if (rand < 0.5) {
+            if (rand < PROBABILITIES.SHIFT_PLACEMENT.FILL_LARGE) {
               chromosome[day] = 'large';
-            } else if (rand < 0.8) {
+            } else if (rand < (PROBABILITIES.SHIFT_PLACEMENT.FILL_LARGE + PROBABILITIES.SHIFT_PLACEMENT.FILL_MEDIUM)) {
               chromosome[day] = 'medium';
             } else {
               chromosome[day] = 'small';
@@ -231,9 +244,9 @@ class SimpleGeneticOptimizer {
         for (const day of availableDaysArray) {
           if (!chromosome[day] && daysAdded < remainingWorkDaysNeeded) {
             const rand = Math.random();
-            if (rand < 0.5) {
+            if (rand < PROBABILITIES.SHIFT_PLACEMENT.FILL_LARGE) {
               chromosome[day] = 'large';
-            } else if (rand < 0.8) {
+            } else if (rand < (PROBABILITIES.SHIFT_PLACEMENT.FILL_LARGE + PROBABILITIES.SHIFT_PLACEMENT.FILL_MEDIUM)) {
               chromosome[day] = 'medium';
             } else {
               chromosome[day] = 'small';
@@ -245,7 +258,7 @@ class SimpleGeneticOptimizer {
     }
     
     // Return only days 1-30 (skip index 0)
-    return chromosome.slice(1, 31);
+    return chromosome.slice(SCHEDULE_CONSTANTS.MIN_DAY, SCHEDULE_CONSTANTS.MAX_DAY + 1);
   }
 
   calculateFitness(chromosome) {
@@ -259,7 +272,7 @@ class SimpleGeneticOptimizer {
     let maxConsecutiveDays = 0;
     
     // Process each day
-    for (let day = 1; day <= 30; day++) {
+    for (let day = SCHEDULE_CONSTANTS.MIN_DAY; day <= SCHEDULE_CONSTANTS.MAX_DAY; day++) {
       const shift = chromosome[day - 1]; // Adjust for 0-based array
       
       // Add deposits
@@ -311,12 +324,12 @@ class SimpleGeneticOptimizer {
     const workDayDiff = Math.abs(workDays - idealWorkDays);
     
     // Work day penalty
-    const workDayPenalty = workDayDiff * 200;
+    const workDayPenalty = workDayDiff * FITNESS_WEIGHTS.WORK_DAYS.WORK_DAY_DIFF_PENALTY;
     
     // Consecutive penalty  
     let consecutivePenalty = 0;
-    if (maxConsecutiveDays > 5) {
-      consecutivePenalty = (maxConsecutiveDays - 5) * 500;
+    if (maxConsecutiveDays > FITNESS_WEIGHTS.WORK_DAYS.MAX_CONSECUTIVE_DAYS) {
+      consecutivePenalty = (maxConsecutiveDays - FITNESS_WEIGHTS.WORK_DAYS.MAX_CONSECUTIVE_DAYS) * FITNESS_WEIGHTS.WORK_DAYS.CONSECUTIVE_DAY_PENALTY;
     }
     
     // Gap variance and too small gaps
@@ -329,40 +342,40 @@ class SimpleGeneticOptimizer {
       }
       const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
       gapVariance = gaps.reduce((sum, gap) => sum + Math.pow(gap - avgGap, 2), 0) / gaps.length;
-      tooSmallGapsPenalty = gaps.filter(g => g < 2).length * 150;
+      tooSmallGapsPenalty = gaps.filter(g => g < FITNESS_WEIGHTS.WORK_DAYS.MIN_GAP_DAYS).length * FITNESS_WEIGHTS.WORK_DAYS.SMALL_GAP_PENALTY;
     }
     
     // Clustering penalty
     let clusteringPenalty = 0;
-    for (let day = 1; day <= 26; day++) {
+    for (let day = SCHEDULE_CONSTANTS.MIN_DAY; day <= (SCHEDULE_CONSTANTS.MAX_DAY - FITNESS_WEIGHTS.CLUSTERING.WINDOW_SIZE + 1); day++) {
       let workDaysInWindow = 0;
       for (const workDay of workDaysList) {
-        if (workDay >= day && workDay < day + 5) {
+        if (workDay >= day && workDay < day + FITNESS_WEIGHTS.CLUSTERING.WINDOW_SIZE) {
           workDaysInWindow++;
         }
       }
-      if (workDaysInWindow > 3) {
-        clusteringPenalty += (workDaysInWindow - 3) * 300;
+      if (workDaysInWindow > FITNESS_WEIGHTS.CLUSTERING.MAX_WORK_DAYS_IN_WINDOW) {
+        clusteringPenalty += (workDaysInWindow - FITNESS_WEIGHTS.CLUSTERING.MAX_WORK_DAYS_IN_WINDOW) * FITNESS_WEIGHTS.CLUSTERING.CLUSTERING_PENALTY;
       }
     }
     
     // Balance penalty with progressive overshooting
-    let balancePenalty = finalBalanceDiff * 100;
+    let balancePenalty = finalBalanceDiff * FITNESS_WEIGHTS.BALANCE.FINAL_BALANCE_PENALTY;
     if (balance > targetEndingBalance) {
       const overshootRatio = (balance - targetEndingBalance) / targetEndingBalance;
-      balancePenalty *= 1 + overshootRatio * 2;
+      balancePenalty *= 1 + overshootRatio * FITNESS_WEIGHTS.BALANCE.OVERSHOOT_MULTIPLIER;
     }
     
     // Final fitness calculation (EXACTLY matching client)
     const fitness = 
-      violations * 5000 +
+      violations * FITNESS_WEIGHTS.BALANCE.VIOLATION_PENALTY +
       balancePenalty +
       workDayPenalty +
       consecutivePenalty +
-      Math.sqrt(gapVariance) * 150 +
+      Math.sqrt(gapVariance) * FITNESS_WEIGHTS.WORK_DAYS.GAP_VARIANCE_WEIGHT +
       tooSmallGapsPenalty +
       clusteringPenalty +
-      (minBalance < minimumBalance ? Math.abs(minBalance - minimumBalance) * 100 : 0);
+      (minBalance < minimumBalance ? Math.abs(minBalance - minimumBalance) * FITNESS_WEIGHTS.BALANCE.FINAL_BALANCE_PENALTY : 0);
     
     return {
       fitness,
@@ -376,8 +389,8 @@ class SimpleGeneticOptimizer {
   }
 
   async optimize(progressCallback) {
-    const populationSize = this.config.populationSize || 200;
-    const generations = this.config.generations || 500;
+    const populationSize = this.config.populationSize || GENETIC_ALGORITHM.POPULATION_SIZE;
+    const generations = this.config.generations || GENETIC_ALGORITHM.GENERATIONS;
     
     // Initialize population
     let population = [];
@@ -390,7 +403,7 @@ class SimpleGeneticOptimizer {
     // Early termination tracking (EXACT match client)
     let bestEverFitness = Infinity;
     let generationsWithoutImprovement = 0;
-    const maxGenerationsWithoutImprovement = 150;
+    const maxGenerationsWithoutImprovement = GENETIC_ALGORITHM.STAGNATION_LIMIT;
     let actualGenerations = 0;
     
     // Evolution loop
@@ -400,7 +413,7 @@ class SimpleGeneticOptimizer {
       population.sort((a, b) => a.fitness - b.fitness);
       
       // Check for improvement (EXACT match client)
-      if (population[0].fitness < bestEverFitness * 0.99) {
+      if (population[0].fitness < bestEverFitness * GENETIC_ALGORITHM.IMPROVEMENT_THRESHOLD) {
         bestEverFitness = population[0].fitness;
         generationsWithoutImprovement = 0;
       } else {
@@ -409,7 +422,7 @@ class SimpleGeneticOptimizer {
       
       // Early termination (EXACT match client)
       const best = population[0];
-      const balanceTolerance = 5;
+      const balanceTolerance = GENETIC_ALGORITHM.EARLY_TERMINATION.BALANCE_TOLERANCE;
       const targetLow = this.config.targetEndingBalance - balanceTolerance;
       const targetHigh = this.config.targetEndingBalance + balanceTolerance;
       
@@ -421,11 +434,11 @@ class SimpleGeneticOptimizer {
       
       const canTerminateEarly = (
         // Original condition from client
-        (gen > 300 && generationsWithoutImprovement > maxGenerationsWithoutImprovement && isPerfectSolution) ||
+        (gen > GENETIC_ALGORITHM.EARLY_TERMINATION.FIRST_CHECK && generationsWithoutImprovement > maxGenerationsWithoutImprovement && isPerfectSolution) ||
         // Allow earlier termination for perfect solutions with no improvement
-        (gen > 100 && generationsWithoutImprovement > 50 && isPerfectSolution && best.fitness < 1000) ||
+        (gen > GENETIC_ALGORITHM.EARLY_TERMINATION.SECOND_CHECK && generationsWithoutImprovement > GENETIC_ALGORITHM.EARLY_TERMINATION.FINAL_CHECK && isPerfectSolution && best.fitness < GENETIC_ALGORITHM.EARLY_TERMINATION.FITNESS_THRESHOLD) ||
         // Very early termination for extremely good solutions
-        (gen > 50 && isPerfectSolution && best.fitness < 100)
+        (gen > GENETIC_ALGORITHM.EARLY_TERMINATION.FINAL_CHECK && isPerfectSolution && best.fitness < GENETIC_ALGORITHM.EARLY_TERMINATION.EXTENDED_THRESHOLD)
       );
       
       if (canTerminateEarly) {
@@ -434,7 +447,7 @@ class SimpleGeneticOptimizer {
       }
       
       // Report progress
-      if (progressCallback && gen % 50 === 0) {
+      if (progressCallback && gen % GENETIC_ALGORITHM.PROGRESS_INTERVAL === 0) {
         await progressCallback({
           generation: gen,
           progress: Math.round((gen / generations) * 100),
@@ -449,7 +462,7 @@ class SimpleGeneticOptimizer {
       const newPopulation = [];
       
       // Keep best 10%
-      const eliteSize = Math.max(30, Math.floor(populationSize * 0.2)); // EXACT match client
+      const eliteSize = Math.max(GENETIC_ALGORITHM.MIN_ELITE_SIZE, Math.floor(populationSize * GENETIC_ALGORITHM.ELITE_PERCENTAGE)); // EXACT match client
       for (let i = 0; i < eliteSize; i++) {
         newPopulation.push(population[i]);
       }
@@ -491,8 +504,8 @@ class SimpleGeneticOptimizer {
     const child = [];
     
     // Two-point crossover
-    const point1 = Math.floor(Math.random() * 30);
-    const point2 = Math.floor(Math.random() * 30);
+    const point1 = Math.floor(Math.random() * SCHEDULE_CONSTANTS.MAX_DAY);
+    const point2 = Math.floor(Math.random() * SCHEDULE_CONSTANTS.MAX_DAY);
     const start = Math.min(point1, point2);
     const end = Math.max(point1, point2);
     
@@ -507,9 +520,9 @@ class SimpleGeneticOptimizer {
   }
 
   mutate(chromosome) {
-    const mutationRate = 0.15; // EXACT match client
+    const mutationRate = GENETIC_ALGORITHM.MUTATION_RATE; // EXACT match client
     const mutated = [...chromosome];
-    const startDay = this.config.balanceEditDay ? this.config.balanceEditDay + 1 : 1;
+    const startDay = this.config.balanceEditDay ? this.config.balanceEditDay + 1 : SCHEDULE_CONSTANTS.MIN_DAY;
     
     for (let i = 0; i < mutated.length; i++) {
       const day = i + 1;
@@ -521,7 +534,7 @@ class SimpleGeneticOptimizer {
       
       if (Math.random() < mutationRate) {
         // Calculate if we need double shifts (extreme deficit)
-        const availableDays = 30 - (this.config.balanceEditDay || 0);
+        const availableDays = SCHEDULE_CONSTANTS.MAX_DAY - (this.config.balanceEditDay || 0);
         const deficitPerDay = this.requiredFlexNet / availableDays;
         const largeShiftEarnings = this.shiftTypes.large.net;
         const isExtremeDeficit = deficitPerDay > largeShiftEarnings;
@@ -534,9 +547,9 @@ class SimpleGeneticOptimizer {
         if (isExtremeDeficit) {
           // Extreme deficit - heavily bias towards double shifts
           const rand = Math.random();
-          if (rand < 0.4) {
+          if (rand < PROBABILITIES.CRISIS_MODE.DOUBLE_LARGE) {
             mutated[i] = 'large+large';
-          } else if (rand < 0.8) {
+          } else if (rand < (PROBABILITIES.CRISIS_MODE.DOUBLE_LARGE + PROBABILITIES.CRISIS_MODE.MIXED_LARGE)) {
             mutated[i] = Math.random() < 0.5 ? 'medium+large' : 'large+medium';
           } else {
             mutated[i] = 'medium+medium';
@@ -545,24 +558,24 @@ class SimpleGeneticOptimizer {
           const rand = Math.random();
           
           // Bias against removing well-spaced work days
-          if (mutated[i] && !hasAdjacentWorkDay && rand < 0.8) {
+          if (mutated[i] && !hasAdjacentWorkDay && rand < (1 - PROBABILITIES.MUTATION.REMOVE)) {
             continue; // Keep well-spaced work day
           }
           
           // Bias against adding work days next to existing ones
-          if (!mutated[i] && hasAdjacentWorkDay && rand > 0.2) {
+          if (!mutated[i] && hasAdjacentWorkDay && rand > PROBABILITIES.MUTATION.REMOVE) {
             mutated[i] = null;
             continue;
           }
           
           // Normal mutation with all possible options
-          if (rand < 0.2) {
+          if (rand < PROBABILITIES.MUTATION.REMOVE) {
             mutated[i] = null;
-          } else if (rand < 0.5) {
+          } else if (rand < (PROBABILITIES.MUTATION.REMOVE + PROBABILITIES.MUTATION.TO_SMALL)) {
+            mutated[i] = 'small';
+          } else if (rand < (PROBABILITIES.MUTATION.REMOVE + PROBABILITIES.MUTATION.TO_SMALL + PROBABILITIES.MUTATION.TO_MEDIUM)) {
             mutated[i] = 'medium';
-          } else if (rand < 0.7) {
-            mutated[i] = 'medium+medium';
-          } else if (rand < 0.85) {
+          } else if (rand < (PROBABILITIES.MUTATION.REMOVE + PROBABILITIES.MUTATION.TO_SMALL + PROBABILITIES.MUTATION.TO_MEDIUM + PROBABILITIES.MUTATION.TO_LARGE)) {
             mutated[i] = 'large';
           } else {
             // Random from all options including double shifts
@@ -590,7 +603,7 @@ class SimpleGeneticOptimizer {
   getWorkDaysList(schedule) {
     const workDays = [];
     for (let i = 0; i < schedule.length; i++) {
-      if (schedule[i]) workDays.push(i + 1);
+      if (schedule[i]) workDays.push(i + SCHEDULE_CONSTANTS.MIN_DAY);
     }
     return workDays;
   }
@@ -618,7 +631,7 @@ class SimpleGeneticOptimizer {
   
   tournamentSelect(population) {
     const tournament = [];
-    const tournamentSize = 7; // EXACT match client
+    const tournamentSize = GENETIC_ALGORITHM.TOURNAMENT_SIZE; // EXACT match client
     
     for (let i = 0; i < tournamentSize; i++) {
       const idx = Math.floor(Math.random() * population.length);
@@ -631,10 +644,10 @@ class SimpleGeneticOptimizer {
   }
 
   formatSchedule(schedule) {
-    let balance = this.config.startingBalance || 1000;
+    let balance = this.config.startingBalance || VALIDATION.BALANCE.MIN_STARTING;
     
     return schedule.map((shift, index) => {
-      const dayNumber = index + 1;
+      const dayNumber = index + SCHEDULE_CONSTANTS.MIN_DAY;
       // Get the actual shift value from shiftTypes
       let earnings = 0;
       if (shift) {
@@ -672,8 +685,8 @@ class SimpleGeneticOptimizer {
 
 module.exports = async (req, res) => {
   // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    res.status(200).setHeader('Access-Control-Allow-Origin', '*')
+  if (req.method === API_CONSTANTS.METHODS.OPTIONS) {
+    res.status(API_CONSTANTS.STATUS_CODES.OK).setHeader('Access-Control-Allow-Origin', '*')
       .setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
       .setHeader('Access-Control-Allow-Headers', 'Content-Type')
       .end();
@@ -685,8 +698,8 @@ module.exports = async (req, res) => {
     res.setHeader(key, headers[key]);
   });
 
-  if (req.method !== 'POST') {
-    res.status(405).json({
+  if (req.method !== API_CONSTANTS.METHODS.POST) {
+    res.status(API_CONSTANTS.STATUS_CODES.BAD_REQUEST).json({
       success: false,
       error: 'Method not allowed',
       performanceMetrics: {
@@ -720,14 +733,14 @@ module.exports = async (req, res) => {
     // Run optimization with progress callback
     const result = await optimizer.optimize(async (progress) => {
       // Progress logging for debugging
-      if (progress.generation % 100 === 0) {
+      if (progress.generation % GENETIC_ALGORITHM.LOG_INTERVAL === 0) {
         console.log(`Server optimization progress: Gen ${progress.generation}, Fitness: ${progress.bestFitness}`);
       }
     });
 
     const endTime = Date.now();
 
-    res.status(200).json({
+    res.status(API_CONSTANTS.STATUS_CODES.OK).json({
       success: true,
       result,
       performanceMetrics: {
@@ -743,7 +756,7 @@ module.exports = async (req, res) => {
     console.error('Optimization error:', error);
     console.error('Stack trace:', error.stack);
     
-    res.status(500).json({
+    res.status(API_CONSTANTS.STATUS_CODES.SERVER_ERROR).json({
       success: false,
       error: error.message || 'Unknown error occurred',
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
