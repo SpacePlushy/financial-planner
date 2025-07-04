@@ -262,7 +262,7 @@ function AppContent() {
       )}
 
       {/* Vercel Analytics */}
-      <Analytics />
+      <Analytics debug={true} />
 
       {/* Global Footer Action Bar */}
       <footer className="app-footer">
