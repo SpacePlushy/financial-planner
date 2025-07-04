@@ -25,7 +25,6 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
     selectPreset,
     clearPreset,
     createPreset,
-    updateConfig,
     validateConfig,
     safeUpdateConfig,
     isPresetNameTaken,
