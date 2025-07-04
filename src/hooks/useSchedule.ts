@@ -59,7 +59,7 @@ export function useSchedule() {
    * Calculate total earnings for the current schedule
    */
   const totalEarnings = useMemo(
-    () => currentSchedule.reduce((sum, day) => sum + day.earnings, 0),
+    () => currentSchedule.reduce((sum, day) => sum + (day.earnings || 0), 0),
     [currentSchedule]
   );
 

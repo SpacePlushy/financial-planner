@@ -206,11 +206,11 @@ class SimpleGeneticOptimizer {
       return {
         day: dayNumber,
         shifts: shift ? [shift] : [], // IMPORTANT: This must be an array
-        earnings: earnings,
-        expenses: expenses,
-        deposit: deposit,
-        startBalance: startBalance,
-        endBalance: endBalance
+        earnings: Number(earnings) || 0,
+        expenses: Number(expenses) || 0,
+        deposit: Number(deposit) || 0,
+        startBalance: Number(startBalance) || 0,
+        endBalance: Number(endBalance) || 0
       };
     });
   }

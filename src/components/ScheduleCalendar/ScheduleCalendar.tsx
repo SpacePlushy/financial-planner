@@ -214,14 +214,14 @@ export const ScheduleCalendar: React.FC = () => {
 
                   {/* Earnings */}
                   <div className={styles.earnings}>
-                    ${dayData.earnings.toFixed(0)}
+                    ${dayData.earnings ? dayData.earnings.toFixed(0) : '0'}
                   </div>
 
                   {/* Balance */}
                   <div
                     className={`${styles.balance} ${getBalanceClass(dayData.endBalance)}`}
                   >
-                    ${dayData.endBalance.toFixed(0)}
+                    ${dayData.endBalance ? dayData.endBalance.toFixed(0) : '0'}
                   </div>
 
                   {/* Indicators */}
@@ -229,7 +229,7 @@ export const ScheduleCalendar: React.FC = () => {
                     {dayData.expenses > 0 && (
                       <div
                         className={styles.expenseIndicator}
-                        title={`Expenses: $${dayData.expenses.toFixed(2)}`}
+                        title={`Expenses: $${dayData.expenses ? dayData.expenses.toFixed(2) : '0'}`}
                       >
                         💸
                       </div>
@@ -237,7 +237,7 @@ export const ScheduleCalendar: React.FC = () => {
                     {dayData.deposit > 0 && (
                       <div
                         className={styles.depositIndicator}
-                        title={`Deposit: $${dayData.deposit.toFixed(2)}`}
+                        title={`Deposit: $${dayData.deposit ? dayData.deposit.toFixed(2) : '0'}`}
                       >
                         💰
                       </div>

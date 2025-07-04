@@ -334,11 +334,11 @@ export class ScheduleService {
     for (const day of schedule) {
       const row = [
         day.day,
-        day.shifts.join('+') || 'Off',
-        day.earnings.toFixed(2),
-        day.expenses.toFixed(2),
-        day.deposit.toFixed(2),
-        day.endBalance.toFixed(2),
+        day.shifts ? day.shifts.join('+') || 'Off' : 'Off',
+        day.earnings ? day.earnings.toFixed(2) : '0.00',
+        day.expenses ? day.expenses.toFixed(2) : '0.00',
+        day.deposit ? day.deposit.toFixed(2) : '0.00',
+        day.endBalance ? day.endBalance.toFixed(2) : '0.00',
       ];
       rows.push(row.join(','));
     }
