@@ -14,16 +14,11 @@
 
 import * as DEFAULT_CONSTANTS from './constants';
 
-// Utility type for deep partial objects
-type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
-
 /**
  * User configuration overrides
  * Uncomment and modify any section you want to customize
  */
-export const USER_CONFIG: DeepPartial<typeof DEFAULT_CONSTANTS> = {
+export const USER_CONFIG: Partial<typeof DEFAULT_CONSTANTS> = {
   // Example: Modify genetic algorithm parameters
   // GENETIC_ALGORITHM: {
   //   POPULATION_SIZE: 300,      // Increase population for better solutions
@@ -79,36 +74,19 @@ export const USER_CONFIG: DeepPartial<typeof DEFAULT_CONSTANTS> = {
 };
 
 /**
- * Deep merge utility to combine user config with defaults
+ * Simple merge utility to combine user config with defaults
  */
-function deepMerge<T extends Record<string, any>>(
+function mergeConfig<T extends Record<string, any>>(
   target: T,
-  source: DeepPartial<T>
+  source: Partial<T>
 ): T {
-  const result = { ...target };
-
-  for (const key in source) {
-    const sourceValue = source[key];
-    if (sourceValue !== undefined) {
-      if (
-        typeof sourceValue === 'object' &&
-        sourceValue !== null &&
-        !Array.isArray(sourceValue)
-      ) {
-        result[key] = deepMerge(target[key], sourceValue);
-      } else {
-        result[key] = sourceValue as T[keyof T];
-      }
-    }
-  }
-
-  return result;
+  return { ...target, ...source };
 }
 
 /**
  * Merged configuration (defaults + user overrides)
  */
-export const CONFIG = deepMerge(DEFAULT_CONSTANTS, USER_CONFIG);
+export const CONFIG = mergeConfig(DEFAULT_CONSTANTS, USER_CONFIG as any);
 
 // Re-export individual merged constants for convenience
 export const SCHEDULE_CONSTANTS = CONFIG.SCHEDULE_CONSTANTS;
