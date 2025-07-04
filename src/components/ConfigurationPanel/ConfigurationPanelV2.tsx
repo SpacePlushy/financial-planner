@@ -81,13 +81,13 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
           const preset = presets.find(p => p.id === presetId);
           if (preset) {
             selectPreset(presetId);
-            updateConfig(preset.config);
+            // Don't call updateConfig here - selectPreset already applies the preset config
           }
         }
         setIsLoadingPreset(false);
       }, 100); // Simulate async operation
     },
-    [presets, selectPreset, clearPreset, updateConfig]
+    [presets, selectPreset, clearPreset]
   );
 
   // Handle save as preset
