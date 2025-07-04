@@ -1,7 +1,6 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import { useSchedule } from '../../hooks/useSchedule';
 import { useUI } from '../../context/UIContext';
-import { useProgress } from '../../context/ProgressContext';
 import { DaySchedule } from '../../types';
 import styles from './ScheduleCalendar.module.css';
 
@@ -15,8 +14,6 @@ export const ScheduleCalendar: React.FC = () => {
     setCurrentSchedule,
   } = useSchedule();
   const ui = useUI();
-  const { isOptimizing, currentProgress, getProgressPercentage } =
-    useProgress();
 
   // Loading state for data updates
   const [isUpdating, setIsUpdating] = useState(false);
@@ -176,36 +173,6 @@ export const ScheduleCalendar: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Optimization Progress Bar */}
-      {isOptimizing && currentProgress && (
-        <div className={styles.progressSection}>
-          <div className={styles.progressHeader}>
-            <span className={styles.progressLabel}>Optimization Progress</span>
-            <span className={styles.progressPercentage}>
-              {getProgressPercentage()}%
-            </span>
-          </div>
-          <div className={styles.progressBarContainer}>
-            <div
-              className={styles.progressBar}
-              style={{ width: `${getProgressPercentage()}%` }}
-              role="progressbar"
-              aria-valuenow={getProgressPercentage()}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            />
-          </div>
-          <div className={styles.progressInfo}>
-            <span className={styles.generationInfo}>
-              Generation {currentProgress.generation}
-            </span>
-            <span className={styles.fitnessInfo}>
-              Best Fitness: {currentProgress.bestFitness.toFixed(2)}
-            </span>
-          </div>
-        </div>
-      )}
 
       <div className={styles.calendarGrid}>
         {calendarData.map((dayData, index) => {
