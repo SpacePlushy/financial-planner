@@ -205,6 +205,34 @@
   height: 14px;
 }
 
+/* Mobile fixed positioning styles */
+@media (max-width: 1024px) {
+  .actionBar {
+    position: static; /* Override sticky positioning */
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -2px 8px var(--shadow-color);
+  }
+
+  .actionBar.compact {
+    padding: 12px;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+  }
+
+  .actionBar.compact .actionButton {
+    padding: 10px;
+    font-size: 0.875rem;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .actionBar.compact .actionButton svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
 /* Dark mode adjustments */
 [data-theme='dark'] .actionButton.import {
   background-color: color-mix(in srgb, var(--warning-color) 80%, black);

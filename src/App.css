@@ -505,9 +505,11 @@ body {
     margin-bottom: var(--gap-md);
   }
 
-  /* Last panel needs extra bottom padding */
+  /* Last panel needs extra bottom padding for fixed ActionBar */
   .panel:last-child {
-    margin-bottom: calc(var(--gap-lg) * 2 + env(safe-area-inset-bottom, 20px));
+    margin-bottom: calc(
+      80px + var(--gap-lg) + env(safe-area-inset-bottom, 20px)
+    );
   }
 }
 
@@ -763,4 +765,33 @@ body {
   text-transform: uppercase;
   box-shadow: 0 2px 4px var(--shadow-color);
   z-index: 1000;
+}
+
+/* Mobile ActionBar Container */
+.mobile-action-bar {
+  display: none;
+}
+
+/* Show mobile ActionBar and hide desktop ActionBar on mobile */
+@media (max-width: 1024px) {
+  .mobile-action-bar {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    /* Account for Safari bottom bar */
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Hide the ActionBar inside config panel on mobile */
+  .config-panel > div[class*='actionBar'] {
+    display: none;
+  }
+
+  /* Add padding to main content to account for fixed ActionBar */
+  .app-main {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  }
 }

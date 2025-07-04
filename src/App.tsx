@@ -231,6 +231,20 @@ function AppContent() {
       {/* Debug mode indicator */}
       {ui.debugMode && <div className="debug-indicator">Debug Mode</div>}
 
+      {/* Mobile ActionBar - Fixed at bottom */}
+      <div className="mobile-action-bar">
+        <ActionBar
+          persistence={persistence}
+          onHelp={() =>
+            window.open(
+              'https://github.com/anthropics/financial-schedule-optimizer',
+              '_blank'
+            )
+          }
+          compact={true}
+        />
+      </div>
+
       {/* Global Footer Action Bar */}
       <footer className="app-footer">
         <div className="footer-info">

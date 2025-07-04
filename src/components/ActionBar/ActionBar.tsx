@@ -14,12 +14,14 @@ interface ActionBarProps {
   };
   onPrint?: () => void;
   onHelp?: () => void;
+  compact?: boolean;
 }
 
 export const ActionBar: React.FC<ActionBarProps> = ({
   persistence,
   onPrint,
   onHelp,
+  compact = false,
 }) => {
   const handleImport = () => {
     const input = document.createElement('input');
@@ -35,7 +37,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({
   };
 
   return (
-    <div className={styles.actionBar}>
+    <div className={`${styles.actionBar} ${compact ? styles.compact : ''}`}>
       <div className={styles.actionGroup}>
         <button
           className={`${styles.actionButton} ${styles.save}`}
