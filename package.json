@@ -1,0 +1,85 @@
+{
+  "name": "financial-schedule-optimizer",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@modelcontextprotocol/server-puppeteer": "^2025.5.12",
+    "@playwright/mcp": "^0.0.29",
+    "@testing-library/dom": "^10.4.0",
+    "@types/node": "^16.18.126",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vercel/analytics": "^1.5.0",
+    "puppeteer-core": "^24.11.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
+    "prepare": "husky",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "e2e": "start-server-and-test start http://localhost:3000 cypress:run",
+    "e2e:open": "start-server-and-test start http://localhost:3000 cypress:open",
+    "server": "node scripts/server.js",
+    "server:start": "node scripts/server.js start",
+    "server:start:prod": "node scripts/server.js start prod",
+    "server:stop": "node scripts/server.js stop",
+    "server:restart": "node scripts/server.js restart",
+    "server:status": "node scripts/server.js status",
+    "server:logs": "node scripts/server.js logs",
+    "server:clean": "node scripts/server.js clean"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "src/**/*.{json,css,scss,md}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@cypress/react": "^9.0.1",
+    "@cypress/webpack-dev-server": "^4.1.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@vercel/node": "^5.3.2",
+    "cypress": "^14.5.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "node-fetch": "^2.7.0",
+    "prettier": "^3.6.2",
+    "start-server-and-test": "^2.0.12"
+  }
+}

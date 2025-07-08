@@ -1,0 +1,343 @@
+/* ScheduleTable.module.css - Compact Dashboard Version */
+
+.tableContainer {
+  position: relative;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-primary);
+  opacity: 0.95;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  backdrop-filter: blur(2px);
+}
+
+.tableWrapper {
+  overflow: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scheduleTable {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.scheduleTable thead {
+  background: var(--bg-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.scheduleTable th {
+  padding: 8px 6px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.editableHeader {
+  position: relative;
+}
+
+.editableHeader::after {
+  content: '✏️';
+  margin-left: 4px;
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.scheduleTable td {
+  padding: 6px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+  color: var(--text-primary);
+}
+
+.scheduleTable tbody tr:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.scheduleTable tbody tr.hasEdits {
+  background-color: rgba(255, 152, 0, 0.05);
+}
+
+.scheduleTable tbody tr.hasEdits:hover {
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.workDay {
+  position: relative;
+  padding-left: 8px;
+}
+
+.workDay::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 3px;
+  background-color: var(--success-color);
+  border-radius: 2px;
+}
+
+.dayCell {
+  font-weight: 600;
+  text-align: center;
+  min-width: 40px;
+}
+
+.dayCell.weekend {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.dayCell.hidden {
+  display: none;
+}
+
+.shiftsCell {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.noShifts {
+  color: var(--text-tertiary);
+  font-style: italic;
+  font-size: 11px;
+}
+
+.editableCell {
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.editableCell:hover {
+  background-color: rgba(33, 150, 243, 0.05);
+}
+
+.editableCell::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 4px;
+  right: 4px;
+  height: 1px;
+  background: var(--primary-color);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.editableCell:hover::after {
+  opacity: 0.3;
+}
+
+.editedCell {
+  background-color: rgba(255, 152, 0, 0.1);
+  font-style: italic;
+}
+
+.editIndicator {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: var(--warning-color);
+  border-radius: 50%;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.amountCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.positive {
+  color: var(--success-color);
+  font-weight: 500;
+}
+
+.negative {
+  color: var(--error-color);
+  font-weight: 500;
+}
+
+.balanceCell {
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.violation {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: var(--error-color);
+}
+
+.highlighted.violation {
+  background-color: rgba(244, 67, 54, 0.2);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    background-color: rgba(244, 67, 54, 0.2);
+  }
+  50% {
+    background-color: rgba(244, 67, 54, 0.3);
+  }
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  padding: 8px 12px;
+  background-color: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legendDot.workDay {
+  background-color: var(--success-color);
+}
+
+.legendDot.violation {
+  background-color: var(--error-color);
+}
+
+.legendDot.edited {
+  background-color: var(--warning-color);
+}
+
+/* Hide elements on small schedule panel */
+.scheduleTable th:nth-child(n + 5),
+.scheduleTable td:nth-child(n + 5) {
+  display: none;
+}
+
+/* Show only essential columns */
+@media (min-width: 1600px) {
+  .scheduleTable th:nth-child(n + 5),
+  .scheduleTable td:nth-child(n + 5) {
+    display: table-cell;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tableContainer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scheduleTable {
+    font-size: 11px;
+    min-width: 600px; /* Ensure table has minimum width for scrolling */
+  }
+
+  .scheduleTable th,
+  .scheduleTable td {
+    padding: 6px 4px;
+  }
+
+  /* Show only essential columns on mobile */
+  .scheduleTable th:nth-child(n + 6),
+  .scheduleTable td:nth-child(n + 6) {
+    display: none;
+  }
+
+  /* Make day column sticky for better scrolling */
+  .scheduleTable td:first-child {
+    position: sticky;
+    left: 0;
+    background-color: var(--bg-primary);
+    z-index: 1;
+  }
+
+  .legend {
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .scheduleTable {
+    font-size: 10px;
+  }
+
+  .scheduleTable th,
+  .scheduleTable td {
+    padding: 4px 2px;
+  }
+
+  /* Currency values in smaller font */
+  .currency {
+    font-size: 10px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .tableContainer {
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+
+  .scheduleTable th {
+    background-color: #f5f5f5;
+    color: black;
+  }
+
+  .scheduleTable {
+    font-size: 10pt;
+  }
+
+  .violation {
+    background-color: #ffebee !important;
+    color: #c62828 !important;
+  }
+
+  .workDay::before {
+    background-color: #2e7d32 !important;
+  }
+}

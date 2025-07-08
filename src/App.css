@@ -1,0 +1,805 @@
+/* Import animations */
+@import './styles/animations.css';
+
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* Prevent body scroll */
+  /* Handle Safari's safe areas */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* CSS Variables for theming */
+:root {
+  /* Light theme */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  --bg-card: #ffffff;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --text-tertiary: #999999;
+  --border-color: #dee2e6;
+  --shadow-color: rgba(0, 0, 0, 0.08);
+  --shadow-hover: rgba(0, 0, 0, 0.12);
+  --primary-color: #0d6efd;
+  --primary-hover: #0b5ed7;
+  --success-color: #198754;
+  --warning-color: #ffc107;
+  --error-color: #dc3545;
+  --info-color: #0dcaf0;
+
+  /* Layout spacing */
+  --header-height: 56px;
+  --gap-sm: 8px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+}
+
+[data-theme='dark'] {
+  /* Dark theme */
+  --bg-primary: #0f1214;
+  --bg-secondary: #1a1d21;
+  --bg-tertiary: #2c2f33;
+  --bg-card: #1e2124;
+  --text-primary: #ffffff;
+  --text-secondary: #adb5bd;
+  --text-tertiary: #6c757d;
+  --border-color: #343a40;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --shadow-hover: rgba(0, 0, 0, 0.5);
+  --primary-color: #6ea8fe;
+  --primary-hover: #5090fe;
+  --success-color: #75b798;
+  --warning-color: #ffda6a;
+  --error-color: #ea868f;
+  --info-color: #6edff6;
+}
+
+/* App Layout - Single Screen Dashboard */
+.app {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: var(--header-height) 1fr auto;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Header */
+.app-header {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--gap-lg);
+  z-index: 100;
+}
+
+.header-content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-content h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+}
+
+.persistence-status {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: var(--gap-sm);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  color: var(--text-primary);
+}
+
+.theme-toggle:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* Main Dashboard Grid */
+.app-main {
+  flex: 1;
+  padding: var(--gap-md);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.dashboard-grid {
+  height: 100%;
+  display: flex;
+  gap: 16px;
+  position: relative;
+  align-items: stretch;
+}
+
+.dashboard-grid.resizable-container {
+  overflow: hidden;
+}
+
+/* Panel Styling */
+.panel {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+  height: 100%;
+}
+
+.panel:hover {
+  box-shadow: 0 4px 8px var(--shadow-hover);
+}
+
+.panel-header {
+  padding: var(--gap-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--gap-md);
+}
+
+/* Configuration Panel (Left) */
+.config-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: fadeInLeft 0.4s ease-out;
+}
+
+.config-section {
+  margin-bottom: var(--gap-lg);
+}
+
+.config-section:last-child {
+  margin-bottom: 0;
+}
+
+.config-section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: var(--gap-sm);
+}
+
+/* Compact form fields */
+.config-field {
+  margin-bottom: var(--gap-md);
+}
+
+.config-label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.config-input,
+.config-select {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+}
+
+.config-input:focus,
+.config-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.config-input:focus-visible,
+.config-select:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.optimize-button {
+  width: 100%;
+  padding: 10px;
+  margin-top: var(--gap-md);
+  border: none;
+  border-radius: 4px;
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.optimize-button:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+.optimize-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Results Panel (Center) */
+.results-panel {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: fadeInUp 0.5s ease-out;
+  min-height: 0; /* Allow panel to shrink if needed */
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-md);
+  margin-bottom: var(--gap-lg);
+}
+
+.metric-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: var(--gap-md);
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.metric-value.error {
+  color: var(--error-color);
+}
+
+.metric-value.warning {
+  color: var(--warning-color);
+}
+
+.metric-value.success {
+  color: var(--success-color);
+}
+
+/* Progress Section - Removed (handled by OptimizationProgress component) */
+
+.progress-bar-container {
+  height: 8px;
+  background-color: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: var(--gap-sm) 0;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+/* Schedule Panel (Right) */
+.schedule-panel {
+  display: flex;
+  flex-direction: column;
+  animation: fadeInRight 0.6s ease-out;
+}
+
+.schedule-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--gap-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.view-toggle {
+  display: flex;
+  gap: var(--gap-sm);
+}
+
+.view-button {
+  padding: 4px 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.view-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition:
+    width 0.6s,
+    height 0.6s;
+}
+
+.view-button:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.view-button.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.schedule-actions {
+  display: flex;
+  gap: var(--gap-sm);
+}
+
+.schedule-table-container {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Schedule Actions */
+.schedule-actions {
+  display: flex;
+  gap: var(--gap-sm);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.checkbox-label input[type='checkbox'] {
+  cursor: pointer;
+}
+
+/* Loading and Error States */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--bg-tertiary);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 1400px) {
+  .dashboard-grid {
+    grid-template-columns: 280px 1fr 1.2fr;
+  }
+}
+
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 260px 1fr 1fr;
+  }
+
+  .metric-value {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    /* ActionBar height: padding (24px) + button (44px) + gaps + border = ~80px, add extra buffer for safety */
+    --mobile-actionbar-height: 110px;
+  }
+
+  .app {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent body scroll, only app-main should scroll */
+  }
+
+  .app-main {
+    flex: 1;
+    overflow-y: auto !important; /* Override desktop overflow: hidden */
+    /* Account for fixed ActionBar at bottom */
+    padding-bottom: calc(
+      var(--mobile-actionbar-height) + env(safe-area-inset-bottom, 0)
+    );
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dashboard-grid {
+    display: block;
+    height: auto;
+    min-height: 100%;
+  }
+
+  .resizable-panel {
+    width: 100% !important;
+    height: auto;
+    margin-bottom: var(--gap-md);
+  }
+
+  .resize-divider {
+    display: none;
+  }
+
+  .config-panel {
+    order: 3;
+    max-height: none;
+  }
+
+  .results-panel {
+    order: 1;
+  }
+
+  .schedule-panel {
+    order: 2;
+    min-height: 400px;
+  }
+
+  .panel {
+    margin-bottom: var(--gap-md);
+  }
+
+  /* Ensure last panel has enough space above ActionBar */
+  .panel:last-child {
+    margin-bottom: calc(var(--gap-lg) * 2);
+  }
+
+  .config-panel .panel-content {
+    padding: var(--gap-md);
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --gap-sm: 4px;
+    --gap-md: 8px;
+    --gap-lg: 12px;
+    --header-height: 48px;
+  }
+
+  /* Ensure last panel has extra bottom spacing on mobile */
+  .panel:last-child {
+    margin-bottom: calc(var(--gap-lg) * 4); /* 48px instead of 24px */
+  }
+
+  .app {
+    grid-template-rows: var(--header-height) 1fr;
+  }
+
+  .app-header {
+    padding: 0 var(--gap-md);
+  }
+
+  .header-content h1 {
+    font-size: 1rem;
+  }
+
+  .header-actions {
+    gap: var(--gap-sm);
+  }
+
+  .persistence-status {
+    display: none;
+  }
+
+  .panel-title {
+    font-size: 0.875rem;
+  }
+
+  .panel-header {
+    padding: var(--gap-sm) var(--gap-md);
+  }
+
+  .panel-content {
+    padding: var(--gap-md);
+  }
+
+  .app-footer {
+    display: none; /* Hide footer on mobile to save space */
+  }
+
+  /* Ensure the last visible element has padding for Safari bottom bar */
+  .dashboard-grid > .panel:last-child .panel-content {
+    padding-bottom: calc(var(--gap-lg) * 3);
+  }
+
+  .metric-card {
+    padding: var(--gap-sm);
+  }
+
+  .metric-value {
+    font-size: 1rem;
+  }
+
+  /* Ensure schedule table is scrollable on mobile */
+  .schedule-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Make buttons more touch-friendly */
+  .view-button,
+  .optimize-button {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  /* Stack view toggle buttons vertically on very small screens */
+  @media (max-width: 400px) {
+    .view-toggle {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .view-button {
+      width: 100%;
+    }
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-tertiary) var(--bg-tertiary);
+}
+
+/* Utility classes */
+.text-muted {
+  color: var(--text-secondary);
+}
+
+.text-small {
+  font-size: 0.875rem;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.mt-auto {
+  margin-top: auto;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Footer Action Bar */
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px var(--gap-lg);
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  font-size: 0.75rem;
+}
+
+.footer-info {
+  display: flex;
+  gap: var(--gap-md);
+  color: var(--text-secondary);
+}
+
+.footer-text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.footer-actions {
+  display: flex;
+  gap: var(--gap-sm);
+}
+
+.footer-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.footer-button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.footer-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Error Toast */
+.error-toast {
+  position: fixed;
+  bottom: var(--gap-lg);
+  right: var(--gap-lg);
+  background-color: var(--error-color);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px var(--shadow-hover);
+  animation: slideInRight 0.3s ease;
+  z-index: 1000;
+}
+
+.error-toast button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.error-toast button:hover {
+  opacity: 1;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Debug Indicator */
+.debug-indicator {
+  position: fixed;
+  top: var(--gap-md);
+  right: var(--gap-md);
+  background-color: var(--warning-color);
+  color: black;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  z-index: 1000;
+}
+
+/* Mobile ActionBar Container */
+.mobile-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  /* Account for Safari bottom bar */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  /* Remove any default margins */
+  margin: 0;
+}

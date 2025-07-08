@@ -1,0 +1,363 @@
+/* Summary.module.css - Compact Dashboard Version */
+
+/* Animation definitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.summary {
+  /* Remove styling - handled by parent panel */
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  width: 100%; /* Ensure full width */
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end; /* Since h2 is hidden, align actions to the right */
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header h2 {
+  /* Hidden - using panel header */
+  display: none;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.exportButton,
+.printButton {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.exportButton:hover,
+.printButton:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--primary-color);
+}
+
+.exportButton:focus,
+.printButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Responsive grid layout */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+  min-height: 200px; /* Ensure grid has minimum height */
+}
+
+/* Remove stagger animation to prevent flashing */
+.metricsGrid > * {
+  opacity: 1;
+  /* Simple fade-in without stagger to prevent flash */
+  animation: fadeIn 0.3s ease-out;
+}
+
+.metricCard {
+  padding: 12px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: block; /* Changed from flex to block */
+}
+
+.metricCard:hover {
+  box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.metricCard.success {
+  border-color: var(--success-color);
+  background-color: rgba(76, 175, 80, 0.05);
+}
+
+.metricCard.warning {
+  border-color: var(--warning-color);
+  background-color: rgba(255, 152, 0, 0.05);
+}
+
+.metricCard.error {
+  border-color: var(--error-color);
+  background-color: rgba(244, 67, 54, 0.05);
+}
+
+/* Icon for metrics */
+.metricIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.metricCard.success .metricIcon {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: var(--success-color);
+}
+
+.metricCard.warning .metricIcon {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: var(--warning-color);
+}
+
+.metricCard.error .metricIcon {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: var(--error-color);
+}
+
+.metricCard:not(.success):not(.warning):not(.error) .metricIcon {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.metricContent {
+  flex: 1;
+  min-width: 0; /* Prevent overflow */
+}
+
+.metricTitle {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.metricValue {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 2px 0 0 0;
+  line-height: 1;
+}
+
+.metricDetails {
+  display: block; /* Show metric details */
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.metricLabel {
+  color: var(--text-secondary);
+  margin-right: 4px;
+}
+
+/* Compact sub-value display */
+.metricSubValue {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.metricSubValue.positive {
+  color: var(--success-color);
+}
+
+.metricSubValue.negative {
+  color: var(--error-color);
+}
+
+.successText {
+  color: var(--success-color);
+  font-weight: 500;
+}
+
+/* Compact status message */
+.summaryStatus {
+  padding: 12px;
+  border-radius: 6px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  margin-top: 12px;
+}
+
+.summaryStatus.success {
+  background-color: rgba(76, 175, 80, 0.05);
+  border-color: var(--success-color);
+}
+
+.statusMessage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.statusIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.summaryStatus.success .statusIcon {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.summaryStatus:not(.success) .statusIcon {
+  background-color: var(--warning-color);
+  color: white;
+}
+
+.emptyState {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Print styles */
+@media print {
+  .summary {
+    box-shadow: none;
+    border: 1px solid #d1d5db;
+  }
+
+  .actions {
+    display: none;
+  }
+
+  .header {
+    border-bottom: 2px solid #000;
+    margin-bottom: 20px;
+  }
+
+  .metricCard {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1px solid #000;
+  }
+
+  .metricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .metricCard.success,
+  .metricCard.warning,
+  .metricCard.error {
+    background-color: white !important;
+  }
+}
+
+/* Responsive - tablet and mobile */
+@media (max-width: 768px) {
+  .metricsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+  }
+
+  .metricCard {
+    padding: 10px;
+  }
+
+  .metricTitle {
+    font-size: 10px;
+  }
+
+  .metricValue {
+    font-size: 18px;
+  }
+
+  .metricDetails {
+    font-size: 10px;
+  }
+
+  .metricLabel {
+    display: block;
+    margin-bottom: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+
+  .actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 4px;
+  }
+
+  .exportButton,
+  .printButton {
+    width: 100%;
+    padding: 8px;
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .summaryStatus {
+    padding: 10px;
+    margin-top: 8px;
+  }
+
+  .statusMessage {
+    font-size: 12px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 320px) {
+  .metricsGrid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .metricValue {
+    font-size: 16px;
+  }
+}

@@ -1,0 +1,242 @@
+.processing-mode-selector {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+/* When panel is wider, allow side-by-side metrics */
+@container (min-width: 400px) {
+  .processing-mode-selector .metrics-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    flex-direction: unset !important;
+  }
+}
+
+.mode-selector-header {
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.mode-selector-header h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 0;
+}
+
+.mode-button {
+  flex: 1;
+  min-width: 120px;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--background-color);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.mode-button:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  background: var(--primary-light);
+}
+
+.mode-button.active {
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+  color: white;
+}
+
+.mode-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mode-icon {
+  font-size: 18px;
+}
+
+.performance-metrics {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+  position: relative;
+  z-index: 1;
+  background: var(--surface-color);
+}
+
+.performance-metrics h4 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.processing-mode-selector .metrics-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metric-card {
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.metric-card.client {
+  border-left: 4px solid #4caf50;
+}
+
+.metric-card.server {
+  border-left: 4px solid #2196f3;
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.metric-icon {
+  font-size: 20px;
+}
+
+.metric-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metric-time {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.metric-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  min-width: 35px;
+  text-align: right;
+}
+
+.metric-status {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.metric-status.complete {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.server-region {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.speed-comparison {
+  text-align: center;
+  padding: 12px;
+  background: var(--primary-light);
+  border-radius: 6px;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+.mode-description {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  clear: both;
+}
+
+.mode-description p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .processing-mode-selector {
+  background: var(--surface-color);
+}
+
+[data-theme='dark'] .mode-button {
+  background: var(--surface-color);
+}
+
+[data-theme='dark'] .mode-button.active {
+  background: var(--primary-color);
+}
+
+[data-theme='dark'] .metric-card {
+  background: var(--surface-color);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .mode-buttons {
+    flex-direction: column;
+  }
+
+  .mode-button {
+    width: 100%;
+  }
+}
