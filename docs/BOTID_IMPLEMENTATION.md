@@ -1,12 +1,12 @@
-# Vercel BotID Implementation
+# Vercel BotID Implementation (Simplified)
 
-This document describes the Vercel BotID implementation in the Financial Schedule Optimizer application.
+This document describes the simplified Vercel BotID implementation in the Financial Schedule Optimizer application.
 
 ## Overview
 
 Vercel BotID is an invisible CAPTCHA alternative that protects expensive operations from bot abuse without impacting user experience. It's powered by Kasada and provides enterprise-grade bot detection.
 
-## Implementation Details
+## Simplified Implementation
 
 ### 1. Installation
 
@@ -14,32 +14,17 @@ Vercel BotID is an invisible CAPTCHA alternative that protects expensive operati
 npm install botid
 ```
 
-### 2. Components Added
+### 2. Server-Side Protection Only
 
-#### BotIdProtection Component (`src/components/BotIdProtection/`)
-- Initializes BotID protection for the application
-- Placed at the root of the component tree in App.tsx
-- Configures protected operations (optimization, schedule-generation)
-
-#### BotID Service (`src/services/botidService.ts`)
-- Singleton service for managing BotID checks
-- Provides methods to check sessions and protect operations
-- Wraps expensive operations with bot protection
-
-#### Vercel Optimizer Hook (`src/hooks/useVercelOptimizer.ts`)
-- Uses server-side optimization when deployed to Vercel
-- Falls back to client-side optimization in development
-- Handles Server-Sent Events for progress updates
-
-### 3. API Endpoint
+The implementation is now simplified to only include server-side protection when deployed to Vercel:
 
 #### `/api/optimize.js`
-- Vercel Function that handles optimization requests
+- Vercel Function that protects the optimization endpoint
 - Performs server-side BotID verification using `checkBotId()`
 - Returns 403 Forbidden if bot activity is detected
-- Streams optimization progress using Server-Sent Events
+- Ready to integrate with your optimization logic
 
-### 4. Configuration
+### 3. Configuration
 
 #### `vercel.json`
 ```json

@@ -13,7 +13,6 @@ import { OptimizationProgress } from './components/OptimizationProgress/Optimiza
 import { EditModal } from './components/EditModal/EditModalV2';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { ActionBar } from './components/ActionBar/ActionBar';
-import BotIdProtection from './components/BotIdProtection';
 import { useUI } from './context/UIContext';
 import { usePersistence } from './hooks/usePersistence';
 import { useOptimizer } from './hooks/useOptimizer';
@@ -344,7 +343,6 @@ function App() {
         // In production, you might want to send this to an error tracking service
       }}
     >
-      <BotIdProtection />
       <UIProvider initialDebugMode={false}>
         <ScheduleProvider>
           <ConfigurationProvider>
