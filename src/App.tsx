@@ -22,16 +22,6 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { logger } from './utils/logger';
 import './App.css';
 
-// Import BotID client component - only import if available to avoid build errors
-let BotIdClient: any;
-try {
-  const botIdModule = require('botid/client');
-  BotIdClient = botIdModule.BotIdClient;
-} catch (e) {
-  // BotID client module not available
-  console.warn('BotID client module not available');
-}
-
 /**
  * Main application content component with new dashboard layout
  */
@@ -400,17 +390,6 @@ function App() {
         // In production, you might want to send this to an error tracking service
       }}
     >
-      {/* Add BotID client protection for API endpoints */}
-      {BotIdClient && (
-        <BotIdClient
-          protect={[
-            {
-              path: '/api/optimize',
-              method: 'POST',
-            },
-          ]}
-        />
-      )}
       <UIProvider initialDebugMode={false}>
         <ScheduleProvider>
           <ConfigurationProvider>

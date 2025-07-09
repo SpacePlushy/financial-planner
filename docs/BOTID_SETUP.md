@@ -1,7 +1,7 @@
 # Vercel BotID Setup Guide
 
 ## Current Status
-BotID protection is now **enabled** with both client-side and server-side configuration.
+BotID protection is currently **disabled** due to configuration issues.
 
 ## Implementation Details
 

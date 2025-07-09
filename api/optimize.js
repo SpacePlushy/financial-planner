@@ -7,7 +7,8 @@
  */
 
 // Import BotID for bot protection
-const { checkBotId } = require('botid/server');
+// Temporarily disabled - requires Vercel platform configuration
+// const { checkBotId } = require('botid/server');
 
 // Import configuration constants
 const { 
@@ -719,24 +720,9 @@ module.exports = async (req, res) => {
   const startTime = Date.now();
 
   try {
-    // Check for bot activity with Vercel BotID
-    const { isBot } = await checkBotId();
+    // BotID protection temporarily disabled - requires Vercel platform configuration
+    // See: https://vercel.com/docs/security/botid
     
-    if (isBot) {
-      console.log('Bot detected by Vercel BotID, blocking request');
-      return res.status(403).json({ 
-        success: false,
-        error: 'Access denied', 
-        message: 'Bot activity detected. Please verify you are human.',
-        performanceMetrics: {
-          startTime,
-          endTime: Date.now(),
-          totalTime: Date.now() - startTime,
-          serverRegion: process.env.VERCEL_REGION || 'unknown',
-        },
-      });
-    }
-
     const { config, expenses, deposits, shiftTypes } = req.body;
 
 
