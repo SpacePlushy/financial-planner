@@ -146,14 +146,9 @@ body {
 
 .dashboard-grid {
   height: 100%;
-  display: flex;
-  gap: 16px;
-  position: relative;
-  align-items: stretch;
-}
-
-.dashboard-grid.resizable-container {
-  overflow: hidden;
+  display: grid;
+  grid-template-columns: 320px 1fr 1.5fr;
+  gap: var(--gap-md);
 }
 
 /* Panel Styling */
@@ -166,7 +161,6 @@ body {
   flex-direction: column;
   overflow: hidden;
   transition: box-shadow 0.3s ease;
-  height: 100%;
 }
 
 .panel:hover {
@@ -489,19 +483,11 @@ body {
   }
 
   .dashboard-grid {
-    display: block;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: var(--gap-sm);
     height: auto;
     min-height: 100%;
-  }
-
-  .resizable-panel {
-    width: 100% !important;
-    height: auto;
-    margin-bottom: var(--gap-md);
-  }
-
-  .resize-divider {
-    display: none;
   }
 
   .config-panel {

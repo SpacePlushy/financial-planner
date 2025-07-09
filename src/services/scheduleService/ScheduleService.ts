@@ -219,7 +219,9 @@ export class ScheduleService {
       // Check minimum balance
       if (day.endBalance < config.minimumBalance) {
         violations.push(
-          `Day ${day.day}: Balance ($${day.endBalance ? day.endBalance.toFixed(2) : '0.00'}) below minimum ($${config.minimumBalance.toFixed(2)})`
+          `Day ${day.day}: Balance ($${day.endBalance.toFixed(
+            2
+          )}) below minimum ($${config.minimumBalance.toFixed(2)})`
         );
       }
 
@@ -332,11 +334,11 @@ export class ScheduleService {
     for (const day of schedule) {
       const row = [
         day.day,
-        day.shifts ? day.shifts.join('+') || 'Off' : 'Off',
-        day.earnings ? day.earnings.toFixed(2) : '0.00',
-        day.expenses ? day.expenses.toFixed(2) : '0.00',
-        day.deposit ? day.deposit.toFixed(2) : '0.00',
-        day.endBalance ? day.endBalance.toFixed(2) : '0.00',
+        day.shifts.join('+') || 'Off',
+        day.earnings.toFixed(2),
+        day.expenses.toFixed(2),
+        day.deposit.toFixed(2),
+        day.endBalance.toFixed(2),
       ];
       rows.push(row.join(','));
     }

@@ -18,10 +18,7 @@ export const ScheduleTable: React.FC = () => {
       if (!ui.showWeekends && ui.isWeekend(day.day)) {
         return false;
       }
-      if (
-        ui.filters.showWorkDaysOnly &&
-        (!day.shifts || day.shifts.length === 0)
-      ) {
+      if (ui.filters.showWorkDaysOnly && day.shifts.length === 0) {
         return false;
       }
       if (ui.filters.showEditsOnly && !hasEditsForDay(day.day)) {
@@ -48,8 +45,8 @@ export const ScheduleTable: React.FC = () => {
 
       // Handle special cases
       if (field === 'shifts') {
-        aValue = a.shifts ? a.shifts.length : 0;
-        bValue = b.shifts ? b.shifts.length : 0;
+        aValue = a.shifts.length;
+        bValue = b.shifts.length;
       }
 
       if (aValue < bValue) return direction === 'asc' ? -1 : 1;
@@ -251,12 +248,12 @@ export const ScheduleTable: React.FC = () => {
                   ${getCellValue(day.day, 'deposit', day.deposit)}
                 </td>
                 <td className={`${styles.td} ${styles.numeric}`}>
-                  ${day.startBalance ? day.startBalance.toFixed(2) : '0.00'}
+                  ${day.startBalance.toFixed(2)}
                 </td>
                 <td
-                  className={`${styles.td} ${styles.numeric} ${day.endBalance && day.endBalance < 0 ? styles.negative : ''}`}
+                  className={`${styles.td} ${styles.numeric} ${day.endBalance < 0 ? styles.negative : ''}`}
                 >
-                  ${day.endBalance ? day.endBalance.toFixed(2) : '0.00'}
+                  ${day.endBalance.toFixed(2)}
                 </td>
               </tr>
             );

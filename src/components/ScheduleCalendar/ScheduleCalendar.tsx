@@ -36,7 +36,7 @@ export const ScheduleCalendar: React.FC = () => {
 
   // Get color class for shift type
   const getShiftColorClass = useCallback((shifts: string[]) => {
-    if (!shifts || shifts.length === 0) return '';
+    if (shifts.length === 0) return '';
 
     const shiftType = shifts[0]; // Use first shift for primary color
     switch (shiftType) {
@@ -52,8 +52,8 @@ export const ScheduleCalendar: React.FC = () => {
   }, []);
 
   // Get balance indicator class
-  const getBalanceClass = useCallback((balance: number | null | undefined) => {
-    if (!balance || balance < 0) return styles.balanceNegative;
+  const getBalanceClass = useCallback((balance: number) => {
+    if (balance < 0) return styles.balanceNegative;
     if (balance < 100) return styles.balanceLow;
     if (balance > 1000) return styles.balanceHigh;
     return styles.balanceNormal;
@@ -103,7 +103,7 @@ export const ScheduleCalendar: React.FC = () => {
             for (let day = 1; day <= 30; day++) {
               const isWeekend = day % 7 === 0 || day % 7 === 6;
               const shifts = isWeekend ? [] : ['medium'];
-              const earnings = shifts && shifts.length > 0 ? 67.5 : 0;
+              const earnings = shifts.length > 0 ? 67.5 : 0;
 
               // Calculate expenses for this day
               const dayExpenses = expenses
@@ -201,7 +201,7 @@ export const ScheduleCalendar: React.FC = () => {
                 <div className={styles.dayContent}>
                   {/* Shift information */}
                   <div className={styles.shifts}>
-                    {dayData.shifts && dayData.shifts.length > 0 ? (
+                    {dayData.shifts.length > 0 ? (
                       dayData.shifts.map((shift, idx) => (
                         <span key={idx} className={styles.shiftTag}>
                           {shift}
@@ -214,14 +214,14 @@ export const ScheduleCalendar: React.FC = () => {
 
                   {/* Earnings */}
                   <div className={styles.earnings}>
-                    ${dayData.earnings ? dayData.earnings.toFixed(0) : '0'}
+                    ${dayData.earnings.toFixed(0)}
                   </div>
 
                   {/* Balance */}
                   <div
                     className={`${styles.balance} ${getBalanceClass(dayData.endBalance)}`}
                   >
-                    ${dayData.endBalance ? dayData.endBalance.toFixed(0) : '0'}
+                    ${dayData.endBalance.toFixed(0)}
                   </div>
 
                   {/* Indicators */}
@@ -229,7 +229,7 @@ export const ScheduleCalendar: React.FC = () => {
                     {dayData.expenses > 0 && (
                       <div
                         className={styles.expenseIndicator}
-                        title={`Expenses: $${dayData.expenses ? dayData.expenses.toFixed(2) : '0'}`}
+                        title={`Expenses: $${dayData.expenses.toFixed(2)}`}
                       >
                         💸
                       </div>
@@ -237,7 +237,7 @@ export const ScheduleCalendar: React.FC = () => {
                     {dayData.deposit > 0 && (
                       <div
                         className={styles.depositIndicator}
-                        title={`Deposit: $${dayData.deposit ? dayData.deposit.toFixed(2) : '0'}`}
+                        title={`Deposit: $${dayData.deposit.toFixed(2)}`}
                       >
                         💰
                       </div>
@@ -273,11 +273,7 @@ export const ScheduleCalendar: React.FC = () => {
           <div className={styles.stat}>
             <span className={styles.statLabel}>Total Work Days:</span>
             <span className={styles.statValue}>
-              {
-                currentSchedule.filter(
-                  day => day.shifts && day.shifts.length > 0
-                ).length
-              }
+              {currentSchedule.filter(day => day.shifts.length > 0).length}
             </span>
           </div>
           <div className={styles.stat}>
@@ -295,12 +291,9 @@ export const ScheduleCalendar: React.FC = () => {
               className={`${styles.statValue} ${getBalanceClass(currentSchedule[currentSchedule.length - 1]?.endBalance || 0)}`}
             >
               $
-              {currentSchedule.length > 0 &&
-              currentSchedule[currentSchedule.length - 1]?.endBalance
-                ? currentSchedule[
-                    currentSchedule.length - 1
-                  ].endBalance.toFixed(2)
-                : '0.00'}
+              {currentSchedule[currentSchedule.length - 1]?.endBalance.toFixed(
+                2
+              ) || '0.00'}
             </span>
           </div>
           <div className={styles.stat}>

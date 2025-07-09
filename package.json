@@ -72,13 +72,11 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
-    "@vercel/node": "^5.3.2",
     "cypress": "^14.5.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
-    "node-fetch": "^2.7.0",
     "prettier": "^3.6.2",
     "start-server-and-test": "^2.0.12"
   }

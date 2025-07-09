@@ -76,7 +76,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
 
   // Format shifts array for display
   const formatShifts = (shifts: string[]): string => {
-    if (!shifts || shifts.length === 0) return 'Rest Day';
+    if (shifts.length === 0) return 'Rest Day';
     return shifts.join(', ');
   };
 
