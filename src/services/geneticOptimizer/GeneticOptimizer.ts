@@ -11,6 +11,7 @@ import {
   Deposit,
 } from '../../types';
 import { FitnessManager } from './FitnessManager';
+import { botIdService } from '../botidService';
 // import { logger } from '../../utils/logger';
 
 // Disable logger to prevent console spam during optimization
