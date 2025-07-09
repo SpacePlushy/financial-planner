@@ -724,7 +724,7 @@ module.exports = async (req, res) => {
     
     if (isBot) {
       console.log('Bot detected by Vercel BotID, blocking request');
-      return res.status(API_CONSTANTS.STATUS_CODES.FORBIDDEN || 403).json({ 
+      return res.status(403).json({ 
         success: false,
         error: 'Access denied', 
         message: 'Bot activity detected. Please verify you are human.',
